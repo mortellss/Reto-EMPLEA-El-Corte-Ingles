@@ -1,5 +1,10 @@
 from prophet import Prophet
 import pandas as pd
+from prophet.make_holidays import make_holidays_df
+
+#from sqlalchemy import create_engine
+
+#engine = create_engine("sqlite:///omnicanal.db")
 
 # from sqlalchemy import create_engine
 
@@ -16,7 +21,19 @@ df = df.dropna(subset=["y"])
 # La estructura de los eventos:
 # {"holiday": nombre, "ds": fecha, "lower_window": , "upper_window": },
 
-eventos = pd.DataFrame([
+promociones = pd.DataFrame([
+    #ENERO 2024
+    #FEBRERO 2024
+    #MARZO 2024
+    #ABRIL 2024
+    #MAYO 2024
+    #JUNIO 2024
+    #JULIO 2024
+    #AGOSTO 2024
+    #SEPTIEMBRE 2024
+    #OCTUBRE 2024
+    #NOVIEMBRE 2024
+    #DICIEMBRE 2024
     #ENERO 2025
     {"holiday": "rebajas_enero", "ds": "2025-01-07", "lower_window": 0, "upper_window": 52},
     {"holiday": "dia_sin_iva", "ds": "2025-01-19", "lower_window": 0, "upper_window": 0},
@@ -156,10 +173,29 @@ eventos = pd.DataFrame([
     
 ])
 
-eventos["ds"] = pd.to_datetime(eventos["ds"])
+promociones["ds"] = pd.to_datetime(promociones["ds"])
+
+# No sigue un patrón de que los domingos siempre cierra sino que según el momento del año
+
+
+# ESTO NO LO PUEDO AÑADIR HASTA QUE NO CREEMOS LA BASE DE DATOS
+#calendario = pd.read_sql("""
+#    SELECT fecha AS ds, 
+#           CASE WHEN abierto = 0 THEN 1 ELSE 0 END AS centro_cerrado
+#    FROM calendario_apertura
+#""", engine)
+#calendario["ds"] = pd.to_datetime(calendario["ds"])
+
+# Añadirlo al DataFrame de entrenamiento
+#df = df.merge(calendario, on="ds", how="left")
+# df["centro_cerrado"] = df["centro_cerrado"].fillna(0)  # si no hay registro = abierto
+
+
+
+
 
 model = Prophet(
-    holidays=eventos,
+    holidays=promociones,
     yearly_seasonality=True,
     weekly_seasonality=True,
     daily_seasonality=False,
@@ -173,6 +209,10 @@ model = Prophet(
     # De momento lo dejo en 15 hasta que tenga más datos
     n_changepoints=15
 )
+
+model.add_country_holidays(country_name="ES")
+model.add_country_holidays(country_name="ES", province="VC")
+model.add_regressor("centro_cerrado", mode="multiplicative")
 
 model.fit(df)
 
