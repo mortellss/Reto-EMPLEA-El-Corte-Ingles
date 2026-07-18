@@ -54,7 +54,7 @@ df_final = pd.merge(df_pedidos, df_calendario, on='ds', how='left')
 regresores = ['centro_cerrado', 
               'es_festivo', 
               'dia_posterior_festivo', 
-              'hay_promocion',
+              #'hay_promocion',
               'promo_tier_1', 
               'promo_tier_2', 
               'promo_tier_3'
@@ -418,7 +418,7 @@ promociones = [
     {"nombre": "supertecnoprecios", "inicio": "2026-06-04", "fin": "2026-06-07"},
     {"nombre": "tecnologia", "inicio": "2026-06-04", "fin": "2026-06-10"},
     {"nombre": "belleza", "inicio": "2026-06-05", "fin": "2026-06-12"},
-    {"nombre": "belleza", "inicio": "2026-06-10", "fin": "2026-06-14"},
+    {"nombre": "días_belleza", "inicio": "2026-06-10", "fin": "2026-06-14"},
     {"nombre": "ventas_privadas", "inicio": "2026-06-11", "fin": "2026-06-15"},
     {"nombre": "descuentos_top", "inicio": "2026-06-16", "fin": "2026-06-24"},
     {"nombre": "vuelta_al_cole", "inicio": "2026-06-18", "fin": "2026-08-22"},
@@ -432,7 +432,6 @@ promociones = [
     {"nombre": "especial_baño", "inicio": "2026-07-16", "fin": "2026-07-22"},
     {"nombre": "semana_deporte", "inicio": "2026-06-18", "fin": "2026-07-01"},
     
-
     #AGOSTO 2026
     {"nombre": "rebaja_final", "inicio": "2026-07-30", "fin": "2026-08-31"},
     {"nombre": "limite_1", "inicio": "2026-08-06", "fin": "2026-08-09"},
@@ -488,7 +487,8 @@ promo_tier_2 = [
     "dias_belleza",
     "8_dias_oro",
     "segundas_rebajas_enero",
-    "segundas_rebajas_julio"
+    "segundas_rebajas_julio",
+    "descuentos_top"
 ]
 
 fechas_t1 = set()
@@ -513,9 +513,6 @@ df_final['promo_tier_1'] = df_final['ds'].isin(fechas_t1).astype(int)
 df_final['promo_tier_2'] = df_final['ds'].isin(fechas_t2).astype(int)
 df_final['promo_tier_3'] = df_final['ds'].isin(fechas_t3).astype(int)
 
-df_final['hay_promocion'] = ((df_final['promo_tier_1'] == 1) | 
-                             (df_final['promo_tier_2'] == 1) | 
-                             (df_final['promo_tier_3'] == 1)).astype(int)
 
 # Creamos el modelo
 
@@ -525,14 +522,12 @@ model = Prophet(
     daily_seasonality=False,
     seasonality_mode="multiplicative",
     interval_width=0.5,
-    n_changepoints=50
-)
+    n_changepoints=50)
 
 for reg in regresores:
     model.add_regressor(reg, mode='multiplicative')
 
 model.add_country_holidays(country_name="ES")
-
 model.fit(df_final)
 
 # Predicción
@@ -544,9 +539,6 @@ future['promo_tier_1'] = future['ds'].isin(fechas_t1).astype(int)
 future['promo_tier_2'] = future['ds'].isin(fechas_t2).astype(int)
 future['promo_tier_3'] = future['ds'].isin(fechas_t3).astype(int)
 
-future['hay_promocion'] = ((future['promo_tier_1'] == 1) | 
-                           (future['promo_tier_2'] == 1) | 
-                           (future['promo_tier_3'] == 1)).astype(int)
 
 for reg in regresores:
     future = limpiar_regresor(future, reg)
@@ -557,7 +549,7 @@ trimestre = forecast[forecast["ds"] > df_final["ds"].max()][
     ["ds", "yhat", "yhat_lower", "yhat_upper"]
 ].reset_index(drop=True)
 
-print(trimestre.head(10))
+print(trimestre.head(30))
 
 fig1 = model.plot(forecast)
 plt.title("Previsión de pedidos omnicanal")
