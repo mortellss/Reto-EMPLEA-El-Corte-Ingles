@@ -217,6 +217,8 @@ CREATE TABLE `prediccion` (
   `id_prediccion` int NOT NULL AUTO_INCREMENT,
   `fecha` date NOT NULL,
   `pedidos_previstos` int NOT NULL,
+  `limite_inferior` int NOT NULL,
+  `limite_superior` int NOT NULL,
   `fecha_generacion` datetime NOT NULL,
   `id_centro` int NOT NULL,
   PRIMARY KEY (`id_prediccion`),
@@ -330,6 +332,8 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `trabajador_tarea`;
+/* Aquí probablmenete habrá que añadir la fecha (o la hora, según si hace una o varias) tareas en un mismo turno */
+/* Posible key: el turno */
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `trabajador_tarea` (
