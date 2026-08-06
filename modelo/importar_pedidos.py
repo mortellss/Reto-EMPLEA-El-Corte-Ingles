@@ -52,3 +52,20 @@ try:
     print(f"{len(df)} importados a la base de datos.")
 except Exception as e:
     print(f"{e}")
+
+# Insertar los datos del calendario
+
+df_cal = pd.read_excel(ruta_archivo, sheet_name="Calendario")
+df_cal = df_cal[['fecha', 'centro_abierto', 'es_festivo', 'dia_posterior_festivo', 'hora_apertura', 'hora_cierre']]
+
+df_cal["fecha"] = pd.to_datetime(df_cal["fecha"], errors="coerce")
+df_cal = df_cal.dropna(subset=["fecha"])
+df_cal["fecha"] = df_cal["fecha"].dt.date
+
+df_cal["centro_abierto"] = df_cal["centro_abierto"].astype(int)
+df_cal["es_festivo"] = df_cal["es_festivo"].astype(int)
+df_cal["dia_posterior_festivo"] = df_cal["dia_posterior_festivo"].astype(int)
+
+df_cal.to_sql(name='calendario', con=engine, if_exists='append', index=False)
+
+print("¡Datos insertados correctamente en la base de datos!")

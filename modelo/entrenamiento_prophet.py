@@ -45,12 +45,14 @@ SELECT
 FROM calendario
 """
 df_calendario = pd.read_sql(query_calendario, con=engine)
+print(df_calendario.head())
 df_calendario['ds'] = pd.to_datetime(df_calendario['ds'])
 df_calendario['centro_cerrado'] = 1 - df_calendario['centro_abierto']
 
 # Crear el dataframe final
 
 df_final = pd.merge(df_pedidos, df_calendario, on='ds', how='left')
+print(df_final.head())
 
 # Regresores que voy
 

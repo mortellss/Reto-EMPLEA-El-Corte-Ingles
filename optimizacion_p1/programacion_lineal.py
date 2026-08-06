@@ -25,10 +25,9 @@ FROM prediccion
 """
 df_pedidos_pred = pd.read_sql(query_prediccion, con=engine)
 df_pedidos_pred['id'] = pd.to_numeric(df_pedidos_pred['id'])
-print(df_pedidos_pred.head())
 df_pedidos_pred['fecha'] = pd.to_datetime(df_pedidos_pred['fecha'])
 
-'''
+
 
 # query para obtener el horario y si el centro está abierto
 
@@ -42,10 +41,14 @@ FROM calendario
 """
 
 df_calendario = pd.read_sql(query_calendario, con=engine)
+print(df_calendario.head())
 df_calendario['fecha'] = pd.to_datetime(df_calendario['fecha'])
 df_calendario['hora_apertura'] =pd.to_timedelta(df_calendario['hora_apertura'])
 df_calendario['hora_cierre'] =pd.to_timedelta(df_calendario['hora_cierre'])
 df_calendario['centro_abierto'] = pd.to_numeric(df_calendario['centro_abierto'])
+
+
+'''
 
 
 

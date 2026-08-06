@@ -27,11 +27,14 @@ SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ 'acdd19aa-73e8-11f1-a120-644ed719c585:1-
 -- Table structure for table `calendario`
 --
 
+
+/* PRIMERA VERSIÓN DE LA TABLA DE CALENDARIO*/
+/**
 DROP TABLE IF EXISTS `calendario`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `calendario` (
-  `id_calendario` int NOT NULL AUTO_INCREMENT,
+  `id_calendario` int NOT NULL AUTO_INCREMENT, 
   `fecha` date NOT NULL,
   `centro_abierto` tinyint(1) NOT NULL,
   `es_festivo` tinyint(1) NOT NULL,
@@ -40,6 +43,24 @@ CREATE TABLE `calendario` (
   `hora_cierre` time DEFAULT NULL,
   `id_centro` int NOT NULL,
   PRIMARY KEY (`id_calendario`),
+  KEY `id_centro` (`id_centro`),
+  CONSTRAINT `calendario_ibfk_1` FOREIGN KEY (`id_centro`) REFERENCES `centro` (`id_centro`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+**/
+
+DROP TABLE IF EXISTS `calendario`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `calendario` (
+  `fecha` date NOT NULL,
+  `centro_abierto` tinyint(1) NOT NULL,
+  `es_festivo` tinyint(1) NOT NULL,
+  `dia_posterior_festivo` tinyint(1) NOT NULL,
+  `hora_apertura` time DEFAULT NULL,
+  `hora_cierre` time DEFAULT NULL,
+  `id_centro` int NOT NULL,
+  PRIMARY KEY (`fecha`, `id_centro`),
   KEY `id_centro` (`id_centro`),
   CONSTRAINT `calendario_ibfk_1` FOREIGN KEY (`id_centro`) REFERENCES `centro` (`id_centro`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -221,7 +242,7 @@ CREATE TABLE `prediccion` (
   `limite_superior` int NOT NULL,
   `fecha_generacion` datetime NOT NULL,
   `id_centro` int NOT NULL,
-  
+
   PRIMARY KEY (`id_prediccion`),
   KEY `id_centro` (`id_centro`),
   CONSTRAINT `prediccion_ibfk_1` FOREIGN KEY (`id_centro`) REFERENCES `centro` (`id_centro`)
