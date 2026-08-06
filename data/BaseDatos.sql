@@ -221,6 +221,7 @@ CREATE TABLE `prediccion` (
   `limite_superior` int NOT NULL,
   `fecha_generacion` datetime NOT NULL,
   `id_centro` int NOT NULL,
+  
   PRIMARY KEY (`id_prediccion`),
   KEY `id_centro` (`id_centro`),
   CONSTRAINT `prediccion_ibfk_1` FOREIGN KEY (`id_centro`) REFERENCES `centro` (`id_centro`)

@@ -1,5 +1,7 @@
 # importación de lo necesario
 
+import math
+
 from prophet import Prophet
 import pandas as pd
 from prophet.make_holidays import make_holidays_df
@@ -554,11 +556,33 @@ for reg in regresores:
 
 forecast = model.predict(future)
 
+
+tasa_crecimiento_anual = 0.15
+
+fecha_max_historica = df_final['ds'].max()
+
+def aplicar_crecimiento(row, col_name):
+    if row['ds'] > fecha_max_historica:
+        diferencia = (row['ds'] - fecha_max_historica).days
+        prediccion = math.ceil(diferencia/365.25)
+
+        
+        factor_crecimiento = (1 + tasa_crecimiento_anual) ** prediccion
+        return row[col_name] * factor_crecimiento
+    
+    return row[col_name]
+
+forecast['yhat'] = forecast.apply(lambda r: aplicar_crecimiento(r, 'yhat'), axis=1)
+forecast['yhat_lower'] = forecast.apply(lambda r: aplicar_crecimiento(r, 'yhat_lower'), axis=1)
+forecast['yhat_upper'] = forecast.apply(lambda r: aplicar_crecimiento(r, 'yhat_upper'), axis=1)
+
+
+
 trimestre = forecast[forecast["ds"] > df_final["ds"].max()][
     ["ds", "yhat", "yhat_lower", "yhat_upper"]
 ].reset_index(drop=True)
 
-print(trimestre.head(30))
+print(trimestre[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].head(30))
 
 trimestre = trimestre.rename(columns={
     "ds": "fecha",
@@ -567,25 +591,33 @@ trimestre = trimestre.rename(columns={
     "yhat_upper": "limite_superior"
 })
 
+
 columnas_numericas = ["pedidos_previstos", "limite_inferior", "limite_superior"]
 trimestre[columnas_numericas] = trimestre[columnas_numericas].round().astype(int)
 
 trimestre["fecha_generacion"] = datetime.now()
 trimestre["id_centro"] = 1
 
+
+
 try:
     trimestre.to_sql(
         name="prediccion", 
-        con=engine,                  # La conexión que acabamos de crear
-        if_exists="append",          # 'append' añade filas nuevas; 'replace' sobreescribe la tabla entera
-        index=False                  # Ponemos False para no guardar el índice (0, 1, 2...) de pandas
+        con=engine,                  
+        if_exists="append",          
+        index=False                 
     )
     print("Valores predecidos con éxito")
 except Exception as e:
     print(f"Error: {e}")
 
-
 '''
+
+
+# GRÁFICOS
+
+# Gráfico general
+
 fig1 = model.plot(forecast)
 
 fecha_corte = pd.to_datetime('2026-06-30')
@@ -605,11 +637,17 @@ plt.xlabel("Fecha", fontsize=11)
 plt.ylabel("Número de líneas", fontsize=11)
 plt.show()
 
+# Gráfico por componentes
 
-# Gráfico de componentes: tendencia + estacionalidades por separado
 fig2 = model.plot_components(forecast)
+model.plot
+# Me queda que solamente se vean los componentes por separado
 plt.show()
 
+
+
+
+# MÉTRICAS
 
 df_cv = cross_validation(
     model,
@@ -618,16 +656,32 @@ df_cv = cross_validation(
     horizon="90 days"
 )
 
+def aplicar_crecimiento_cv(row, col_name):
+    # En CV, la base histórica es el "cutoff" de la simulación
+    dias_diferencia = (row['ds'] - row['cutoff']).days
+    if dias_diferencia > 0:
+        ano_prediccion = math.ceil(dias_diferencia / 365.25)
+        factor_crecimiento = (1 + tasa_crecimiento_anual) ** ano_prediccion
+        return row[col_name] * factor_crecimiento
+    return row[col_name]
+
+# Aplicamos el crecimiento a los resultados del CV
+df_cv['yhat'] = df_cv.apply(lambda r: aplicar_crecimiento_cv(r, 'yhat'), axis=1)
+df_cv['yhat_lower'] = df_cv.apply(lambda r: aplicar_crecimiento_cv(r, 'yhat_lower'), axis=1)
+df_cv['yhat_upper'] = df_cv.apply(lambda r: aplicar_crecimiento_cv(r, 'yhat_upper'), axis=1)
+
 metricas = performance_metrics(df_cv)
 
+print("\n--- Métricas CV con Tasa de Crecimiento Aplicada ---")
+print(metricas.head(10))
 
-# Las métricas clave:
-# mae   → error medio absoluto (en número de pedidos)
-# mape  → error medio porcentual (en %)
-# rmse  → raíz del error cuadrático medio
+df_cv['error_porcentual'] = abs((df_cv['y'] - df_cv['yhat']) / df_cv['y']) * 100
 
-print(metricas[["horizon", "mae", "mape", "rmse"]])
+# 2. Ordenamos para obtener los errores más graves
+peores_dias = df_cv.sort_values(by='error_porcentual', ascending=False).head(15)
+
+print("\n--- Fechas críticas que están disparando el MAPE ---")
+print(peores_dias[['ds', 'cutoff', 'y', 'yhat', 'error_porcentual']])
 
 '''
 
-# tasa de crecimiento constante
