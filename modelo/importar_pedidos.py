@@ -56,7 +56,7 @@ except Exception as e:
 # Insertar los datos del calendario
 
 df_cal = pd.read_excel(ruta_archivo, sheet_name="Calendario")
-df_cal = df_cal[['fecha', 'centro_abierto', 'es_festivo', 'dia_posterior_festivo', 'hora_apertura', 'hora_cierre']]
+df_cal = df_cal[['fecha', 'centro_abierto', 'es_festivo', 'dia_posterior_festivo', 'hora_apertura', 'hora_cierre', 'id_centro']]
 
 df_cal["fecha"] = pd.to_datetime(df_cal["fecha"], errors="coerce")
 df_cal = df_cal.dropna(subset=["fecha"])
