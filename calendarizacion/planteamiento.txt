@@ -1,0 +1,9 @@
+
+Inputs:
+
+- Trabajadores de Horas Ordinarias con sus requisitos especiales: número de horas, tipos de jornadas, las tareas que saben hacer
+- El número de Horas Ordinarias que se deben de hacer en total
+
+Output:
+- Se calendariza el horario de cada trabajador
+

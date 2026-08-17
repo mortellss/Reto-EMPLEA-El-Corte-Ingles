@@ -7,7 +7,7 @@ import pandas as pd
 from prophet.make_holidays import make_holidays_df
 import matplotlib.pyplot as plt
 from prophet.diagnostics import cross_validation, performance_metrics
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 import numpy as np
 from datetime import datetime
 
@@ -29,9 +29,11 @@ engine = create_engine("mysql+pymysql://root:root2004@localhost/emplea")
 query_pedidos = """
 SELECT fecha AS ds, total_lineas AS y 
 FROM pedidohistorico
+WHERE id_centro = 1
 """
 df_pedidos = pd.read_sql(query_pedidos, con=engine)
 df_pedidos['ds'] = pd.to_datetime(df_pedidos['ds'])
+df_pedidos = df_pedidos.groupby('ds', as_index=False)['y'].sum()
 
 
 # query para obtener cuando está abierto y cuando no el centro
@@ -43,16 +45,16 @@ SELECT
     es_festivo,
     dia_posterior_festivo
 FROM calendario
+WHERE id_centro = 1
 """
 df_calendario = pd.read_sql(query_calendario, con=engine)
-print(df_calendario.head())
 df_calendario['ds'] = pd.to_datetime(df_calendario['ds'])
+df_calendario = df_calendario.drop_duplicates(subset=['ds'], keep='last').sort_values('ds').reset_index(drop=True)
 df_calendario['centro_cerrado'] = 1 - df_calendario['centro_abierto']
 
 # Crear el dataframe final
 
 df_final = pd.merge(df_pedidos, df_calendario, on='ds', how='left')
-print(df_final.head())
 
 # Regresores que voy
 
@@ -584,6 +586,8 @@ trimestre = forecast[forecast["ds"] > df_final["ds"].max()][
     ["ds", "yhat", "yhat_lower", "yhat_upper"]
 ].reset_index(drop=True)
 
+trimestre = trimestre.drop_duplicates(subset=['ds'], keep='last').sort_values('ds').reset_index(drop=True)
+
 print(trimestre[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].head(30))
 
 trimestre = trimestre.rename(columns={
@@ -596,19 +600,46 @@ trimestre = trimestre.rename(columns={
 
 columnas_numericas = ["pedidos_previstos", "limite_inferior", "limite_superior"]
 trimestre[columnas_numericas] = trimestre[columnas_numericas].round().astype(int)
+trimestre = trimestre.drop_duplicates(subset=['fecha'], keep='last').sort_values('fecha').reset_index(drop=True)
 
+# Duplicamos pedidos_previstos en pedidos_acumulados y, si el centro está cerrado,
+# sumamos ese valor al día siguiente para no perderlo en la previsión acumulada.
+trimestre = trimestre.merge(
+    df_calendario[['ds', 'centro_abierto']].rename(columns={'ds': 'fecha'}),
+    on='fecha',
+    how='left'
+)
+trimestre['pedidos_acumulados'] = trimestre['pedidos_previstos'].copy()
+
+for i in range(len(trimestre) - 1):
+    if trimestre.at[i, 'centro_abierto'] == 0:
+        trimestre.at[i + 1, 'pedidos_acumulados'] = (
+            trimestre.at[i + 1, 'pedidos_acumulados'] + trimestre.at[i, 'pedidos_previstos']
+        )
+
+trimestre = trimestre.drop(columns=['centro_abierto'])
 trimestre["fecha_generacion"] = datetime.now()
 trimestre["id_centro"] = 1
-
+trimestre = trimestre[[
+    'fecha',
+    'pedidos_previstos',
+    'pedidos_acumulados',
+    'limite_inferior',
+    'limite_superior',
+    'fecha_generacion',
+    'id_centro'
+]]
 
 
 try:
-    trimestre.to_sql(
-        name="prediccion", 
-        con=engine,                  
-        if_exists="append",          
-        index=False                 
-    )
+    with engine.begin() as conn:
+        conn.execute(text("DELETE FROM prediccion"))
+        trimestre.to_sql(
+            name="prediccion",
+            con=conn,
+            if_exists="append",
+            index=False
+        )
     print("Valores predecidos con éxito")
 except Exception as e:
     print(f"Error: {e}")
