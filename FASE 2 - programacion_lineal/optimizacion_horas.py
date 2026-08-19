@@ -163,9 +163,9 @@ horas_gestion_mostrador = 3
 porcentaje_devoluciones = 0.05
 horas_gestion_devoluciones = 3
  
-prob += X_HO_1 + X_HC_1 + X_HFD_1 == pedidos_mes_1 * (horas_pedidos + porcentaje_devoluciones * horas_gestion_devoluciones) + horas_presencia_mostrador + horas_otras_gestiones + horas_gestion_mostrador, "Horas_Completar_Pedidos_Mes_1"
-prob += X_HO_2 + X_HC_2 + X_HFD_2 == pedidos_mes_2 * (horas_pedidos + porcentaje_devoluciones * horas_gestion_devoluciones) + horas_presencia_mostrador + horas_otras_gestiones + horas_gestion_mostrador, "Horas_Completar_Pedidos_Mes_2"
-prob += X_HO_3 + X_HC_3 + X_HFD_3 == pedidos_mes_3 * (horas_pedidos + porcentaje_devoluciones * horas_gestion_devoluciones) + horas_presencia_mostrador + horas_otras_gestiones + horas_gestion_mostrador, "Horas_Completar_Pedidos_Mes_3"
+prob += X_HO_1 + X_HC_1 + X_HFD_1 >= pedidos_mes_1 * (horas_pedidos + porcentaje_devoluciones * horas_gestion_devoluciones) + horas_presencia_mostrador + horas_otras_gestiones + horas_gestion_mostrador, "Horas_Completar_Pedidos_Mes_1"
+prob += X_HO_2 + X_HC_2 + X_HFD_2 >= pedidos_mes_2 * (horas_pedidos + porcentaje_devoluciones * horas_gestion_devoluciones) + horas_presencia_mostrador + horas_otras_gestiones + horas_gestion_mostrador, "Horas_Completar_Pedidos_Mes_2"
+prob += X_HO_3 + X_HC_3 + X_HFD_3 >= pedidos_mes_3 * (horas_pedidos + porcentaje_devoluciones * horas_gestion_devoluciones) + horas_presencia_mostrador + horas_otras_gestiones + horas_gestion_mostrador, "Horas_Completar_Pedidos_Mes_3"
 
 
     # Relacionamos las variables binarias con las continuas

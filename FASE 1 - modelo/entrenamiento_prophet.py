@@ -167,7 +167,7 @@ for reg in regresores:
 forecast = model.predict(future)
 
 
-tasa_crecimiento_anual = 0.15
+tasa_crecimiento_anual = 0
 
 fecha_max_historica = df_final['ds'].max()
 
@@ -283,7 +283,7 @@ model.plot
 # Me queda que solamente se vean los componentes por separado
 plt.show()
 
-
+'''
 
 
 # MÉTRICAS
@@ -322,5 +322,5 @@ peores_dias = df_cv.sort_values(by='error_porcentual', ascending=False).head(15)
 print("\n--- Fechas críticas que están disparando el MAPE ---")
 print(peores_dias[['ds', 'cutoff', 'y', 'yhat', 'error_porcentual']])
 
-'''
+
 
