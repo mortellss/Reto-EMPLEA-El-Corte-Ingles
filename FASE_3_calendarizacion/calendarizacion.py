@@ -175,40 +175,5 @@ meses_en_periodo_fd = {
     for indice, periodo in enumerate(meses_horizonte, start=1)
 }
 
-# Cálculo de las horas necesarias al día
+# Las horas diarias necesarias están
 
-def calc_horas_totales():
-    horas_recoleccion_1 = 0.00029611101
-    horas_recoleccion_2 = 0.00005238316019
-    horas_empaquetado = (0.007350211777 + 0.009435869071) / 2
-    horas_almacenado = (
-        0.001311401251 + 0.006738298913 + 0.01256998856 + 0.009548456075
-    ) / 4
-    horas_entrega = (0.0002393378489 + 0.009691886578) / 2
-    horas_pedidos = (
-        horas_recoleccion_1
-        + horas_recoleccion_2
-        + horas_empaquetado
-        + horas_almacenado
-        + horas_entrega
-    )
-
-    horas_presencia_mostrador = 11
-    horas_otras_gestiones = 1
-    horas_gestion_mostrador = 3
-    porcentaje_devoluciones = 0.05
-    horas_gestion_devoluciones = 3
-
-    horas_fijas_diarias = (
-        horas_presencia_mostrador
-        + horas_otras_gestiones
-        + horas_gestion_mostrador
-    )
-    horas_por_pedido = horas_pedidos + porcentaje_devoluciones * horas_gestion_devoluciones + horas_fijas_diarias
-
-    # Meter en la tabla de predicción
-    horas_diarias = df_prediccion['fecha']['pedidos_acumulados']
-
-    return horas_diarias
-
-print(calc_horas_totales)

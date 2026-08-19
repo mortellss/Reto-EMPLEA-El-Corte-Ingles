@@ -208,6 +208,37 @@ columnas_numericas = ["pedidos_previstos", "limite_inferior", "limite_superior"]
 trimestre[columnas_numericas] = trimestre[columnas_numericas].round().astype(int)
 trimestre = trimestre.drop_duplicates(subset=['fecha'], keep='last').sort_values('fecha').reset_index(drop=True)
 
+def calc_horas_totales(pedidos):
+    horas_recoleccion_1 = 0.00029611101
+    horas_recoleccion_2 = 0.00005238316019
+    horas_empaquetado = (0.007350211777 + 0.009435869071) / 2
+    horas_almacenado = (
+        0.001311401251 + 0.006738298913 + 0.01256998856 + 0.009548456075
+    ) / 4
+    horas_entrega = (0.0002393378489 + 0.009691886578) / 2
+    horas_pedidos = (
+        horas_recoleccion_1
+        + horas_recoleccion_2
+        + horas_empaquetado
+        + horas_almacenado
+        + horas_entrega
+    )
+
+    horas_presencia_mostrador = 11
+    horas_otras_gestiones = 1
+    horas_gestion_mostrador = 3
+    porcentaje_devoluciones = 0.05
+    horas_gestion_devoluciones = 3
+
+    horas_fijas_diarias = (
+        horas_presencia_mostrador
+        + horas_otras_gestiones
+        + horas_gestion_mostrador
+    )
+    horas_por_pedido = horas_pedidos + porcentaje_devoluciones * horas_gestion_devoluciones
+
+    return pedidos * horas_por_pedido + horas_fijas_diarias
+
 # Duplicamos pedidos_previstos en pedidos_acumulados y, si el centro está cerrado,
 # sumamos ese valor al día siguiente para no perderlo en la previsión acumulada.
 trimestre = trimestre.merge(
@@ -216,6 +247,7 @@ trimestre = trimestre.merge(
     how='left'
 )
 trimestre['pedidos_acumulados'] = trimestre['pedidos_previstos'].copy()
+trimestre['horas_necesarias'] = trimestre['pedidos_previstos'].apply(calc_horas_totales).round().astype(int)
 
 for i in range(len(trimestre) - 1):
     if trimestre.at[i, 'centro_abierto'] == 0:
@@ -230,6 +262,7 @@ trimestre = trimestre[[
     'fecha',
     'pedidos_previstos',
     'pedidos_acumulados',
+    'horas_necesarias',
     'limite_inferior',
     'limite_superior',
     'fecha_generacion',
