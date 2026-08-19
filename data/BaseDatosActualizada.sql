@@ -252,6 +252,7 @@ CREATE TABLE `prediccion` (
   `fecha` date NOT NULL,
   `pedidos_previstos` int NOT NULL,
   `pedidos_acumulados` int NOT NULL,
+  `horas_necesarias` int NOT NULL,
   `limite_inferior` int NOT NULL,
   `limite_superior` int NOT NULL,
   `fecha_generacion` datetime NOT NULL,

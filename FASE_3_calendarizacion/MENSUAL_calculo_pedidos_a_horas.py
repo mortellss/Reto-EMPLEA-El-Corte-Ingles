@@ -1,12 +1,15 @@
 from sqlalchemy import create_engine
 import pandas as pd
 
+# Cálculo de horas necesarias con los datos reales proporcionados 
+# Nota: Para que se calcule bien, en el archivo de importar_datos tiene que estar bien puesta la referencia a la hoja de excel
+
 
 engine = create_engine("mysql+pymysql://root:root2004@localhost/emplea")
 
 year = 2026
 mes_inicial = 1
-meses_a_calcular = 3
+meses_a_calcular = 6
 fecha_inicio = f"{year}-{mes_inicial:02d}-01"
 fecha_fin = f"{year}-{mes_inicial + meses_a_calcular:02d}-01"
 
@@ -58,14 +61,14 @@ horas_gestion_mostrador = 3
 porcentaje_devoluciones = 0.05
 horas_gestion_devoluciones = 3
 
-horas_fijas_mensuales = (
+horas_fijas_diarias = (
 	horas_presencia_mostrador
 	+ horas_otras_gestiones
 	+ horas_gestion_mostrador
 )
 horas_por_pedido = horas_pedidos + porcentaje_devoluciones * horas_gestion_devoluciones
 
-horas_mes = pedidos_mes * horas_por_pedido + horas_fijas_mensuales
+horas_mes = pedidos_mes * horas_por_pedido + horas_fijas_diarias * 30
 
 resultado = pd.DataFrame(
 	{

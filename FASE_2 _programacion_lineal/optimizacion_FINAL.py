@@ -56,7 +56,7 @@ prob = pulp.LpProblem("Optimizacion_Coste", pulp.LpMinimize)
 
 # Variables de decisión para los 12 meses del horizonte
 
-NUM_MESES = 3
+NUM_MESES = 6
 meses = range(1, NUM_MESES + 1)
 X_HO = {
     mes: pulp.LpVariable(f"X_HO_{mes}", lowBound=0, upBound=max_horas, cat="Continuous")
@@ -240,7 +240,9 @@ for mes in meses:
 
 prob.solve()
 
+'''
 print("Estado del modelo:", pulp.LpStatus[prob.status], "\n")
+
 
 
 for indice, periodo in enumerate(meses_horizonte, start=1):
@@ -249,3 +251,4 @@ for indice, periodo in enumerate(meses_horizonte, start=1):
           f"FD={round(X_HFD[indice].varValue / 5) * 5}")
 
 
+'''
