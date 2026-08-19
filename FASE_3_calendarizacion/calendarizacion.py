@@ -94,7 +94,7 @@ NUM_MESES = 6
 meses = range(1, NUM_MESES + 1)
 
 query_prediccion = """
-SELECT fecha, pedidos_acumulados
+SELECT fecha, pedidos_acumulados, horas_necesarias
 FROM prediccion
 ORDER BY fecha
 """
@@ -175,5 +175,5 @@ meses_en_periodo_fd = {
     for indice, periodo in enumerate(meses_horizonte, start=1)
 }
 
-# Las horas diarias necesarias están
+# Las horas diarias necesarias están en la base de datos
 

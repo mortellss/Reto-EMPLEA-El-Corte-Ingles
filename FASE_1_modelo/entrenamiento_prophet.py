@@ -269,7 +269,6 @@ trimestre = trimestre[[
     'id_centro'
 ]]
 
-
 try:
     with engine.begin() as conn:
         conn.execute(text("DELETE FROM prediccion"))
@@ -316,8 +315,6 @@ model.plot
 # Me queda que solamente se vean los componentes por separado
 plt.show()
 
-'''
-
 
 # MÉTRICAS
 
@@ -356,4 +353,5 @@ print("\n--- Fechas críticas que están disparando el MAPE ---")
 print(peores_dias[['ds', 'cutoff', 'y', 'yhat', 'error_porcentual']])
 
 
+'''
 
