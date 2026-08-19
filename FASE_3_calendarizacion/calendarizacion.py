@@ -103,8 +103,22 @@ df_prediccion = pd.read_sql(query_prediccion, con=engine)
 
 df_prediccion['fecha'] = pd.to_datetime(df_prediccion['fecha'])
 df_prediccion['pedidos_acumulados'] = pd.to_numeric(df_prediccion['pedidos_acumulados'], errors='coerce').fillna(0).astype(int)
+df_prediccion['horas_necesarias'] = pd.to_numeric(
+    df_prediccion['horas_necesarias'], errors='coerce'
+).fillna(0)
 df_prediccion = df_prediccion.sort_values('fecha').reset_index(drop=True)
 df_prediccion['mes'] = df_prediccion['fecha'].dt.to_period('M')
+
+horas_necesarias_por_fecha = df_prediccion.set_index(
+    'fecha'
+)['horas_necesarias'].to_dict()
+
+dia_semana_por_fecha = 
+# Horas necesarias para cumplir las líneas diarias
+
+def obtener_horas_necesarias(fecha):
+    fecha = pd.Timestamp(fecha)
+    return horas_necesarias_por_fecha[fecha]
 
 meses_horizonte = df_prediccion['mes'].drop_duplicates().tolist()[:NUM_MESES]
 
@@ -175,5 +189,6 @@ meses_en_periodo_fd = {
     for indice, periodo in enumerate(meses_horizonte, start=1)
 }
 
-# Las horas diarias necesarias están en la base de datos
+
+
 

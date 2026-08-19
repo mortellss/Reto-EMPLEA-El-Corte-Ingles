@@ -60,13 +60,24 @@ df_cal = df_cal[['fecha', 'centro_abierto', 'es_festivo', 'dia_posterior_festivo
 
 df_cal["fecha"] = pd.to_datetime(df_cal["fecha"], errors="coerce")
 df_cal = df_cal.dropna(subset=["fecha"])
+df_cal["dia_semana"] = df_cal["fecha"].dt.day_name().map({
+    "Monday": "Lunes",
+    "Tuesday": "Martes",
+    "Wednesday": "Miércoles",
+    "Thursday": "Jueves",
+    "Friday": "Viernes",
+    "Saturday": "Sábado",
+    "Sunday": "Domingo",
+})
 df_cal["fecha"] = df_cal["fecha"].dt.date
 
 df_cal["centro_abierto"] = df_cal["centro_abierto"].astype(int)
 df_cal["es_festivo"] = df_cal["es_festivo"].astype(int)
 df_cal["dia_posterior_festivo"] = df_cal["dia_posterior_festivo"].astype(int)
+df_cal["id_centro"] = 1
 
-# df_cal.to_sql(name='calendario', con=engine, if_exists='append', index=False)
+df_cal.to_sql(name="calendario", con=engine, if_exists="append", index=False)
+
 
 print("¡Datos insertados correctamente en la base de datos!")
 
@@ -521,4 +532,3 @@ try:
     print(f"{len(df_promociones)} promociones importadas a la base de datos.")
 except Exception as e:
     print(f"Error al importar promociones: {e}")
-

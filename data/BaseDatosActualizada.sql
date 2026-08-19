@@ -31,6 +31,7 @@ DROP TABLE IF EXISTS `calendario`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `calendario` (
   `fecha` date NOT NULL,
+  `dia_semana` varchar(100) NOT NULL,
   `centro_abierto` tinyint(1) NOT NULL,
   `es_festivo` tinyint(1) NOT NULL,
   `dia_posterior_festivo` tinyint(1) NOT NULL,
@@ -50,7 +51,6 @@ CREATE TABLE `calendario` (
 
 LOCK TABLES `calendario` WRITE;
 /*!40000 ALTER TABLE `calendario` DISABLE KEYS */;
-INSERT INTO `calendario` VALUES ('2027-03-16',1,0,1,'10:00:00','21:00:00',1,0);
 /*!40000 ALTER TABLE `calendario` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -250,6 +250,7 @@ DROP TABLE IF EXISTS `prediccion`;
 CREATE TABLE `prediccion` (
   `id_prediccion` int NOT NULL AUTO_INCREMENT,
   `fecha` date NOT NULL,
+  `dia_semana` varchar(100) NOT NULL,
   `pedidos_previstos` int NOT NULL,
   `pedidos_acumulados` int NOT NULL,
   `horas_necesarias` int NOT NULL,

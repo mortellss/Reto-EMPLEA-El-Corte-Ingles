@@ -190,7 +190,7 @@ for mes in meses:
     # Jornadas de 5 horas
 
 for mes in meses:
-    prob += X_HFD[mes] == 5 * K_HFD[mes]
+    prob += X_HFD[mes] == 4 * K_HFD[mes]
 
     # Los fijos discontinuos solamente pueden estar contratados:
     # - Desde el 27 de noviembre hasta el 28 de febrero del año siguiente.
@@ -240,7 +240,7 @@ for mes in meses:
 
 prob.solve()
 
-'''
+
 print("Estado del modelo:", pulp.LpStatus[prob.status], "\n")
 
 
@@ -251,4 +251,3 @@ for indice, periodo in enumerate(meses_horizonte, start=1):
           f"FD={round(X_HFD[indice].varValue / 5) * 5}")
 
 
-'''

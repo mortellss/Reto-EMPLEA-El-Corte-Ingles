@@ -248,6 +248,16 @@ trimestre = trimestre.merge(
 )
 trimestre['pedidos_acumulados'] = trimestre['pedidos_previstos'].copy()
 trimestre['horas_necesarias'] = trimestre['pedidos_previstos'].apply(calc_horas_totales).round().astype(int)
+trimestre['dia_semana'] = trimestre["fecha"].dt.day_name().map({
+    "Monday": "Lunes",
+    "Tuesday": "Martes",
+    "Wednesday": "Miércoles",
+    "Thursday": "Jueves",
+    "Friday": "Viernes",
+    "Saturday": "Sábado",
+    "Sunday": "Domingo",
+})
+
 
 for i in range(len(trimestre) - 1):
     if trimestre.at[i, 'centro_abierto'] == 0:
@@ -260,6 +270,7 @@ trimestre["fecha_generacion"] = datetime.now()
 trimestre["id_centro"] = 1
 trimestre = trimestre[[
     'fecha',
+    'dia_semana',
     'pedidos_previstos',
     'pedidos_acumulados',
     'horas_necesarias',
