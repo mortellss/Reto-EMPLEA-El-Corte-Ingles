@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>EMPLEA | Centro</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/gestion-datos.css">
+    <link rel="stylesheet" href="../css/centro.css">
+
+</head>
+
+<body>
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            <img src="../img/logo.webp" alt="El Corte Inglés">
+        </div>
+
+        <nav>
+
+            <a href="dashboard.html">
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="gestion-datos.html" class="active">
+                <i class="fa-solid fa-users"></i>
+                <span>Gestión de datos</span>
+            </a>
+
+            <a href="historicos.html">
+                <i class="fa-solid fa-database"></i>
+                <span>Datos históricos</span>
+            </a>
+
+            <a href="prediccion.html">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Predicción</span>
+            </a>
+
+            <a href="planificacion.html">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Planificación</span>
+            </a>
+
+            <a href="configuracion.html">
+                <i class="fa-solid fa-gear"></i>
+                <span>Configuración</span>
+            </a>
+
+        </nav>
+
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div>
+
+                <h2>Gestión de datos</h2>
+
+                <p>Administra la información necesaria para generar la planificación.</p>
+
+            </div>
+
+            <div class="user">
+
+                <button>
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+
+                <div class="user-info">
+                    <span>Usuario</span>
+                </div>
+
+            </div>
+
+        </header>
+
+        <section class="content">
+
+            <a href="centro.html" class="back-link">
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+                Volver al centro
+
+            </a>
+
+            <div class="page-header">
+
+                <h1>Calendario laboral</h1>
+
+                <p>Avenida de Francia · Año 2026</p>
+
+            </div>
+
+            <div class="calendar-toolbar">
+
+                <select>
+
+                    <option>2026</option>
+                    <option>2027</option>
+
+                </select>
+
+                <div class="legend">
+
+                    <span><div class="dot open"></div> Abierto</span>
+                    <span><div class="dot closed"></div> Cerrado</span>
+                    <span><div class="dot holiday"></div> Festivo</span>
+                    <span><div class="dot modified"></div> Modificado</span>
+
+                </div>
+
+            </div>
+
+            <div class="calendar-container">
+
+                <div class="months-grid">
+
+                    <div class="month">
+
+                        <h3>Enero</h3>
+
+                        <div class="weekdays">
+                            <span>L</span>
+                            <span>M</span>
+                            <span>X</span>
+                            <span>J</span>
+                            <span>V</span>
+                            <span>S</span>
+                            <span>D</span>
+                        </div>
+
+                        <div class="days">
+
+                            <div></div>
+                            <div></div>
+                            <div></div>
+
+                            <div class="day holiday closed">1</div>
+                            <div class="day">2</div>
+                            <div class="day">3</div>
+                            <div class="day open">4</div>
+
+                            <div class="day">5</div>
+                            <div class="day">6</div>
+                            <div class="day">7</div>
+                            <div class="day">8</div>
+                            <div class="day">9</div>
+                            <div class="day">10</div>
+                            <div class="day open">11</div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>

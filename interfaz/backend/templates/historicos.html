@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMPLEA | Datos históricos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/historicos.css') }}">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='img/logo.webp') }}" alt="Logo">
+        </div>
+        <nav>
+            <a href="{{ url_for('dashboard') }}">
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('gestion_datos') }}">
+                <i class="fa-solid fa-users"></i>
+                <span>Gestión de datos</span>
+            </a>
+            <a href="{{ url_for('historicos') }}" class="active">
+                <i class="fa-solid fa-database"></i>
+                <span>Datos históricos</span>
+            </a>
+            <a href="{{ url_for('prediccion') }}">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Predicción</span>
+            </a>
+            <a href="{{ url_for('planificacion') }}">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Planificación</span>
+            </a>
+            <a href="{{ url_for('configuracion') }}">
+                <i class="fa-solid fa-gear"></i>
+                <span>Configuración</span>
+            </a>
+        </nav>
+    </aside>
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <h2>Datos históricos</h2>
+                <p>Gestiona la información utilizada para la predicción de demanda.</p>
+            </div>
+            <div class="user">
+                <button>
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+                <div class="user-info">
+                    <span>Usuario</span>
+                </div>
+            </div>
+        </header>
+        <section class="content">
+            <div class="historicos-tabs">
+                <button class="historicos-tab active" data-tab="promociones">
+                    <i class="fa-solid fa-tag"></i>
+                    Promociones
+                </button>
+                <button class="historicos-tab" data-tab="pedidos">
+                    <i class="fa-solid fa-box"></i>
+                    Pedidos históricos
+                </button>
+            </div>
+            <div id="promociones" class="historicos-panel active">
+                <div class="section-header">
+                    <div>
+                        <h2>Promociones</h2>
+                        <p>Gestiona las promociones que pueden afectar a la demanda.</p>
+                    </div>
+                    <div class="historicos-actions">
+                        <button type="button" id="seleccionarExcelPromociones" class="secondary-button">
+                            <i class="fa-solid fa-upload"></i>
+                            Importar Excel
+                        </button>
+
+                        <button type="button" id="exportarPromociones" class="secondary-button">
+                            <i class="fa-solid fa-download"></i>
+                            Exportar Excel
+                        </button>
+
+                        <button type="button" id="verInstruccionesPromociones" class="secondary-button">
+                            <i class="fa-solid fa-circle-info"></i>
+                            Instrucciones
+                        </button>
+
+                        <input
+                            type="file"
+                            id="archivoPromociones"
+                            accept=".xlsx"
+                            style="display:none;"
+                        >
+                    </div>
+
+                    <p id="nombreArchivoPromociones"></p>
+                    <button
+                        type="button"
+                        id="nuevaPromocion"
+                        class="primary-button">
+                        <i class="fa-solid fa-plus"></i>
+                        Nueva promoción
+                    </button>
+                </div>
+                <div class="table-tools">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="buscarPromocion" placeholder="Buscar promoción...">
+                    </div>
+                </div>
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Promoción</th>
+                                <th>Fecha inicio</th>
+                                <th>Fecha fin</th>
+                                <th>Tipo</th>
+                                <th>Descripción</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaPromociones">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="pedidos" class="historicos-panel">
+                <div class="historicos-header">
+                    <div>
+                        <h2>Pedidos históricos</h2>
+                        <p>Gestiona los datos diarios utilizados para la predicción.</p>
+                    </div>
+                    <div class="pedidos-excel-actions">
+                    <button type="button" id="importarPedidosExcel" class="secondary-button">
+                        <i class="fa-solid fa-upload"></i>
+                        Importar Excel
+                    </button>
+
+                    <button type="button" id="exportarPedidosExcel" class="secondary-button">
+                        <i class="fa-solid fa-download"></i>
+                        Exportar Excel
+                    </button>
+
+                    <button type="button" id="verInstruccionesPedidos" class="secondary-button">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Ver instrucciones
+                    </button>
+
+                    <input
+                        type="file"
+                        id="archivoPedidosExcel"
+                        accept=".xlsx"
+                        hidden>
+                </div>
+                    <button id="anadirDia" class="primary-button">
+                        <i class="fa-solid fa-plus"></i>
+                        Añadir día
+                    </button>
+                </div>
+                <div class="pedidos-toolbar">
+                    <div class="mes-selector">
+                        <label for="mesPedidos">Ver mes</label>
+                        <select id="mesPedidos"></select>
+                    </div>
+                    <div class="metric-selector">
+                        <label for="tipoDato">Mostrar</label>
+                        <select id="tipoDato">
+                            <option value="pedidos">Nº de pedidos</option>
+                            <option value="lineas">Nº de líneas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="historicos-table-container">
+                    <table class="historicos-table pedidos-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Envíos 2h MCIA</th>
+                                <th>Envíos 2h FOOD</th>
+                                <th>Encargos</th>
+                                <th>Home Delivery</th>
+                                <th>Total</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pedidosTabla">
+                            <tr>
+                                <td colspan="7" class="loading-cell">
+                                    Cargando datos...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="modal-overlay" id="modalPedido">
+        <div class="modal pedido-modal">
+            <div class="modal-header">
+                <h2 id="tituloModalPedido">Añadir día</h2>
+                <button type="button" class="close-modal" id="cerrarModalPedido">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="modal-body pedido-modal-body">
+
+                <input type="hidden" id="idPedido">
+
+                <div class="form-group fecha-pedido">
+                    <label for="fechaPedido">Fecha</label>
+                    <input type="date" id="fechaPedido">
+                </div>
+
+                <div class="pedido-grid">
+
+                    <div class="pedido-bloque">
+                        <h3>Envíos 2h MCIA</h3>
+
+                        <div class="form-group">
+                            <label>Nº de pedidos</label>
+                            <input type="number" id="mciaPedidos" min="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nº de líneas</label>
+                            <input type="number" id="mciaLineas" min="0">
+                        </div>
+                    </div>
+
+                    <div class="pedido-bloque">
+                        <h3>Envíos 2h FOOD</h3>
+
+                        <div class="form-group">
+                            <label>Nº de pedidos</label>
+                            <input type="number" id="foodPedidos" min="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nº de líneas</label>
+                            <input type="number" id="foodLineas" min="0">
+                        </div>
+                    </div>
+
+                    <div class="pedido-bloque">
+                        <h3>Encargos</h3>
+
+                        <div class="form-group">
+                            <label>Nº de pedidos</label>
+                            <input type="number" id="encargosPedidos" min="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nº de líneas</label>
+                            <input type="number" id="encargosLineas" min="0">
+                        </div>
+                    </div>
+
+                    <div class="pedido-bloque">
+                        <h3>Home Delivery</h3>
+
+                        <div class="form-group">
+                            <label>Nº de pedidos</label>
+                            <input type="number" id="homePedidos" min="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nº de líneas</label>
+                            <input type="number" id="homeLineas" min="0">
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="totales-pedido">
+
+                    <div class="form-group">
+                        <label>Total pedidos</label>
+                        <input type="number" id="totalPedidos" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Total líneas</label>
+                        <input type="number" id="totalLineas" min="0">
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" id="cancelarPedido" class="secondary-button">
+                    Cancelar
+                </button>
+
+                <button type="button" id="guardarPedido" class="primary-button">
+                    Guardar
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalInstruccionesPedidos">
+
+        <div class="modal instrucciones-pedidos-modal">
+
+            <div class="modal-header">
+
+                <h2>Instrucciones para importar pedidos históricos</h2>
+
+                <button
+                    class="close-modal"
+                    id="cerrarInstruccionesPedidos"
+                    type="button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+            </div>
+
+            <div class="modal-body instrucciones-pedidos-body">
+
+                <h3>Formato del archivo</h3>
+
+                <ul>
+                    <li>El archivo debe estar en formato <strong>.xlsx</strong>.</li>
+                    <li>Debe contener una única hoja.</li>
+                    <li>No se deben cambiar los nombres de las columnas.</li>
+                    <li>Debe haber una fila por cada día.</li>
+                    <li>Los valores numéricos deben introducirse como números.</li>
+                    <li>La fecha debe corresponder al día al que pertenecen los datos.</li>
+                </ul>
+
+                <h3>Columnas</h3>
+
+                <div class="instrucciones-pedidos-tabla">
+
+                    <div>
+                        <strong>Fecha de venta</strong>
+                        <span>Fecha del día en formato de fecha.</span>
+                    </div>
+
+                    <div>
+                        <strong>Núm. pedidos 2h MCIA GENERAL</strong>
+                        <span>Número de pedidos realizados mediante envíos 2h de MCIA.</span>
+                    </div>
+
+                    <div>
+                        <strong>Núm. líneas 2h MCIA GENERAL</strong>
+                        <span>Número de líneas correspondientes a los pedidos 2h de MCIA.</span>
+                    </div>
+
+                    <div>
+                        <strong>Núm. pedidos 2h FOOD</strong>
+                        <span>Número de pedidos realizados mediante envíos 2h de FOOD.</span>
+                    </div>
+
+                    <div>
+                        <strong>Núm. líneas 2h FOOD</strong>
+                        <span>Número de líneas correspondientes a los pedidos 2h de FOOD.</span>
+                    </div>
+
+                    <div>
+                        <strong>Núm. pedidos ENCARGOS</strong>
+                        <span>Número de pedidos de encargos.</span>
+                    </div>
+
+                    <div>
+                        <strong>Núm. líneas ENCARGOS</strong>
+                        <span>Número de líneas correspondientes a los encargos.</span>
+                    </div>
+
+                    <div>
+                        <strong>Núm. pedidos HOME DELIVERY</strong>
+                        <span>Número de pedidos de Home Delivery.</span>
+                    </div>
+
+                    <div>
+                        <strong>Núm. líneas HOME DELIVERY</strong>
+                        <span>Número de líneas correspondientes a Home Delivery.</span>
+                    </div>
+
+                    <div>
+                        <strong>Total PEDIDOS</strong>
+                        <span>Se calcula automáticamente como la suma de los pedidos de las cuatro modalidades.</span>
+                    </div>
+
+                    <div>
+                        <strong>Total LÍNEAS</strong>
+                        <span>Se calcula automáticamente como la suma de las líneas de las cuatro modalidades.</span>
+                    </div>
+
+                </div>
+
+                <div class="warning-box">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    <span>
+                        <strong>Importante:</strong>
+                        no es necesario introducir manualmente los campos
+                        <strong>Total PEDIDOS</strong> y <strong>Total LÍNEAS</strong>.
+                        El sistema puede calcularlos automáticamente.
+                    </span>
+                </div>
+
+                <div class="plantilla-box plantilla-pedidos">
+
+                    <div class="plantilla-info">
+
+                        <i class="fa-solid fa-file-excel"></i>
+
+                        <div>
+                            <strong>Plantilla de pedidos históricos</strong>
+
+                            <span>
+                                Descarga la plantilla con las columnas y el formato
+                                necesarios para importar los datos.
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <a href="{{ url_for('static', filename='plantilla_pedidos_historicos.xlsx') }}"
+                        class="download-template-button"
+                        download>
+                            <i class="fa-solid fa-download"></i>
+                            Descargar plantilla
+                        </a>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    class="primary-button"
+                    id="cerrarInstruccionesPedidos2"
+                    type="button">
+
+                    Entendido
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="modal-overlay" id="modalInstruccionesPromociones">
+
+        <div class="modal instrucciones-promociones-modal">
+
+            <div class="modal-header">
+
+                <h2>Instrucciones para importar promociones</h2>
+
+                <button
+                    type="button"
+                    id="cerrarInstruccionesPromociones"
+                    class="close-modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+            </div>
+
+            <div class="instructions-body">
+
+                <p>
+                    Para importar promociones debes utilizar un archivo
+                    Excel con las siguientes columnas:
+                </p>
+
+                <div class="instruction-item">
+                    <strong>nombre</strong>
+                    <span>Nombre de la promoción.</span>
+                </div>
+
+                <div class="instruction-item">
+                    <strong>fecha_inicio</strong>
+                    <span>Fecha de inicio de la promoción.</span>
+                </div>
+
+                <div class="instruction-item">
+                    <strong>fecha_fin</strong>
+                    <span>Fecha de finalización de la promoción.</span>
+                </div>
+
+                <div class="instruction-item">
+                    <strong>tipo</strong>
+                    <span>Tipo de promoción. Este campo es opcional.</span>
+                </div>
+
+                <div class="instruction-item">
+                    <strong>descripcion</strong>
+                    <span>Descripción de la promoción. Este campo es opcional.</span>
+                </div>
+
+                <div class="instruction-warning">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    <p>
+                        Las fechas deben introducirse correctamente.
+                        No es necesario introducir <strong>id_promocion</strong>
+                        ni <strong>id_centro</strong>, ya que el sistema los
+                        genera automáticamente.
+                    </p>
+
+                </div>
+
+                <div class="template-download">
+
+                    <i class="fa-solid fa-file-excel"></i>
+
+                    <div>
+                        <strong>Plantilla de promociones</strong>
+
+                        <p>
+                            Utiliza esta plantilla para introducir los datos.
+                        </p>
+
+                        <a href="{{ url_for('static', filename='plantilla_promociones.xlsx') }}" download>
+                            <i class="fa-solid fa-download"></i>
+                            Descargar plantilla
+                        </a>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    id="cerrarInstruccionesPromociones2"
+                    class="primary-button">
+                    Entendido
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="modal-overlay" id="modalPromocion">
+        <div class="modal promocion-modal">
+            <div class="modal-header">
+                <h2 id="tituloModalPromocion">Nueva promoción</h2>
+                <button type="button" id="cerrarModalPromocion" class="close-modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="promotion-form">
+                <input type="hidden" id="idPromocion">
+                <div class="form-group">
+                    <label for="nombrePromocion">Nombre</label>
+                    <input type="text" id="nombrePromocion" placeholder="Nombre de la promoción" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fechaInicioPromocion">Fecha inicio</label>
+                        <input type="date" id="fechaInicioPromocion" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fechaFinPromocion">Fecha fin</label>
+                        <input type="date" id="fechaFinPromocion" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="tipoPromocion">Tipo</label>
+                    <input type="text" id="tipoPromocion" placeholder="Tipo de promoción">
+                </div>
+                <div class="form-group">
+                    <label for="descripcionPromocion">Descripción</label>
+                    <textarea id="descripcionPromocion" rows="4" placeholder="Descripción de la promoción"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="cancelarPromocion" class="cancel-button">
+                    Cancelar
+                </button>
+                <button type="button" id="guardarPromocion" class="primary-button">
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/historicos.js') }}"></script>
+</body>
+</html>

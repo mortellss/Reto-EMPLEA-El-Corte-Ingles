@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>EMPLEA | Centro</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gestion-datos.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/centro.css') }}">
+
+</head>
+
+<body>
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            <img src="{{ url_for('static', filename='img/logo.webp') }}" alt="Logo">
+        </div>
+
+        <nav>
+
+            <a href="{{ url_for('dashboard') }}">
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{{ url_for('gestion_datos') }}" class="active">
+                <i class="fa-solid fa-users"></i>
+                <span>Gestión de datos</span>
+            </a>
+
+            <a href="{{ url_for('historicos') }}">
+                <i class="fa-solid fa-database"></i>
+                <span>Datos históricos</span>
+            </a>
+
+            <a href="{{ url_for('prediccion') }}">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Predicción</span>
+            </a>
+
+            <a href="{{ url_for('planificacion') }}">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Planificación</span>
+            </a>
+
+            <a href="{{ url_for('configuracion') }}">
+                <i class="fa-solid fa-gear"></i>
+                <span>Configuración</span>
+            </a>
+
+        </nav>
+
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div>
+
+                <h2>Gestión de datos</h2>
+
+                <p>Administra la información necesaria para generar la planificación.</p>
+
+            </div>
+
+            <div class="user">
+
+                <button>
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+
+                <div class="user-info">
+                    <span>Usuario</span>
+                </div>
+
+            </div>
+
+        </header>
+
+        <section class="content">
+
+            <a href="{{ url_for('gestion_datos') }}" class="back-link">
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+                Volver a centros
+
+            </a>
+
+            <div class="page-header">
+
+                <h1>Avenida de Francia</h1>
+
+                <p>Configuración del centro y calendario laboral.</p>
+
+            </div>
+
+            <div class="actions-grid">
+
+                <div class="action-card">
+
+                    <i class="fa-solid fa-calendar-days"></i>
+
+                    <div>
+
+                        <h3>Calendario anual</h3>
+
+                        <p>
+                            Consulta el calendario laboral del centro y visualiza festivos, horarios y aperturas. Las modificaciones manuales pueden realizarse pulsando sobre cualquier día del calendario.
+                        </p>
+
+                        <button id="abrirCalendario" class="primary-button">
+                            Abrir calendario
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                    <div class="action-card">
+                        <i class="fa-solid fa-file-arrow-up"></i>
+                        <div>
+                            <h3>Importar calendario</h3>
+
+                            <p>
+                                Sustituye el calendario actual cargando un nuevo archivo Excel.
+                            </p>
+
+                            <div class="import-buttons">
+
+                                <button type="button" id="seleccionarExcel" class="import-excel-btn">
+                                    <i class="fa-solid fa-upload"></i>
+                                    <span>Seleccionar Excel</span>
+                                </button>
+
+
+                                <button
+                                    type="button"
+                                    id="verInstrucciones"
+                                    class="instructions-button">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    <span>Ver instrucciones</span>
+                                </button>
+
+                            </div>
+
+                            <input
+                                type="file"
+                                id="archivoCalendario"
+                                accept=".xlsx"
+                                style="display:none;">
+
+                            <p id="nombreArchivoCalendario" class="file-selected"></p>
+                        </div>
+                    </div>
+
+
+                <div class="action-card">
+
+                    <i class="fa-solid fa-download"></i>
+
+                    <div>
+
+                        <h3>Exportar calendario</h3>
+
+                        <p>
+                            Descarga el calendario actualizado con todas las modificaciones realizadas.
+                        </p>
+
+                        <button type="button" id="descargarExcel" class="primary-button">
+                            Descargar Excel
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <div class="modal-overlay" id="modalInstruccionesCalendario">
+        <div class="modal instrucciones-modal">
+
+            <div class="modal-header">
+                <h2>Instrucciones para importar el calendario</h2>
+
+                <button
+                    class="close-modal"
+                    id="cerrarInstruccionesCalendario"
+                    type="button">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="modal-body instrucciones-body">
+
+                <h3>Formato del archivo</h3>
+
+                <ul>
+                    <li>El archivo debe estar en formato <strong>.xlsx</strong>.</li>
+                    <li>Debe contener una única hoja.</li>
+                    <li>No se deben cambiar los nombres de las columnas.</li>
+                    <li>Debe haber una fila por cada día del calendario.</li>
+                </ul>
+
+                <h3>Columnas</h3>
+
+                <div class="instrucciones-tabla">
+
+                    <div>
+                        <strong>fecha</strong>
+                        <span>Fecha del día.</span>
+                    </div>
+
+                    <div>
+                        <strong>centro_abierto</strong>
+                        <span>1 = abierto / 0 = cerrado.</span>
+                    </div>
+
+                    <div>
+                        <strong>es_festivo</strong>
+                        <span>1 = festivo / 0 = no festivo.</span>
+                    </div>
+
+                    <div>
+                        <strong>dia_posterior_festivo</strong>
+                        <span>1 = sí / 0 = no.</span>
+                    </div>
+
+                    <div>
+                        <strong>hora_apertura</strong>
+                        <span>Formato HH:MM.</span>
+                    </div>
+
+                    <div>
+                        <strong>hora_cierre</strong>
+                        <span>Formato HH:MM.</span>
+                    </div>
+
+                </div>
+
+                <div class="warning-box">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    <span>
+                        <strong>Importante:</strong>
+                        al importar un calendario se sustituirá el calendario actual.
+                    </span>
+                </div>
+
+                <div class="plantilla-box">
+                <div class="plantilla-info">
+                    <i class="fa-solid fa-file-excel"></i>
+                    <div>
+                        <strong>Plantilla de calendario</strong>
+                        <span>
+                            Descarga la plantilla con las columnas y el formato
+                            necesarios para importar el calendario.
+                        </span>
+                    </div>
+                </div>
+
+                <a
+                    href="{{ url_for('static', filename='plantilla_calendario.xlsx') }}"
+                    class="download-template-button"
+                    download>
+                    <i class="fa-solid fa-download"></i>
+                    Descargar plantilla
+                </a>
+            </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    class="primary-button"
+                    id="cerrarInstruccionesCalendario2"
+                    type="button">
+                    Entendido
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/centro.js') }}"></script>
+
+</body>
+
+</html>

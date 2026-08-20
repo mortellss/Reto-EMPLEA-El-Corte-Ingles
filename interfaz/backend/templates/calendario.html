@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>EMPLEA | Centro</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gestion-datos.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/centro.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/calendario.css') }}">
+
+</head>
+
+<body>
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            <img src="{{ url_for('static', filename='img/logo.webp') }}" alt="Logo">
+        </div>
+
+        <nav>
+
+            <a href="{{ url_for('dashboard') }}">
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{{ url_for('gestion_datos') }}" class="active">
+                <i class="fa-solid fa-users"></i>
+                <span>Gestión de datos</span>
+            </a>
+
+            <a href="{{ url_for('historicos') }}">
+                <i class="fa-solid fa-database"></i>
+                <span>Datos históricos</span>
+            </a>
+
+            <a href="{{ url_for('prediccion') }}">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Predicción</span>
+            </a>
+
+            <a href="{{ url_for('planificacion') }}">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Planificación</span>
+            </a>
+
+            <a href="{{ url_for('configuracion') }}">
+                <i class="fa-solid fa-gear"></i>
+                <span>Configuración</span>
+            </a>
+
+        </nav>
+
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div>
+
+                <h2>Gestión de datos</h2>
+
+                <p>Administra la información necesaria para generar la planificación.</p>
+
+            </div>
+
+            <div class="user">
+
+                <button>
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+
+                <div class="user-info">
+                    <span>Usuario</span>
+                </div>
+
+            </div>
+
+        </header>
+
+        <section class="content">
+
+            <a href="{{ url_for('centro') }}" class="back-link">
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+                Volver al centro
+
+            </a>
+
+
+            <div class="calendario-top">
+                <div class="calendario-titulo">
+                    <h1>Calendario laboral</h1>
+                    <p>Consulta y modifica el calendario del centro.</p>
+                </div>
+                <div class="selector-anio">
+                    <label for="anioCalendario">Año</label>
+                    <select id="anioCalendario">
+                        {% for a in anios %}
+                            <option value="{{ a }}" {% if a==anio %}selected{% endif %}>
+                                {{ a }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="calendar-toolbar">
+                <div class="legend">
+                    <span><span class="dot open"></span> Abierto</span>
+                    <span><span class="dot closed"></span> Cerrado</span>
+                    <span><span class="dot modified"></span> Modificado</span>
+                </div>
+            </div>
+
+            </div>
+
+            <div class="calendar-container">
+
+                <div class="months-grid">
+
+                    {% for nombre_mes, dias in meses.items() %}
+
+                    <div class="month">
+
+                        <h3>{{ nombre_mes }}</h3>
+
+                        <div class="weekdays">
+                            <span>L</span>
+                            <span>M</span>
+                            <span>X</span>
+                            <span>J</span>
+                            <span>V</span>
+                            <span>S</span>
+                            <span>D</span>
+                        </div>
+
+                        <div class="days">
+                            {% for dia in dias %}
+                                {% if dia %}
+                                    <div class="day
+                                            {% if dia.modificado %}
+                                                modified
+                                            {% elif dia.centro_abierto %}
+                                                open
+                                            {% else %}
+                                                closed
+                                            {% endif %}
+                                        "
+                                        data-fecha="{{ dia.fecha.strftime('%Y-%m-%d') }}"
+                                        data-abierto="{{ dia.centro_abierto }}"
+                                        data-apertura="{{ dia.hora_apertura }}"
+                                        data-cierre="{{ dia.hora_cierre }}">
+                                            {% if dia %}
+                                                {{ dia.fecha.day }}
+                                            {% endif %}
+                                        </div>
+                                {% else %}
+                                    <div class="day"></div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </section>
+
+       <div class="modal-overlay" id="modalOverlay">
+
+            <div class="modal">
+
+                <div class="modal-header">
+                    <h2>Modificar día</h2>
+
+                    <button class="close-modal" id="cerrarModal">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="form-column">
+
+                        <div class="form-group">
+                            <label>Fecha</label>
+                            <p id="fechaSeleccionada" class="fecha-modal"></p>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Hora apertura</label>
+                            <input type="time" id="horaApertura">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Hora cierre</label>
+                            <input type="time" id="horaCierre">
+                        </div>
+
+                        <label class="check">
+                            <input type="checkbox" id="abierto">
+                            Centro abierto
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button id="cancelar">Cancelar</button>
+
+                    <button class="primary-button" id="guardarDia">
+                        Guardar cambios
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/calendario.js') }}"></script>
+
+</body>
+
+</html>

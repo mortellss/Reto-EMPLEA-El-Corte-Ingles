@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>EMPLEA | Dashboard</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gestion-datos.css') }}">
+</head>
+
+<body>
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            <img src="{{ url_for('static', filename='img/logo.webp') }}" alt="Logo">
+        </div>
+
+        <nav>
+
+            <a href="{{ url_for('dashboard') }}">
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{{ url_for('gestion_datos') }}" class="active">
+                <i class="fa-solid fa-users"></i>
+                <span>Gestión de datos</span>
+            </a>
+
+            <a href="{{ url_for('historicos') }}">
+                <i class="fa-solid fa-database"></i>
+                <span>Datos históricos</span>
+            </a>
+
+            <a href="{{ url_for('prediccion') }}">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Predicción</span>
+            </a>
+
+            <a href="{{ url_for('planificacion') }}">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Planificación</span>
+            </a>
+
+            <a href="{{ url_for('configuracion') }}">
+                <i class="fa-solid fa-gear"></i>
+                <span>Configuración</span>
+            </a>
+
+        </nav>
+
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div>
+                <h2>Gestión de datos</h2>
+                <p>Administra la información necesaria para generar la planificación.</p>
+            </div>
+
+            <div class="user">
+
+                <button>
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+
+                <div class="user-info">
+                    <span>Usuario</span>
+                </div>
+
+            </div>
+
+        </header>
+
+        <section class="content">
+
+            <section class="content">
+
+
+                <div class="tabs">
+
+                    <button class="tab active" data-tab="trabajadores">
+                        Trabajadores
+                    </button>
+
+                    <button class="tab" data-tab="contratos">
+                        Contratos
+                    </button>
+
+                    <button class="tab" data-tab="tareas">
+                        Tareas
+                    </button>
+
+                    <button class="tab" data-tab="disponibilidad">
+                        Disponibilidad
+                    </button>
+
+                    <button class="tab" data-tab="centro">
+                        Centro
+                    </button>
+
+                </div>
+                
+
+                <div class="tab-panel active-panel" id="trabajadores-panel">
+                <div class="toolbar">
+
+                    <div class="search-box">
+
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                        <input
+                            id="buscarTrabajador"
+                            type="text"
+                            placeholder="Buscar trabajador...">
+
+                    </div>
+
+                    <button class="primary-button" id="openModal">
+
+                        <i class="fa-solid fa-plus"></i>
+
+                        Nuevo trabajador
+
+                    </button>
+
+                </div>
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th class="col-nombre">Nombre</th>
+                                <th class="col-contrato">Contrato</th>
+                                <th class="col-disponibilidad">Disponibilidad</th>
+                                <th class="col-fd">FD</th>
+                                <th class="col-competencias">Competencias</th>
+                                <th class="col-estado">Estado</th>
+                                <th class="col-acciones">Acciones</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                        {% for trabajador in trabajadores %}
+
+                        <tr>
+
+                            <td>{{ trabajador.nombre }} {{ trabajador.apellidos }}</td>
+
+                            <td>{{ trabajador.contrato }}</td>
+
+                            <td>
+
+                                {% if trabajador.disponibilidad == "M" %}
+                                    Mañanas
+                                {% elif trabajador.disponibilidad == "T" %}
+                                    Tardes
+                                {% else %}
+                                    Sin restricciones
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {% if trabajador.fijo_discontinuo %}
+
+                                    <button
+                                        class="fd-btn"
+                                        data-id="{{ trabajador.id_trabajador }}"
+                                        type="button">
+
+                                        <i class="fa-solid fa-calendar-days"></i>
+
+                                    </button>
+
+                                {% else %}
+
+                                    <span class="fd-no">—</span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                <button
+                                    class="competencias-btn"
+                                    data-id="{{ trabajador.id_trabajador }}"
+                                    type="button">
+
+                                    <i class="fa-solid fa-list-check"></i>
+
+                                    {{ trabajador.competencias }} / {{ total_tareas }}
+
+                                </button>
+
+                            </td>
+
+                            <td>
+
+                                <button
+                                    class="status status-btn {% if trabajador.estado %}active{% else %}inactive{% endif %}"
+                                    data-id="{{ trabajador.id_trabajador }}"
+                                    data-estado="{{ trabajador.estado }}">
+
+                                    {% if trabajador.estado %}
+                                        Activo
+                                    {% else %}
+                                        Inactivo
+                                    {% endif %}
+
+                                </button>
+
+                            </td>
+
+                            <td class="actions">
+
+                                <button
+                                    class="edit-btn"
+
+                                    data-id="{{ trabajador.id_trabajador }}"
+                                    data-numero="{{ trabajador.numero_vendedor }}"
+                                    data-nombre="{{ trabajador.nombre }}"
+                                    data-apellidos="{{ trabajador.apellidos }}"
+                                    data-correo="{{ trabajador.correo }}"
+                                    data-contrato="{{ trabajador.id_contrato }}"
+                                    data-disponibilidad="{{ trabajador.disponibilidad }}"
+                                    data-estado="{{ trabajador.estado }}"
+                                    data-fijo-discontinuo="{{ trabajador.fijo_discontinuo }}">
+
+                                    <i class="fa-solid fa-pen"></i>
+
+                                </button>
+
+                                <button class="delete-trabajador-btn"
+                                        data-id="{{ trabajador.id_trabajador }}">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+                </div>
+
+                <div id="contratos-panel" class="tab-panel">
+
+                <div class="toolbar">
+
+                    <div class="search-box">
+
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                        <input
+                            id="buscarContrato"
+                            type="text"
+                            placeholder="Buscar contrato...">
+
+                    </div>
+
+                    <button
+                        class="primary-button"
+                        id="openContratoModal">
+
+                        <i class="fa-solid fa-plus"></i>
+
+                        Nuevo contrato
+
+                    </button>
+
+                </div>
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Nombre</th>
+                                <th>Jornada</th>
+                                <th>Horas anuales</th>
+                                <th>Horas día</th>
+                                <th>Estado</th>
+                                <th>Trabajadores</th>
+                                <th>Acciones</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for contrato in contratos %}
+
+                            <tr>
+
+                                <td>{{ contrato.nombre }}</td>
+
+
+                                <td>{{ contrato.jornada }} %</td>
+
+
+                                <td>—</td>
+
+
+                                <td>{{ contrato.horas_por_turno }} h</td>
+
+                                <td>
+                                    <span class="status active">
+                                        Activo
+                                    </span>
+                                </td>
+                                <td>
+
+                                    <button
+                                        type="button"
+                                        class="workers-contrato-btn"
+                                        data-id="{{ contrato.id_contrato }}">
+
+                                        <i class="fa-solid fa-users"></i>
+
+                                        {{ contrato.trabajadores }}
+
+                                    </button>
+
+                                </td>
+
+                                <td class="actions">
+
+                                    <button
+
+                                        class="edit-contrato-btn"
+
+                                        data-id="{{ contrato.id_contrato }}"
+                                        data-nombre="{{ contrato.nombre }}"
+                                        data-jornada="{{ contrato.jornada }}"
+                                        data-horas-anuales="{{ contrato.horas_anuales }}"
+                                        data-horas-turno="{{ contrato.horas_por_turno }}">
+
+                                        <i class="fa-solid fa-pen"></i>
+
+                                    </button>
+
+                                    <button
+                                        class="delete-contrato-btn"
+                                        data-id="{{ contrato.id_contrato }}">
+
+                                        <i class="fa-solid fa-trash"></i>
+
+                                    </button>
+
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                            </tbody>
+
+                    </table>
+
+                </div>
+                </div>
+
+                <div id="tareas-panel" class="tab-panel">
+
+                    <div class="toolbar">
+
+                        <div class="search-box">
+
+                            <i class="fa-solid fa-magnifying-glass"></i>
+
+                            <input
+                                id="buscarTarea"
+                                type="text"
+                                placeholder="Buscar tarea...">
+
+                        </div>
+
+                        <button class="primary-button" id="openModalTarea">
+
+                            <i class="fa-solid fa-plus"></i>
+
+                            Nueva tarea
+
+                        </button>
+
+                    </div>
+
+                    <div class="table-container">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Tarea</th>
+                                    <th>Trabajadores asignados</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                {% for tarea in tareas %}
+
+                                <tr>
+
+                                    <td>{{ tarea.nombre }}</td>
+
+                                    <td>
+
+                                        <button
+                                            class="trabajadores-btn"
+                                            data-id="{{ tarea.id_tarea }}">
+                                            <i class="fa-solid fa-users"></i>
+                                            {{ tarea.trabajadores }}
+                                        </button>
+
+                                    </td>
+
+                                    <td>
+                                        <button
+                                            class="status status-btn {% if tarea.activa %}active{% else %}inactive{% endif %}"
+                                            data-id="{{ tarea.id_tarea }}"
+                                            data-estado="{{ tarea.activa }}">
+                                            {% if tarea.activa %}
+                                                Activa
+                                            {% else %}
+                                                Inactiva
+                                            {% endif %}
+                                        </button>
+                                    </td>
+
+                                    <td class="actions">
+
+                                        <button
+                                            class="edit-tarea-btn"
+                                            data-id="{{ tarea.id_tarea }}"
+                                            data-nombre="{{ tarea.nombre }}"
+                                            data-descripcion="{{ tarea.descripcion }}"
+                                            data-estado="{{ tarea.activa }}">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+
+                                        <button
+                                        class="delete-tarea-btn"
+                                        data-id="{{ tarea.id_tarea }}">
+                                        <i class="fa-solid fa-trash"></i>
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                                {% endfor %}
+
+                                </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+                <div id="disponibilidad-panel" class="tab-panel">
+                    <div class="toolbar">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input
+                                type="text"
+                                id="buscarDisponibilidad"
+                                placeholder="Buscar trabajador...">
+                        </div>
+                        <button class="primary-button" id="openDisponibilidadModal">
+                            <i class="fa-solid fa-plus"></i>
+                            Nueva restricción
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Trabajador</th>
+                                    <th>Periodos</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for d in disponibilidades %}
+                                <tr class="fila-disponibilidad" data-id="{{ d.id_trabajador }}">
+                                    <td class="nombre-trabajador">{{ d.trabajador }}</td>
+                                    <td>
+                                        <button
+                                            class="periodos-disponibilidad-btn"
+                                            data-id="{{ d.id_trabajador }}"
+                                            type="button">
+                                            {{ d.total_periodos }}
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                    
+                <div id="centro-panel" class="tab-panel">
+
+                    <div class="toolbar">
+
+                        <div class="search-box">
+
+                            <i class="fa-solid fa-magnifying-glass"></i>
+
+                            <input
+                                type="text"
+                                placeholder="Buscar centro...">
+
+                        </div>
+
+                        <button class="primary-button">
+
+                            <i class="fa-solid fa-plus"></i>
+
+                            Nuevo centro
+
+                        </button>
+
+                    </div>
+
+                    <div class="table-container">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Centro</th>
+                                    <th>Ciudad</th>
+                                    <th>Estado</th>
+                                    <th>Calendario</th>
+                                    <th>Acciones</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+
+                                    <td>Avenida de Francia</td>
+                                    <td>Valencia</td>
+
+                                    <td>
+                                        <span class="status active">
+                                            Activo
+                                        </span>
+                                    </td>
+
+                                    <td>
+
+                                        <a href="{{ url_for('centro') }}" class="secondary-button">
+
+                                            <i class="fa-solid fa-calendar"></i>
+
+                                            Abrir
+
+                                        </a>
+                                    </td>
+
+                                    <td class="actions">
+                                        <button class="edit-btn">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+
+                                        <button class="delete-btn">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>    
+
+</section>
+
+        </section>
+
+    </main>
+
+    <div  class="modal-overlay" id="modal">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <h2 id="tituloModalTrabajador">
+                    Nuevo trabajador
+                </h2>
+
+                <button  class="close-modal"id="closeModal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="form-column">
+
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" id="nombre">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Apellidos</label>
+                        <input type="text" id="apellidos">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nº vendedor</label>
+                        <input type="number" id="numeroVendedor">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Correo electrónico</label>
+                        <input type="email" id="correo">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Contrato</label>
+
+                        <select id="contrato">
+
+                            {% for contrato in contratos %}
+                                <option value="{{ contrato.id_contrato }}">
+                                    {{ contrato.nombre }}
+                                </option>
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label>Disponibilidad</label>
+
+                        <select id="disponibilidad">
+                            <option value="S">Sin restricciones</option>
+                            <option value="M">Solo mañanas</option>
+                            <option value="T">Solo tardes</option>
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label>Estado</label>
+
+                        <select id="estado">
+                            <option value="1" selected>Activo</option>
+                            <option value="0">Inactivo</option>
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tipo de trabajador</label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" id="fijoDiscontinuoTrabajador">
+                            Fijo discontinuo
+                        </label>
+                    </div>
+
+                </div>
+
+                <div class="skills-column">
+
+                    <h3>Competencias</h3>
+
+                    <p>
+                        Introduce la información del trabajador y selecciona las tareas que puede realizar.
+                    </p>
+
+                    <div class="skills-list">
+
+                        {% for tarea in tareas %}
+
+                        <div class="skill-item">
+
+                            <span>{{ tarea.nombre }}</span>
+
+                            <label class="switch">
+
+                                <input
+                                    type="checkbox"
+                                    class="tarea-check"
+                                    value="{{ tarea.id_tarea }}">
+
+                                <span class="slider"></span>
+
+                            </label>
+
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button  class="secondary-button" id="cancelModal">
+                    Cancelar
+                </button>
+
+                <button class="primary-button" id="guardarTrabajador">
+                    Guardar trabajador
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+        <div class="modal-overlay" id="modalDisponibilidad">
+
+        <div class="modal" style="width:700px;height:auto;">
+
+            <div class="modal-header">
+
+                <h2>Nueva restricción</h2>
+
+                <button class="close-modal" id="closeDisponibilidadModal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+            </div>
+
+            <div class="modal-body" style="display:block;overflow:visible;">
+
+                <div class="form-column">
+
+                    <div class="form-group">
+
+                        <label>Trabajador</label>
+
+                        <select id="trabajadorDisponibilidad">
+
+                            {% for trabajador in trabajadores %}
+
+                                <option value="{{ trabajador.id_trabajador }}">
+                                    {{ trabajador.nombre }} {{ trabajador.apellidos }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Motivo</label>
+
+                        <select id="motivoDisponibilidad">
+
+                            <option value="">Seleccionar...</option>
+
+                            <option value="Vacaciones largas">
+                                Vacaciones largas
+                            </option>
+
+                            <option value="Vacaciones cortas">
+                                Vacaciones cortas
+                            </option>
+
+                            <option value="Baja médica">
+                                Baja médica
+                            </option>
+
+                            <option value="Permiso">
+                                Permiso
+                            </option>
+
+                            <option value="Formación">
+                                Formación
+                            </option>
+
+                            <option value="Excedencia">
+                                Excedencia
+                            </option>
+
+                            <option value="Otro">
+                                Otro...
+                            </option>
+
+                        </select>
+                        <div id="otroMotivoContainer" style="display:none;">
+
+                            <label>Especificar motivo</label>
+
+                            <input
+                                type="text"
+                                id="otroMotivo"
+                                placeholder="Escribe el motivo">
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Turno</label>
+
+                        <select id="turnoDisponibilidad">
+
+                            <option value="">Seleccionar...</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Fecha inicio</label>
+
+                        <input
+                            type="date"
+                            id="fechaInicioDisponibilidad">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Fecha fin</label>
+
+                        <input
+                            type="date"
+                            id="fechaFinDisponibilidad">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    class="secondary-button"
+                    id="cancelDisponibilidadModal">
+
+                    Cancelar
+
+                </button>
+
+                <button
+                    class="primary-button"
+                    id="guardarDisponibilidad">
+
+                    Guardar restricción
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="modal-overlay" id="modalPeriodosDisponibilidad">
+        <div class="modal periodos-modal">
+            <div class="modal-header">
+                <div>
+                    <h2>Periodos de trabajo</h2>
+                    <p id="nombreTrabajadorPeriodos"></p>
+                </div>
+                <button class="close-modal" id="closePeriodosDisponibilidad">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="listaPeriodosDisponibilidad"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="primary-button" id="nuevoPeriodoDisponibilidad">
+                    <i class="fa-solid fa-plus"></i>
+                    Añadir periodo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalTrabajadoresContrato">
+
+        <div class="modal" style="width:500px;">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>Trabajadores</h2>
+
+                    <p id="totalTrabajadores"></p>
+
+                </div>
+
+                <button class="close-modal" id="closeTrabajadoresContrato">
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div id="listaTrabajadoresContrato"></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="modal-overlay" id="modalContrato">
+
+        <div class="modal" style="width:600px;">
+
+            <div class="modal-header">
+
+                <h2 id="tituloModalContrato">
+                    Nuevo contrato
+                </h2>
+
+                <button class="close-modal" id="closeContratoModal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+            </div>
+
+            <div class="modal-body" style="display:block;">
+
+                <div class="form-group">
+
+                    <label>Nombre</label>
+
+                    <input
+                        type="text"
+                        id="nombreContrato">
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Jornada (%)</label>
+
+                    <input
+                        type="number"
+                        step="0.1"
+                        id="jornadaContrato">
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Horas anuales</label>
+
+                    <input
+                        type="number"
+                        id="horasAnualesContrato">
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Horas por turno</label>
+
+                    <input
+                        type="number"
+                        step="0.1"
+                        id="horasTurnoContrato">
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    class="secondary-button"
+                    id="cancelContratoModal">
+
+                    Cancelar
+
+                </button>
+
+                <button
+                    class="primary-button"
+                    id="guardarContrato">
+
+                    Guardar contrato
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="modal-overlay" id="modalCompetencias">
+
+        <div class="modal" style="width:650px;">
+
+            <div class="modal-header">
+
+                <h2>Ver Competencias</h2>
+
+                <button
+                    class="close-modal"
+                    id="closeCompetencias">
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+            </div>
+
+            <div
+                class="modal-body"
+                id="listaCompetencias">
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="modal-overlay" id="modalTarea">
+    <div class="modal tarea-modal">
+
+        <div class="modal-header">
+
+            <h2 id="tituloModalTarea">
+                Nueva tarea
+            </h2>
+
+            <button class="close-modal" id="closeModalTarea">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+        <div class="modal-body" style="display:block;">
+
+            <div class="form-group">
+
+                <label>Nombre</label>
+
+                <input
+                    type="text"
+                    id="nombreTarea">
+
+            </div>
+
+            <br>
+
+            <div class="form-group">
+
+                <label>Descripción</label>
+
+                <input
+                    type="text"
+                    id="descripcionTarea">
+
+            </div>
+
+            <br>
+
+            <div class="form-group">
+
+                <label>Estado</label>
+
+                <select id="estadoTarea">
+
+                    <option value="1">
+                        Activa
+                    </option>
+
+                    <option value="0">
+                        Inactiva
+                    </option>
+
+                </select>
+
+            </div>
+
+            <br>
+
+            <div class="form-group">
+
+                <label>Trabajadores asignados</label>
+
+                <input
+                    type="text"
+                    id="buscarTrabajadorTarea"
+                    placeholder="Buscar trabajador...">
+
+                <div class="lista-trabajadores-tarea">
+
+                    {% for trabajador in trabajadores %}
+
+                    <label class="trabajador-tarea-item">
+
+                        <input
+                            type="checkbox"
+                            class="trabajador-tarea-check"
+                            value="{{ trabajador.id_trabajador }}">
+
+                        <span class="nombre-trabajador">
+                            {{ trabajador.nombre }} {{ trabajador.apellidos }}
+                        </span>
+
+                    </label>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button
+                class="secondary-button"
+                id="cancelModalTarea">
+
+                Cancelar
+
+            </button>
+
+            <button
+                class="primary-button"
+                id="guardarTarea">
+
+                Guardar tarea
+
+            </button>
+
+        </div>
+
+    </div>
+    </div>
+
+    <div class="modal-overlay" id="modalTrabajadoresTarea">
+
+        <div class="modal" style="width:500px;">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>Trabajadores asignados</h2>
+
+                    <p id="totalTrabajadoresTarea"></p>
+
+                </div>
+
+                <button class="close-modal" id="closeTrabajadoresTarea">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div id="listaTrabajadoresTarea"></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="modal-overlay" id="modalPeriodosFD">
+        <div class="modal" id="modalPeriodosFDContenido">
+            <div class="modal-header">
+                <div>
+                    <h2>Periodos de trabajo</h2>
+                    <p id="nombreTrabajadorFD"></p>
+                </div>
+                <button class="close-modal" id="closePeriodosFD">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="listaPeriodosFD"></div>
+                <button class="add-periodo-btn" id="nuevoPeriodoFD">
+                    <i class="fa-solid fa-plus"></i>
+                    Añadir periodo
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal-overlay" id="modalEditarPeriodoFD">
+        <div class="modal" style="width:500px;">
+            <div class="modal-header">
+                <h2 id="tituloPeriodoFD">Nuevo periodo</h2>
+                <button class="close-modal" id="closeEditarPeriodoFD">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="display:block;">
+                <div class="form-group">
+                    <label>Fecha de inicio</label>
+                    <input type="date" id="fechaInicioFD">
+                </div>
+                <br>
+                <div class="form-group">
+                    <label>Fecha de fin</label>
+                    <input type="date" id="fechaFinFD">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-button" id="cancelEditarPeriodoFD">Cancelar</button>
+                <button class="primary-button" id="guardarPeriodoFD">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+    const turnos = {{ turnos|tojson }};
+
+    </script>
+
+    <script src="{{ url_for('static', filename='js/gestion-datos.js') }}"></script>
+
+</body>
+
+</html>
