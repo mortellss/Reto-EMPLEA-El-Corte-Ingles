@@ -12,10 +12,39 @@ app = Flask(__name__)
 # DASHBOARD
 # ------------------------
 
-@app.route("/")
+@app.route("/dashboard")
 def dashboard():
-    return render_template("dashboard.html")
+    trabajadores = pd.read_sql("""
+        SELECT COUNT(*) AS total
+        FROM trabajador
+        WHERE activo = 1
+    """, engine).iloc[0]["total"]
 
+    pedidos = pd.read_sql("""
+        SELECT SUM(total_pedidos) AS total
+        FROM pedidohistorico
+        WHERE id_centro = 1
+    """, engine).iloc[0]["total"]
+
+    ultima_prediccion = pd.read_sql("""
+        SELECT MAX(fecha_generacion) AS fecha
+        FROM prediccion
+        WHERE id_centro = 1
+    """, engine).iloc[0]["fecha"]
+
+    ultima_planificacion = pd.read_sql("""
+        SELECT MAX(fecha_generacion) AS fecha
+        FROM planificacion
+        WHERE id_centro = 1
+    """, engine).iloc[0]["fecha"]
+
+    return render_template(
+        "dashboard.html",
+        trabajadores=int(trabajadores or 0),
+        pedidos=int(pedidos or 0),
+        ultima_prediccion=ultima_prediccion,
+        ultima_planificacion=ultima_planificacion
+    )
 
 # ------------------------
 # GESTIÓN DE DATOS
@@ -2231,9 +2260,95 @@ def exportar_pedidos_historicos():
 # ------------------------
 # PREDICCIÓN
 # ------------------------
+
 @app.route("/prediccion")
 def prediccion():
     return render_template("prediccion.html")
+
+@app.route("/api/prediccion")
+def api_prediccion():
+    try:
+        df = pd.read_sql("""
+            SELECT
+                id_prediccion,
+                fecha,
+                dia_semana,
+                pedidos_previstos,
+                pedidos_acumulados,
+                horas_necesarias,
+                limite_inferior,
+                limite_superior,
+                fecha_generacion,
+                id_centro
+            FROM prediccion
+            WHERE id_centro = 1
+            ORDER BY fecha
+        """, engine)
+
+        df = df.astype(object).where(pd.notna(df), None)
+
+        datos = df.to_dict(orient="records")
+
+        for fila in datos:
+            if fila.get("fecha") is not None:
+                fila["fecha"] = fila["fecha"].strftime("%Y-%m-%d")
+
+            if fila.get("fecha_generacion") is not None:
+                fila["fecha_generacion"] = fila["fecha_generacion"].strftime("%Y-%m-%d %H:%M:%S")
+
+        return jsonify(datos)
+
+    except Exception as e:
+        print("ERROR PREDICCIÓN:", e)
+        return jsonify({
+            "error": "No se han podido cargar las predicciones."
+        }), 500
+
+
+@app.route("/api/prediccion/generar", methods=["POST"])
+def generar_prediccion():
+    try:
+        import subprocess
+        import sys
+        import os
+
+        script = os.path.join(
+            os.path.dirname(__file__),
+            "..",
+            "..",
+            "FASE_1_modelo",
+            "entrenamiento_prophet.py"
+        )
+
+        resultado = subprocess.run(
+            [sys.executable, script],
+            capture_output=True,
+            text=True
+        )
+
+        if resultado.returncode != 0:
+            print("ERROR ENTRENAMIENTO:")
+            print(resultado.stderr)
+
+            return jsonify({
+                "error": "No se ha podido generar la predicción."
+            }), 500
+
+        print("PREDICCIÓN GENERADA:")
+        print(resultado.stdout)
+
+        return jsonify({
+            "ok": True,
+            "mensaje": "Predicción generada correctamente."
+        })
+
+    except Exception as e:
+
+        print("ERROR:", e)
+
+        return jsonify({
+            "error": str(e)
+        }), 500
 # ------------------------
 # PLANIFICACIÓN
 # ------------------------

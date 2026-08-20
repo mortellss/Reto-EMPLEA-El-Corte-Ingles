@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMPLEA | Predicción</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/prediccion.css') }}">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='img/logo.webp') }}" alt="Logo">
+        </div>
+        <nav>
+            <a href="{{ url_for('dashboard') }}">
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('gestion_datos') }}">
+                <i class="fa-solid fa-users"></i>
+                <span>Gestión de datos</span>
+            </a>
+            <a href="{{ url_for('historicos') }}">
+                <i class="fa-solid fa-database"></i>
+                <span>Datos históricos</span>
+            </a>
+            <a href="{{ url_for('prediccion') }}" class="active">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Predicción</span>
+            </a>
+            <a href="{{ url_for('planificacion') }}">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Planificación</span>
+            </a>
+            <a href="{{ url_for('configuracion') }}">
+                <i class="fa-solid fa-gear"></i>
+                <span>Configuración</span>
+            </a>
+        </nav>
+    </aside>
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <h2>Predicción</h2>
+                <p>Genera y consulta la previsión de demanda del centro.</p>
+            </div>
+            <div class="user">
+                <button>
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+                <div class="user-info">
+                    <span>Usuario</span>
+                </div>
+            </div>
+        </header>
+        <section class="content">
+            <div class="prediccion-header">
+                <div>
+                    <h2>Predicción de demanda</h2>
+                    <p>Utiliza los datos históricos, el calendario y las promociones para generar una previsión de pedidos.</p>
+                </div>
+                <button type="button" id="generarPrediccion" class="primary-button">
+                    <i class="fa-solid fa-chart-line"></i>
+                    Generar predicción
+                </button>
+            </div>
+            <div class="prediccion-resumen">
+                <div class="prediccion-card">
+                    <div class="prediccion-card-icon">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <div>
+                        <span>Última generación</span>
+                        <strong id="ultimaGeneracion">—</strong>
+                    </div>
+                </div>
+                <div class="prediccion-card">
+                    <div class="prediccion-card-icon">
+                        <i class="fa-solid fa-calendar-days"></i>
+                    </div>
+                    <div>
+                        <span>Días previstos</span>
+                        <strong id="diasPrevistos">—</strong>
+                    </div>
+                </div>
+                <div class="prediccion-card">
+                    <div class="prediccion-card-icon">
+                        <i class="fa-solid fa-box"></i>
+                    </div>
+                    <div>
+                        <span>Pedidos previstos</span>
+                        <strong id="totalPrevisto">—</strong>
+                    </div>
+                </div>
+                <div class="prediccion-card">
+                    <div class="prediccion-card-icon">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div>
+                        <span>Horas necesarias</span>
+                        <strong id="totalHoras">—</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="prediccion-periodo">
+                <div>
+                    <span>Periodo de predicción</span>
+                    <strong id="periodoPrediccion">—</strong>
+                </div>
+                <div>
+                    <span>Número de días</span>
+                    <strong id="numeroDias">—</strong>
+                </div>
+            </div>
+            <div class="prediccion-section">
+                <div class="section-header">
+                    <div>
+                        <h2>Previsión de demanda</h2>
+                        <p>Resultados generados por el modelo de predicción.</p>
+                    </div>
+                </div>
+                <div class="prediccion-table-container">
+                    <table class="prediccion-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Día</th>
+                                <th>Pedidos previstos</th>
+                                <th>Pedidos acumulados</th>
+                                <th>Horas necesarias</th>
+                                <th>Límite inferior</th>
+                                <th>Límite superior</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaPrediccion">
+                            <tr>
+                                <td colspan="7" class="loading-cell">Cargando datos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='js/prediccion.js') }}"></script>
+</body>
+</html>

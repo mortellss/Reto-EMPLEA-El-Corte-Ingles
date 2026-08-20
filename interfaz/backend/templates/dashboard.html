@@ -95,25 +95,37 @@
 
                 <article class="card">
                     <h3>Trabajadores</h3>
-                    <span>43</span>
+                    <span>{{ trabajadores }}</span>
                     <p>Trabajadores activos</p>
                 </article>
 
                 <article class="card">
                     <h3>Pedidos</h3>
-                    <span>18.542</span>
+                    <span>{{ "{:,.0f}".format(pedidos).replace(",", ".") }}</span>
                     <p>Pedidos históricos</p>
                 </article>
 
                 <article class="card">
                     <h3>Predicción</h3>
-                    <span>18/07/2026</span>
+                    <span>
+                        {% if ultima_prediccion %}
+                            {{ ultima_prediccion.strftime('%d/%m/%Y') }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </span>
                     <p>Última ejecución</p>
                 </article>
 
                 <article class="card">
                     <h3>Planificación</h3>
-                    <span>3T 2026</span>
+                    <span>
+                        {% if ultima_planificacion %}
+                            {{ ultima_planificacion.strftime('%d/%m/%Y') }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </span>
                     <p>Última planificación</p>
                 </article>
 
