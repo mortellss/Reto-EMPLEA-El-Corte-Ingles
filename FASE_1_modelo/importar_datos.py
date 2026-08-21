@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
  
 engine = create_engine(
@@ -76,7 +76,12 @@ df_cal["es_festivo"] = df_cal["es_festivo"].astype(int)
 df_cal["dia_posterior_festivo"] = df_cal["dia_posterior_festivo"].astype(int)
 df_cal["id_centro"] = 1
 
-df_cal.to_sql(name="calendario", con=engine, if_exists="append", index=False)
+with engine.begin() as connection:
+    connection.execute(
+        text("DELETE FROM calendario WHERE id_centro = :id_centro"),
+        {"id_centro": 1},
+    )
+    df_cal.to_sql(name="calendario", con=connection, if_exists="append", index=False)
 
 
 print("¡Datos insertados correctamente en la base de datos!")
@@ -523,12 +528,17 @@ df_promociones["id_centro"] = 1
 
 # Insertar en la base de datos
 try:
-    df_promociones.to_sql(
-        "promocion",
-        con=engine,
-        if_exists="append",
-        index=False
-    )
+    with engine.begin() as connection:
+        connection.execute(
+            text("DELETE FROM promocion WHERE id_centro = :id_centro"),
+            {"id_centro": 1},
+        )
+        df_promociones.to_sql(
+            "promocion",
+            con=connection,
+            if_exists="append",
+            index=False
+        )
     print(f"{len(df_promociones)} promociones importadas a la base de datos.")
 except Exception as e:
     print(f"Error al importar promociones: {e}")

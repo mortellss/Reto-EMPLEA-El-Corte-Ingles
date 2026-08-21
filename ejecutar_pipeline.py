@@ -9,7 +9,7 @@ PASOS = [
     ROOT / "FASE_1_modelo" / "importar_datos.py",
     ROOT / "FASE_1_modelo" / "entrenamiento_prophet.py",
     ROOT / "FASE_2 _programacion_lineal" / "optimizacion_FINAL.py",
-    ROOT / "FASE_3_calendarizacion" / "calendarizacion.py",
+    #ROOT / "FASE_3_calendarizacion" / "calendarizacion.py",
 ]
 
 

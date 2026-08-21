@@ -258,6 +258,17 @@ trimestre['dia_semana'] = trimestre["fecha"].dt.day_name().map({
     "Sunday": "Domingo",
 })
 
+inicio_trimestre = trimestre['fecha'].min().replace(day=1)
+dias_hasta_primer_domingo = 6 - inicio_trimestre.weekday()
+inicio_segunda_semana = inicio_trimestre + pd.Timedelta(
+    days=dias_hasta_primer_domingo + 1
+)
+trimestre['num_semana'] = 1
+fechas_desde_segunda_semana = trimestre['fecha'] >= inicio_segunda_semana
+trimestre.loc[fechas_desde_segunda_semana, 'num_semana'] = (
+    (trimestre.loc[fechas_desde_segunda_semana, 'fecha'] - inicio_segunda_semana).dt.days // 7
+) + 2
+
 
 for i in range(len(trimestre) - 1):
     if trimestre.at[i, 'centro_abierto'] == 0:
@@ -268,11 +279,18 @@ for i in range(len(trimestre) - 1):
 trimestre = trimestre.drop(columns=['centro_abierto'])
 trimestre["fecha_generacion"] = datetime.now()
 trimestre["id_centro"] = 1
+trimestre["horas_ordinarias"] = 0
+trimestre["horas_complementarias"] = 0
+trimestre["horas_FD"] = 0
 trimestre = trimestre[[
     'fecha',
     'dia_semana',
+    'num_semana',
     'pedidos_previstos',
     'pedidos_acumulados',
+    'horas_ordinarias',
+    'horas_complementarias',
+    'horas_FD',
     'horas_necesarias',
     'limite_inferior',
     'limite_superior',

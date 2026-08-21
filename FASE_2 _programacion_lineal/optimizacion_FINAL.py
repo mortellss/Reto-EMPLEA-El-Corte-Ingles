@@ -19,31 +19,31 @@ df_trabajadores = pd.read_sql(query_trabajadores, con=engine)
 count_tipos_contratos = df_trabajadores['id_contrato'].value_counts().to_dict()
 
 num_trabajadores_100_C = count_tipos_contratos.get(1)
-horas_100 = 40 * 4
+horas_100 = 37.5 * 4
 max_horas_100_C = num_trabajadores_100_C * horas_100
 
 num_trabajadores_912_C = count_tipos_contratos.get(2)
-horas_JP_912 = 40 * 0.912 * 4
+horas_JP_912 = 37.5 * 0.912 * 4
 max_horas_912_C = num_trabajadores_912_C * horas_JP_912
 
 num_trabajadores_90_FD = count_tipos_contratos.get(3)
-horas_JP_90 = 40 * 0.90 * 4
+horas_JP_90 = 37.5 * 0.90 * 4
 max_horas_90_FD = num_trabajadores_90_FD * horas_JP_90
 
 num_trabajadores_70_C = count_tipos_contratos.get(4)
-horas_JP_70 = 40 * 0.70 * 4
+horas_JP_70 = 37.5 * 0.70 * 4
 max_horas_70_C = num_trabajadores_70_C * horas_JP_70
 
 num_trabajadores_JP_407_C = count_tipos_contratos.get(5)
-horas_JP_407 = 40 * 0.407 * 4
+horas_JP_407 = 37.5 * 0.407 * 4
 max_horas_407_C = num_trabajadores_JP_407_C * horas_JP_407
 
 num_trabajadores_JP_40_C = count_tipos_contratos.get(6)
-horas_JP_40 = 40 * 0.40 * 4
+horas_JP_40 = 37.5 * 0.40 * 4
 max_horas_40_C = num_trabajadores_JP_40_C * horas_JP_40
 
 num_trabajadores_JP_253_C = count_tipos_contratos.get(7)
-horas_JP_253 = 40 * 0.253 * 4
+horas_JP_253 = 37.5 * 0.253 * 4
 max_horas_253_C = num_trabajadores_JP_253_C * horas_JP_253
 
 max_horas = max_horas_100_C + max_horas_912_C + max_horas_70_C + max_horas_407_C + max_horas_40_C + max_horas_253_C
@@ -54,9 +54,9 @@ max_horas_sin_100 = max_horas_912_C + max_horas_70_C + max_horas_407_C + max_hor
 
 prob = pulp.LpProblem("Optimizacion_Coste", pulp.LpMinimize)
 
-# Variables de decisión para los 12 meses del horizonte
+# Variables de decisión para x meses del horizonte
 
-NUM_MESES = 6
+NUM_MESES = 3
 meses = range(1, NUM_MESES + 1)
 X_HO = {
     mes: pulp.LpVariable(f"X_HO_{mes}", lowBound=0, upBound=max_horas, cat="Continuous")

@@ -251,8 +251,12 @@ CREATE TABLE `prediccion` (
   `id_prediccion` int NOT NULL AUTO_INCREMENT,
   `fecha` date NOT NULL,
   `dia_semana` varchar(100) NOT NULL,
+  `num_semana` int NOT NULL, /* es para ver el número de semana dentro del trimestre */
   `pedidos_previstos` int NOT NULL,
   `pedidos_acumulados` int NOT NULL,
+  `horas_ordinarias` int NOT NULL,
+  `horas_complementarias` int NOT NULL,
+  `horas_FD` int NOT NULL,
   `horas_necesarias` int NOT NULL,
   `limite_inferior` int NOT NULL,
   `limite_superior` int NOT NULL,
@@ -326,7 +330,7 @@ CREATE TABLE `tarea` (
 
 LOCK TABLES `tarea` WRITE;
 /*!40000 ALTER TABLE `tarea` DISABLE KEYS */;
-INSERT INTO `tarea` VALUES (1,'RUNNER','Runner',1),(2,'ECI EXPRESS','ECI Express',1),(3,'HOME DELIVERY','Home Delivery',1),(4,'CLICK&CAR','Click&Car',1),(5,'DERIVADAS','Derivadas',1),(6,'ENCARGOS MURO','Encargos Muro',1),(7,'EXPEDICIÓN','Expedición',1),(8,'LOCKERS','Lockers',1),(9,'MOSTRADOR','Mostrador',1),(10,'DEV. EDIG','Devoluciones EDIG',1),(11,'RUTAS','Rutas',1),(12,'CASOS SALES FORCE','Casos Sales Force',1),(13,'EXCEDIDOS','Excedidos',1),(14,'VENTA EN PROCESO','Venta en proceso',1),(15,'EDIG SIT 152','EDIG SIT 152',1),(16,'GESTIONES LOGISTICA','Gestiones Logística',1),(17,'CORREO','Correo',1),(18,'RG 31 MRW','RG 31 MRW',1),(19,'GESTIÓN MOSTRADOR','Gestión Mostrador',1),(21,'BARRER','Nueva tarea',0);
+INSERT INTO `tarea` VALUES (1,'RUNNER','Runner',1),(2,'ECI EXPRESS','ECI Express',1),(3,'HOME DELIVERY','Home Delivery',1),(4,'CLICK&CAR','Click&Car',1),(5,'DERIVADAS','Derivadas',1),(6,'ENCARGOS MURO','Encargos Muro',1),(7,'EXPEDICIÓN','Expedición',1),(8,'LOCKERS','Lockers',1),(9,'MOSTRADOR','Mostrador',1),(10,'DEV. EDIG','Devoluciones EDIG',1),(11,'RUTAS','Rutas',1),(12,'CASOS SALES FORCE','Casos Sales Force',1),(13,'EXCEDIDOS','Excedidos',1),(14,'VENTA EN PROCESO','Venta en proceso',1),(15,'EDIG SIT 152','EDIG SIT 152',1),(16,'GESTIONES LOGISTICA','Gestiones Logística',1),(17,'CORREO','Correo',1),(18,'RG 31 MRW','RG 31 MRW',1),(19,'GESTIÓN MOSTRADOR','Gestión Mostrador',1),(20,'EXTRA','Grupo de tareas restantes',1),(21,'BARRER','Nueva tarea',0);
 /*!40000 ALTER TABLE `tarea` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -368,6 +372,21 @@ LOCK TABLES `trabajador` WRITE;
 INSERT INTO `trabajador` VALUES (1,58116070,'ANGELA MARI','SANFELIU','angela.sanfeliu@elcorteingles.es',1,2,1,1,'M',0),(2,58098914,'AMPARO','MAS ALARIO','amparo.masalario@elcorteingles.es',1,2,1,1,'M',0),(3,65891889,'INMACULADA','LOPEZ CARSI','inmaculada.lopezcarsi@elcorteingles.es',1,5,1,1,'M',0),(4,58060583,'PILAR','TUDELA ALCAIDE','pilar.tudelaalcaide@elcorteingles.es',1,1,1,1,'M',0),(5,73713778,'ROLANDO','PRIETO SIFONTES','rolando.prietosifontes@elcorteingles.es',1,2,1,1,'A',0),(6,57597437,'ROBERTO','VALERI BULLS','roberto.valeribulls@elcorteingles.es',1,2,1,1,'T',0),(7,67212050,'SARAY','MARTINEZ AVILA','saray.martinezavila@elcorteingles.es',1,1,1,1,'T',0),(8,58056227,'DAVID JORGE','PRADANOS ARRIBAS','davidjorge.pradanosarribas@elcorteingles.es',1,1,1,0,'A',0),(9,67326579,'RAQUEL','BRENTA VILLORA','raquel.brentavillora@elcorteingles.es',1,1,1,1,'A',0),(10,67953885,'DIEGO','SANCHEZ MARTINEZ','diego.sanchezmartinez@elcorteingles.es',1,2,1,1,'A',0),(11,58148131,'LORENA','GIMENO MARIN','lorena.gimenomarin@elcorteingles.es',1,2,1,1,'A',0),(12,73734303,'ENIO JESÚS','SANCHEZ MORA','eniojesus.sanchezmora@elcorteingles.es',1,1,1,1,'A',0),(13,58161720,'SUSANA','SENENT DOMINGO','susana.senentdomingo@elcorteingles.es',1,2,1,0,'A',0),(14,66252495,'RUBEN','LATORRE AGUILAR','ruben.latorreaguilar@elcorteingles.es',1,1,1,1,'A',0),(15,57818031,'IVÁN','ARJONA GOMAR','ivan.arjonagomar@elcorteingles.es',1,2,1,1,'A',0),(16,73530057,'HECTOR','CABO SIMON','hector.cabosimon@elcorteingles.es',1,2,1,1,'A',0),(17,73566374,'MAYRA ALEJANDRA','CASTRO BANGUERA','mayraalejandra.castrobanguera@elcorteingles.es',1,2,1,1,'A',0),(18,58114315,'INMA','TORMO ALEIXANDRE','inma.tormoaleixandre@elcorteingles.es',1,2,1,1,'A',0),(19,58157850,'CARMEN','ROMERO SOLER','carmen.romerosoler@elcorteingles.es',1,2,1,1,'A',0),(20,57697625,'MANEL','SERRA CHOQUE','manel.serrachoque@elcorteingles.es',1,2,1,0,'A',0),(21,58717596,'M. CARMEN','SALES COSTA','mcarmen.salescosta@elcorteingles.es',1,2,1,0,'A',0),(22,51966919,'SANTIAGO','HIDALGO LOPEZ','santiago.hidalgolopez@elcorteingles.es',1,4,1,1,'A',0),(23,67370882,'ALEJANDRO','GUTIERREZ VILLALBA','alejandro.gutierrezvillalba@elcorteingles.es',1,4,1,1,'T',0),(24,57620262,'SERGIO','SANZ LOPEZ','sergio.sanzlopez@elcorteingles.es',1,6,1,1,'A',0),(25,73596850,'CANDELA','MIJANCOS CARAVACA','candela.mijancoscaravaca@elcorteingles.es',1,7,1,1,'A',0),(26,74268483,'ALEJANDRO','PACHECO GIMÉNEZ','alejandro.pachecogimenez@elcorteingles.es',1,7,1,1,'A',0),(27,73721409,'SAMUEL','ORTIZ HEREDIA','samuel.ortizheredia@elcorteingles.es',1,3,1,1,'A',1),(28,74360017,'IVÁN','ARTERO GARCIA','ivan.arterogarcia@elcorteingles.es',1,3,1,1,'',1),(29,74261496,'NIRVANA SOFI','RIOS NG','nirvanasofi.riosng@elcorteingles.es',1,3,1,1,'A',1),(30,73582666,'ALEJANDRO','RODRIGUEZ HERRERO','alejandro.rodriguezherrero@elcorteingles.es',1,3,1,1,'A',1),(31,51982122,'MERCEDES','DELGADO TEBAR','mercedes.delgadotebar@elcorteingles.es',1,3,1,1,'A',1),(32,74297045,'ANDREU','SOLER MARQUEZ','andreu.solermarquez@elcorteingles.es',1,3,1,1,'A',1),(33,51983047,'SARA','VALERO MARTINEZ','sara.valeromartinez@elcorteingles.es',1,3,1,1,'A',1),(34,74270364,'NATALIA','FITO ARRAEZ','natalia.fitoarraez@elcorteingles.es',1,3,1,1,'A',1),(35,74293820,'MARIELA RAMON','VARGAS HERNANDEZ','marielaramon.vargashernandez@elcorteingles.es',1,3,1,1,'A',1),(36,51966026,'ANTONIO','MENCHERO ERQUICIA','antonio.mencheroerquicia@elcorteingles.es',1,3,1,1,'A',1),(37,51983013,'FIDEL','BLANQUEZ HERRERA','fidel.blanquezherrera@elcorteingles.es',1,3,1,1,'A',1),(38,74263971,'ADRIAN','SALVADOR SANGERMAN','adrian.salvadorsangerman@elcorteingles.es',1,3,1,1,'A',1),(39,74268137,'JUDITH','COLETO PEREZ','judith.coletoperez@elcorteingles.es',1,3,1,1,'A',1),(40,73580409,'ALVARO','GOMEZ GALLEGO','alvaro.gomezgallego@elcorteingles.es',1,3,1,1,'A',1),(41,74294695,'MARCOS','IBAÑEZ DE LEON','marcos.ibanezdeleon@elcorteingles.es',1,3,1,1,'A',1),(42,58160102,'LUCIA','MARCH ADELANTADO','lucia.marchadelantado@elcorteingles.es',1,3,1,1,'M',1),(43,74294919,'ITZIAR','SANCHEZ DEFEZ','itziar.sanchezdefez@elcorteingles.es',1,3,1,1,'A',1),(44,67668103,'NICOLÁS','JIMÉNEZ ÍÑIGO','nicolas.jimenezinigo@elcorteingles.es',1,3,1,1,'A',1),(45,74294646,'MARCOS','VARGAS FLORES','marcos.vargasflores@elcorteingles.es',1,3,1,1,'A',1),(46,74297771,'MANUEL MIGUEL','VARGAS FERNANDEZ','manuelmiguel.vargasfernandez@elcorteingles.es',1,3,1,1,'A',1),(47,74259045,'SERGIO','MARTIN HERNANZ','sergio.martinhernanz@elcorteingles.es',1,3,1,1,'A',1),(48,74298373,'VICTOR','GUILLEN LEON','victor.guillenleon@elcorteingles.es',1,3,1,1,'A',1),(49,73582636,'Marta','Carrión Bernad','marta.carrionbernad@elcorteingles.es',0,2,1,1,'M',1),(51,1234567,'AIRE','GANADORAS','ASDFGHJKLÑ',0,1,1,1,'M',1),(53,73582637,'Marta','Carrión Bernad','martacarrionbernad@gmail.com',1,2,1,1,'M',0);
 /*!40000 ALTER TABLE `trabajador` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `calendario_trabajadores`
+--
+
+DROP TABLE IF EXISTS `calendario_trabajadores`;
+CREATE TABLE `calendario_trabajadores` (
+  `fecha` date NOT NULL,
+  `id_trabajador` int NOT NULL,
+  `estado` tinyint(1) NOT NULL,
+  PRIMARY KEY (`fecha`,`id_trabajador`),
+  KEY `id_trabajador` (`id_trabajador`),
+  CONSTRAINT `calendario_trabajadores_ibfk_1`
+    FOREIGN KEY (`id_trabajador`) REFERENCES `trabajador` (`id_trabajador`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Table structure for table `trabajador_tarea`
