@@ -1,8 +1,9 @@
 # importación de lo necesario
 
 import math
-
+import os
 from prophet import Prophet
+from dotenv import load_dotenv
 import pandas as pd
 from prophet.make_holidays import make_holidays_df
 import matplotlib.pyplot as plt
@@ -21,8 +22,16 @@ def limpiar_regresor(df, columna):
         df[columna] = 0
     return df
 
+load_dotenv()
 
-engine = create_engine("mysql+pymysql://root:root2004@localhost/emplea")
+usuario = os.getenv("DB_USER")
+password = os.getenv("DB_PASSWORD")
+
+engine = create_engine(
+    f"mysql+pymysql://{usuario}:{password}@localhost/emplea"
+)
+
+# engine = create_engine("mysql+pymysql://root:root2004@localhost/emplea")
 
 # query para obtener el total de líneas
 

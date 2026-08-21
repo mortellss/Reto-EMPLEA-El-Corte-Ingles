@@ -1,0 +1,121 @@
+.calendario-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:30px;
+}
+.calendario-top{
+    display:flex;
+    align-items:flex-end;
+    gap:35px;
+    margin-bottom:8px;
+}
+
+.calendario-titulo h1{
+    margin:0;
+}
+
+.calendario-titulo p{
+    margin:6px 0 0;
+}
+
+.selector-anio{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:2px;
+}
+
+.selector-anio label{
+    font-size:15px;
+    font-weight:500;
+    color:#172b4d;
+}
+
+.selector-anio select{
+    width:150px;
+    height:52px;
+    padding:0 38px 0 16px;
+    border:1px solid #dce4ec;
+    border-radius:12px;
+    background:white;
+    color:#172b4d;
+    font-family:inherit;
+    font-size:16px;
+    cursor:pointer;
+}
+
+.selector-anio select:focus{
+    outline:none;
+    border-color:#087f3f;
+}
+
+.calendar-toolbar{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+.legend{
+    display:flex;
+    align-items:center;
+    gap:25px;
+}
+
+.legend>span{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:15px;
+    color:#172b4d;
+}
+
+.dot{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    display:inline-block;
+}
+
+.dot.open{
+    background:#16a34a;
+}
+
+.dot.closed{
+    background:#ef4444;
+}
+
+.dot.modified{
+    background:#3b82f6;
+}
+
+.selector-anio{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.selector-anio label{
+    font-size:15px;
+    font-weight:500;
+    color:#172b4d;
+}
+
+.selector-anio select{
+    min-width:120px;
+    height:46px;
+    padding:0 38px 0 14px;
+    border:1px solid #dce4ec;
+    border-radius:10px;
+    background:white;
+    color:#172b4d;
+    font-family:inherit;
+    font-size:15px;
+    cursor:pointer;
+}
+
+.selector-anio select:focus{
+    outline:none;
+    border-color:#087f3f;
+}

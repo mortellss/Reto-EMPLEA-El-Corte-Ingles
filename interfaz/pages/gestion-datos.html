@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>EMPLEA | Dashboard</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/gestion-datos.css">
+</head>
+
+<body>
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            <img src="../img/logo.webp" alt="El Corte Inglés">
+        </div>
+
+        <nav>
+
+            <a href="dashboard.html">
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="gestion-datos.html" class="active">
+                <i class="fa-solid fa-users"></i>
+                <span>Gestión de datos</span>
+            </a>
+
+            <a href="historicos.html">
+                <i class="fa-solid fa-database"></i>
+                <span>Datos históricos</span>
+            </a>
+
+            <a href="prediccion.html">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Predicción</span>
+            </a>
+
+            <a href="planificacion.html">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Planificación</span>
+            </a>
+
+            <a href="configuracion.html">
+                <i class="fa-solid fa-gear"></i>
+                <span>Configuración</span>
+            </a>
+
+        </nav>
+
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div>
+                <h2>Gestión de datos</h2>
+                <p>Administra la información necesaria para generar la planificación.</p>
+            </div>
+
+            <div class="user">
+
+                <button>
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+
+                <div class="user-info">
+                    <span>Usuario</span>
+                </div>
+
+            </div>
+
+        </header>
+
+        <section class="content">
+
+            <section class="content">
+
+
+                <div class="tabs">
+
+                    <button class="tab active" data-tab="trabajadores">
+                        Trabajadores
+                    </button>
+
+                    <button class="tab" data-tab="contratos">
+                        Contratos
+                    </button>
+
+                    <button class="tab" data-tab="tareas">
+                        Tareas
+                    </button>
+
+                    <button class="tab" data-tab="disponibilidad">
+                        Disponibilidad
+                    </button>
+
+                    <button class="tab" data-tab="centro">
+                        Centro
+                    </button>
+
+                </div>
+                
+
+                <div id="trabajadores-panel" class="tab-panel active-panel">
+                <div class="toolbar">
+
+                    <div class="search-box">
+
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                        <input
+                            type="text"
+                            placeholder="Buscar trabajador...">
+
+                    </div>
+
+                    <button class="primary-button" id="openModal">
+
+                        <i class="fa-solid fa-plus"></i>
+
+                        Nuevo trabajador
+
+                    </button>
+
+                </div>
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Nombre</th>
+                                <th>Contrato</th>
+                                <th>Disponibilidad</th>
+                                <th>Competencias</th>
+                                <th>Estado</th>
+                                <th></th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            <tr>
+
+                                <td>Ana López</td>
+                                <td>91,2 %</td>
+                                <td>Mañanas</td>
+                                <td>13 / 15</td>
+                                <td>
+                                    <span class="status active">
+                                        Activo
+                                    </span>
+                                </td>
+
+                                <td class="actions">
+
+                                    <button class="edit-btn">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+
+                                    <button class="delete-btn">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>Luis García</td>
+                                <td>Jornada completa</td>
+                                <td>Tardes</td>
+                                <td>9 / 15</td>
+
+                                <td>
+                                    <span class="status active">
+                                        Activo
+                                    </span>
+                                </td>
+
+                                <td class="actions">
+
+                                    <button class="edit-btn">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+
+                                    <button class="delete-btn">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+                </div>
+
+                <div id="contratos-panel" class="tab-panel">
+
+                <div class="toolbar">
+
+                    <div class="search-box">
+
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                        <input
+                            type="text"
+                            placeholder="Buscar contrato...">
+
+                    </div>
+
+                    <button class="primary-button">
+
+                        <i class="fa-solid fa-plus"></i>
+
+                        Nuevo contrato
+
+                    </button>
+
+                </div>
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Nombre</th>
+                                <th>Jornada</th>
+                                <th>Horas semanales</th>
+                                <th>Estado</th>
+                                <th></th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            <tr>
+
+                                <td>Jornada completa</td>
+                                <td>100 %</td>
+                                <td>40 h</td>
+
+                                <td>
+                                    <span class="status active">
+                                        Activo
+                                    </span>
+                                </td>
+
+                                <td class="actions">
+
+                                    <button class="edit-btn">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+
+                                    <button class="delete-btn">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>Parcial</td>
+                                <td>91,2 %</td>
+                                <td>36,5 h</td>
+
+                                <td>
+                                    <span class="status active">
+                                        Activo
+                                    </span>
+                                </td>
+
+                                <td class="actions">
+
+                                    <button class="edit-btn">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+
+                                    <button class="delete-btn">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>Parcial</td>
+                                <td>40,7 %</td>
+                                <td>16,3 h</td>
+
+                                <td>
+                                    <span class="status active">
+                                        Activo
+                                    </span>
+                                </td>
+
+                                <td class="actions">
+
+                                    <button class="edit-btn">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+
+                                    <button class="delete-btn">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+                </div>
+
+                <div id="tareas-panel" class="tab-panel">
+
+                    <div class="toolbar">
+
+                        <div class="search-box">
+
+                            <i class="fa-solid fa-magnifying-glass"></i>
+
+                            <input
+                                type="text"
+                                placeholder="Buscar tarea...">
+
+                        </div>
+
+                        <button class="primary-button">
+
+                            <i class="fa-solid fa-plus"></i>
+
+                            Nueva tarea
+
+                        </button>
+
+                    </div>
+
+                    <div class="table-container">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Tarea</th>
+                                    <th>Descripción</th>
+                                    <th>Trabajadores asignados</th>
+                                    <th>Estado</th>
+                                    <th></th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+                                    <td>Runner</td>
+                                    <td>Recogida y transporte de pedidos</td>
+                                    <td>18</td>
+                                    <td><span class="status active">Activa</span></td>
+                                    <td class="actions">
+                                        <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
+                                        <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Consola</td>
+                                    <td>Gestión y seguimiento de pedidos</td>
+                                    <td>6</td>
+                                    <td><span class="status active">Activa</span></td>
+                                    <td class="actions">
+                                        <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
+                                        <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Home Delivery</td>
+                                    <td>Preparación de entregas a domicilio</td>
+                                    <td>9</td>
+                                    <td><span class="status active">Activa</span></td>
+                                    <td class="actions">
+                                        <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
+                                        <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>C&amp;CAR</td>
+                                    <td>Pedidos Click &amp; Car</td>
+                                    <td>12</td>
+                                    <td><span class="status active">Activa</span></td>
+                                    <td class="actions">
+                                        <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
+                                        <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+                <div id="disponibilidad-panel" class="tab-panel">
+
+                    <div class="toolbar">
+
+                        <div class="search-box">
+
+                            <i class="fa-solid fa-magnifying-glass"></i>
+
+                            <input
+                                type="text"
+                                placeholder="Buscar restricción...">
+
+                        </div>
+
+                        <button class="primary-button">
+
+                            <i class="fa-solid fa-plus"></i>
+
+                            Nueva restricción
+
+                        </button>
+
+                    </div>
+
+                    <div class="table-container">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Trabajador</th>
+                                    <th>Tipo</th>
+                                    <th>Inicio</th>
+                                    <th>Fin</th>
+                                    <th>Estado</th>
+                                    <th></th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+
+                                    <td>Ana López</td>
+                                    <td>Vacaciones</td>
+                                    <td>04/08/2026</td>
+                                    <td>17/08/2026</td>
+
+                                    <td>
+                                        <span class="status active">
+                                            Activa
+                                        </span>
+                                    </td>
+
+                                    <td class="actions">
+
+                                        <button class="edit-btn">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+
+                                        <button class="delete-btn">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>Luis García</td>
+                                    <td>Solo mañanas</td>
+                                    <td>—</td>
+                                    <td>—</td>
+
+                                    <td>
+                                        <span class="status active">
+                                            Activa
+                                        </span>
+                                    </td>
+
+                                    <td class="actions">
+
+                                        <button class="edit-btn">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+
+                                        <button class="delete-btn">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>Marta Pérez</td>
+                                    <td>Baja médica</td>
+                                    <td>21/07/2026</td>
+                                    <td>02/08/2026</td>
+
+                                    <td>
+                                        <span class="status active">
+                                            Activa
+                                        </span>
+                                    </td>
+
+                                    <td class="actions">
+
+                                        <button class="edit-btn">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+
+                                        <button class="delete-btn">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>Carlos Ruiz</td>
+                                    <td>EREPAPE</td>
+                                    <td>—</td>
+                                    <td>—</td>
+
+                                    <td>
+                                        <span class="status active">
+                                            Activa
+                                        </span>
+                                    </td>
+
+                                    <td class="actions">
+
+                                        <button class="edit-btn">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+
+                                        <button class="delete-btn">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+                <div id="centro-panel" class="tab-panel">
+
+                    <div class="toolbar">
+
+                        <div class="search-box">
+
+                            <i class="fa-solid fa-magnifying-glass"></i>
+
+                            <input
+                                type="text"
+                                placeholder="Buscar centro...">
+
+                        </div>
+
+                        <button class="primary-button">
+
+                            <i class="fa-solid fa-plus"></i>
+
+                            Nuevo centro
+
+                        </button>
+
+                    </div>
+
+                    <div class="table-container">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Centro</th>
+                                    <th>Ciudad</th>
+                                    <th>Estado</th>
+                                    <th>Calendario</th>
+                                    <th>Acciones</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+
+                                    <td>Avenida de Francia</td>
+                                    <td>Valencia</td>
+
+                                    <td>
+                                        <span class="status active">
+                                            Activo
+                                        </span>
+                                    </td>
+
+                                    <td>
+
+                                        <a href="centro.html" class="secondary-button">
+
+                                            <i class="fa-solid fa-calendar"></i>
+
+                                            Abrir
+
+                                        </a>
+                                    </td>
+
+                                    <td class="actions">
+
+                                        <button class="edit-btn">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+
+                                        <button class="delete-btn">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>    
+
+</section>
+
+        </section>
+
+    </main>
+
+    <div  class="modal-overlay" id="modal">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <h2>Nuevo trabajador</h2>
+
+                <button  class="close-modal"id="closeModal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="form-column">
+
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Apellidos</label>
+                        <input type="text">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Contrato</label>
+
+                        <select>
+
+                            <option>Jornada completa</option>
+                            <option>91,2 %</option>
+                            <option>40,7 %</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label>Disponibilidad</label>
+
+                        <select>
+
+                            <option>Sin restricciones</option>
+                            <option>Solo mañanas</option>
+                            <option>Solo tardes</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label>Estado</label>
+
+                        <select>
+
+                            <option>Activo</option>
+                            <option>Inactivo</option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <div class="skills-column">
+
+                    <h3>Competencias</h3>
+                    <p>Introduce la información del trabajador y selecciona las tareas que puede realizar.</p>
+
+                    <div
+                        id="skills-list"
+                        class="skills-list">
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button  class="secondary-button" id="cancelModal">
+                    Cancelar
+                </button>
+
+                <button class="primary-button" id="openModal">
+                    Guardar trabajador
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="../js/gestion-datos.js"></script>
+
+</body>
+
+</html>
