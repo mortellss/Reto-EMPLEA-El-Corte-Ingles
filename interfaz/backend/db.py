@@ -15,7 +15,9 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 DB_NAME = os.getenv("DB_NAME")
-DB_SSL_CA = os.getenv("DB_SSL_CA")
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_SSL_CA = os.path.join(BASE_DIR, "ca.pem")
 
 engine = create_engine(
     f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}",
