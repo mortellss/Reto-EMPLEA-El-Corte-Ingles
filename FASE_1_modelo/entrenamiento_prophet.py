@@ -22,6 +22,7 @@ def limpiar_regresor(df, columna):
         df[columna] = 0
     return df
 
+
 load_dotenv()
 
 usuario = os.getenv("DB_USER")
@@ -30,6 +31,8 @@ password = os.getenv("DB_PASSWORD")
 engine = create_engine(
     f"mysql+pymysql://{usuario}:{password}@localhost/emplea"
 )
+
+
 
 # engine = create_engine("mysql+pymysql://root:root2004@localhost/emplea")
 
@@ -170,6 +173,7 @@ future['promo_tier_2'] = future['ds'].isin(fechas_t2).astype(int)
 future['promo_tier_3'] = future['ds'].isin(fechas_t3).astype(int)
 
 
+
 for reg in regresores:
     future = limpiar_regresor(future, reg)
 
@@ -267,14 +271,17 @@ trimestre['dia_semana'] = trimestre["fecha"].dt.day_name().map({
     "Sunday": "Domingo",
 })
 
+
+
+
 inicio_trimestre = trimestre['fecha'].min().replace(day=1)
 dias_hasta_primer_domingo = 6 - inicio_trimestre.weekday()
 inicio_segunda_semana = inicio_trimestre + pd.Timedelta(
     days=dias_hasta_primer_domingo + 1
 )
-trimestre['num_semana'] = 1
+trimestre["num_semana"] = 1
 fechas_desde_segunda_semana = trimestre['fecha'] >= inicio_segunda_semana
-trimestre.loc[fechas_desde_segunda_semana, 'num_semana'] = (
+trimestre.loc[fechas_desde_segunda_semana, "num_semana"] = (
     (trimestre.loc[fechas_desde_segunda_semana, 'fecha'] - inicio_segunda_semana).dt.days // 7
 ) + 2
 
@@ -297,9 +304,6 @@ trimestre = trimestre[[
     'num_semana',
     'pedidos_previstos',
     'pedidos_acumulados',
-    'horas_ordinarias',
-    'horas_complementarias',
-    'horas_FD',
     'horas_necesarias',
     'limite_inferior',
     'limite_superior',

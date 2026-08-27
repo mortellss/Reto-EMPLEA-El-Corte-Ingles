@@ -1,12 +1,17 @@
 import os
 import pandas as pd
 from sqlalchemy import create_engine, text
+from dotenv import load_dotenv
 
- 
+
+load_dotenv()
+
+usuario = os.getenv("DB_USER")
+password = os.getenv("DB_PASSWORD")
+
 engine = create_engine(
-    "mysql+pymysql://root:root2004@localhost/emplea"
+    f"mysql+pymysql://{usuario}:{password}@localhost/emplea"
 )
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ruta_archivo = os.path.join(BASE_DIR, "..", "data", "Tablas Emplea.xlsx")
 
@@ -15,6 +20,8 @@ print(f"\nImportando datos desde: {ruta_archivo}")
 # Leer el contenido de la hoja de los pedidos históricos
 
 df = pd.read_excel(ruta_archivo, sheet_name="Pedido Histórico")
+
+print("Pedido Histórico leido")
 
 #  Renombrar las columnas
 df.columns = [
@@ -53,7 +60,6 @@ try:
 except Exception as e:
     print(f"{e}")
 
-# Insertar los datos del calendario
 
 df_cal = pd.read_excel(ruta_archivo, sheet_name="Calendario")
 df_cal = df_cal[['fecha', 'centro_abierto', 'es_festivo', 'dia_posterior_festivo', 'hora_apertura', 'hora_cierre', 'id_centro']]
