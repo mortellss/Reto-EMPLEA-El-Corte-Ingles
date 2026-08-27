@@ -8,9 +8,9 @@ from io import BytesIO
 app = Flask(__name__)
 
 
-# ------------------------
+# ============================================================
 # DASHBOARD
-# ------------------------
+# ============================================================
 
 @app.route("/dashboard")
 def dashboard():
@@ -46,10 +46,12 @@ def dashboard():
         ultima_planificacion=ultima_planificacion
     )
 
-# ------------------------
-# GESTIÓN DE DATOS
-# ------------------------
 
+# ============================================================
+# GESTIÓN DE DATOS — TRABAJADORES (listado y consultas)
+# ============================================================
+
+# ---- Vista principal: trabajadores, contratos, tareas y disponibilidad ----
 @app.route("/gestion-datos")
 def gestion_datos():
 
@@ -213,7 +215,7 @@ def gestion_datos():
     )
 
 
-
+# ---- Competencias de un trabajador (AJAX) ----
 @app.route("/competencias_trabajador/<int:id_trabajador>")
 def competencias_trabajador(id_trabajador):
 
@@ -242,6 +244,7 @@ def competencias_trabajador(id_trabajador):
     )
 
 
+# ---- Trabajadores asociados a un contrato (AJAX) ----
 @app.route("/trabajadores_contrato/<int:id_contrato>")
 def trabajadores_contrato(id_contrato):
 
@@ -275,10 +278,11 @@ def trabajadores_contrato(id_contrato):
     )
 
 
-# ------------------------
-# NUEVO CONTRATO
-# ------------------------
+# ============================================================
+# GESTIÓN DE DATOS — CONTRATOS
+# ============================================================
 
+# ---- Nuevo contrato ----
 @app.route("/nuevo_contrato", methods=["POST"])
 def nuevo_contrato():
 
@@ -319,10 +323,8 @@ def nuevo_contrato():
 
     return "",204
 
-# ------------------------
-# ELIMINAR CONTRATO
-# ------------------------
 
+# ---- Eliminar contrato ----
 @app.route("/eliminar_contrato", methods=["POST"])
 def eliminar_contrato():
 
@@ -381,10 +383,7 @@ def eliminar_contrato():
     })
 
 
-# ------------------------
-# EDITAR CONTRATO
-# ------------------------
-
+# ---- Editar contrato ----
 @app.route("/editar_contrato", methods=["POST"])
 def editar_contrato():
 
@@ -420,7 +419,11 @@ def editar_contrato():
     return "",204
 
 
-   
+# ============================================================
+# GESTIÓN DE DATOS — TRABAJADORES (alta, edición y estado)
+# ============================================================
+
+# ---- Eliminar trabajador ----
 @app.route("/eliminar_trabajador", methods=["POST"])
 def eliminar_trabajador():
 
@@ -438,6 +441,7 @@ def eliminar_trabajador():
     return jsonify(ok=True)
 
 
+# ---- Nuevo trabajador ----
 @app.route("/nuevo_trabajador",methods=["POST"])
 def nuevo_trabajador():
     datos=request.get_json()
@@ -485,6 +489,8 @@ def nuevo_trabajador():
             })
     return jsonify(ok=True)
 
+
+# ---- Editar trabajador ----
 @app.route("/editar_trabajador", methods=["POST"])
 def editar_trabajador():
 
@@ -538,10 +544,7 @@ def editar_trabajador():
     return jsonify(ok=True)
 
 
-# ------------------------
-# CAMBIAR ESATDO TRABAJADOR
-# ------------------------
-
+# ---- Cambiar estado (activo / inactivo) ----
 @app.route("/cambiar_estado_trabajador", methods=["POST"])
 def cambiar_estado_trabajador():
 
@@ -566,8 +569,7 @@ def cambiar_estado_trabajador():
     return jsonify(ok=True)
 
 
-
-# Periodos fijos discontinuos
+# ---- Periodos de fijo discontinuo de un trabajador (AJAX) ----
 @app.route("/periodos_trabajador/<int:id_trabajador>")
 def periodos_trabajador(id_trabajador):
     periodos=pd.read_sql("""
@@ -585,7 +587,7 @@ def periodos_trabajador(id_trabajador):
     )
 
 
-#Añadir/editar/eliminar periodos fijos discontinuos
+# ---- Nuevo periodo de fijo discontinuo ----
 @app.route("/nuevo_periodo_fd",methods=["POST"])
 def nuevo_periodo_fd():
     datos=request.get_json()
@@ -604,6 +606,8 @@ def nuevo_periodo_fd():
         """),datos)
     return jsonify(ok=True)
 
+
+# ---- Editar periodo de fijo discontinuo ----
 @app.route("/editar_periodo_fd",methods=["POST"])
 def editar_periodo_fd():
     datos=request.get_json()
@@ -617,6 +621,8 @@ def editar_periodo_fd():
         """),datos)
     return jsonify(ok=True)
 
+
+# ---- Eliminar periodo de fijo discontinuo ----
 @app.route("/eliminar_periodo_fd",methods=["POST"])
 def eliminar_periodo_fd():
     datos=request.get_json()
@@ -632,9 +638,11 @@ def eliminar_periodo_fd():
     return jsonify(ok=True)
 
 
-# ------------------------
+# ============================================================
 # CALENDARIO
-# ------------------------
+# ============================================================
+
+# ---- Vista del calendario anual ----
 @app.route("/calendario")
 def calendario():
     ID_CENTRO=1
@@ -678,9 +686,8 @@ def calendario():
         anio=anio
     )
 
-# ------------------------
-# ACTUALIZAR CALENDARIO
-# ------------------------
+
+# ---- Actualizar un día del calendario ----
 @app.route("/actualizar_dia",methods=["POST"])
 def actualizar_dia():
     datos=request.get_json()
@@ -704,9 +711,9 @@ def actualizar_dia():
             }
         )
     return jsonify({"ok":True})
-# ------------------------
-# IMPORTAR CALENDARIO
-# ------------------------
+
+
+# ---- Importar calendario desde Excel ----
 @app.route("/importar_calendario",methods=["POST"])
 def importar_calendario():
     ID_CENTRO=1
@@ -857,9 +864,7 @@ def importar_calendario():
         ),500
 
 
-# ------------------------
-# EXPORTAR CALENDARIO
-# ------------------------
+# ---- Exportar calendario a Excel ----
 @app.route("/exportar_calendario")
 def exportar_calendario():
     ID_CENTRO=1
@@ -905,11 +910,12 @@ def exportar_calendario():
         print("ERROR AL EXPORTAR CALENDARIO:",e)
         return jsonify(error="No se ha podido exportar el calendario."),500
 
-    
-# ------------------------
-# NUEVA DISPONIBILIDAD
-# ------------------------
 
+# ============================================================
+# GESTIÓN DE DATOS — DISPONIBILIDAD
+# ============================================================
+
+# ---- Periodos de disponibilidad de un trabajador (AJAX) ----
 @app.route("/periodos_disponibilidad/<int:id_trabajador>")
 def periodos_disponibilidad(id_trabajador):
     trabajador=pd.read_sql("""
@@ -938,6 +944,7 @@ def periodos_disponibilidad(id_trabajador):
     })
 
 
+# ---- Nueva restricción de disponibilidad ----
 @app.route("/nueva_disponibilidad", methods=["POST"])
 def nueva_disponibilidad():
 
@@ -978,10 +985,8 @@ def nueva_disponibilidad():
 
     return jsonify(ok=True)
 
-# ------------------------
-# EDITAR DISPONIBILIDAD
-# ------------------------
 
+# ---- Editar restricción de disponibilidad ----
 @app.route("/editar_disponibilidad", methods=["POST"])
 def editar_disponibilidad():
 
@@ -1017,11 +1022,7 @@ def editar_disponibilidad():
     return jsonify(ok=True)
 
 
-
-# ------------------------
-# ELIMINAR DISPONIBILIDAD
-# ------------------------
-
+# ---- Eliminar restricción de disponibilidad ----
 @app.route("/eliminar_disponibilidad", methods=["POST"])
 def eliminar_disponibilidad():
 
@@ -1043,12 +1044,18 @@ def eliminar_disponibilidad():
 
     return jsonify(ok=True)
 
+
+# ============================================================
+# GESTIÓN DE DATOS — CENTRO Y TAREAS
+# ============================================================
+
+# ---- Vista del centro ----
 @app.route("/centro")
 def centro():
     return render_template("centro.html")
 
 
-# Nueva tarea
+# ---- Nueva tarea ----
 @app.route("/nueva_tarea", methods=["POST"])
 def nueva_tarea():
 
@@ -1106,8 +1113,7 @@ def nueva_tarea():
     return jsonify(ok=True)
 
 
-# editar los trabajdores
-# Editar tarea
+# ---- Editar tarea ----
 @app.route("/editar_tarea", methods=["POST"])
 def editar_tarea():
     datos=request.get_json()
@@ -1141,7 +1147,7 @@ def editar_tarea():
     return jsonify(ok=True)
 
 
-# Ver los trabajadores asignados a cada tarea
+# ---- Trabajadores asignados a una tarea (AJAX) ----
 @app.route("/trabajadores_tarea/<int:id_tarea>")
 def trabajadores_tarea(id_tarea):
 
@@ -1168,7 +1174,8 @@ def trabajadores_tarea(id_tarea):
         force_ascii=False
     )
 
-# Cambiar estado de tarea
+
+# ---- Cambiar estado de una tarea ----
 @app.route("/cambiar_estado_tarea", methods=["POST"])
 def cambiar_estado_tarea():
 
@@ -1186,7 +1193,8 @@ def cambiar_estado_tarea():
 
     return jsonify(ok=True)
 
-# eliminar tarea
+
+# ---- Eliminar tarea ----
 @app.route("/eliminar_tarea", methods=["POST"])
 def eliminar_tarea():
     datos=request.get_json()
@@ -1206,12 +1214,11 @@ def eliminar_tarea():
     return jsonify(ok=True)
 
 
-# ------------------------
-# DATOS HISTÓRICOS
-# ------------------------
-# ------------------------
-# PROMOCIONES
-# ------------------------
+# ============================================================
+# PROMOCIONES (API)
+# ============================================================
+
+# ---- Listado de promociones ----
 @app.route("/api/promociones")
 def api_promociones():
 
@@ -1257,8 +1264,8 @@ def api_promociones():
             error="No se han podido cargar las promociones."
         ), 500
 
-    
 
+# ---- Obtener una promoción ----
 @app.route("/api/promociones/<int:id_promocion>", methods=["GET"])
 def obtener_promocion(id_promocion):
 
@@ -1323,9 +1330,8 @@ def obtener_promocion(id_promocion):
             error="No se ha podido cargar la promoción."
         ), 500
 
-    
 
-
+# ---- Crear promoción ----
 @app.route("/api/promociones",methods=["POST"])
 def crear_promocion():
     datos=request.get_json()
@@ -1369,6 +1375,7 @@ def crear_promocion():
         ),500
 
 
+# ---- Actualizar promoción ----
 @app.route("/api/promociones/<int:id_promocion>",methods=["PUT"])
 def actualizar_promocion(id_promocion):
     datos=request.get_json()
@@ -1411,6 +1418,7 @@ def actualizar_promocion(id_promocion):
         ),500
 
 
+# ---- Eliminar promoción ----
 @app.route("/api/promociones/<int:id_promocion>",methods=["DELETE"])
 def eliminar_promocion(id_promocion):
     try:
@@ -1440,10 +1448,7 @@ def eliminar_promocion(id_promocion):
         ),500
 
 
-# ------------------------
-# IMPORTAR PROMOCIONES
-# ------------------------
-
+# ---- Importar promociones desde Excel ----
 @app.route("/importar_promociones",methods=["POST"])
 def importar_promociones():
 
@@ -1575,10 +1580,7 @@ def importar_promociones():
         ),500
 
 
-# ------------------------
-# EXPORTAR PROMOCIONES
-# ------------------------
-
+# ---- Exportar promociones a Excel ----
 @app.route("/exportar_promociones")
 def exportar_promociones():
 
@@ -1629,20 +1631,17 @@ def exportar_promociones():
         ),500
 
 
-    
-# ------------------------
-# DATOS HISTÓRICOS
-# ------------------------
+# ============================================================
+# DATOS HISTÓRICOS — PEDIDOS
+# ============================================================
 
+# ---- Vista de datos históricos ----
 @app.route("/historicos")
 def historicos():
     return render_template("historicos.html")
 
 
-# ------------------------
-# PEDIDOS HISTÓRICOS
-# ------------------------
-
+# ---- Listado de pedidos históricos ----
 @app.route("/api/pedidos_historicos")
 def api_pedidos_historicos():
 
@@ -1678,10 +1677,8 @@ def api_pedidos_historicos():
             error="No se han podido cargar los pedidos históricos."
         ), 500
 
-# ------------------------
-# OBTENER UN DÍA
-# ------------------------
 
+# ---- Obtener un día ----
 @app.route("/api/pedidos_historicos/<int:id_pedido>",methods=["GET"])
 def obtener_pedido_historico(id_pedido):
     try:
@@ -1708,10 +1705,7 @@ def obtener_pedido_historico(id_pedido):
         return jsonify(error="No se ha podido cargar el registro."),500
 
 
-# ------------------------
-# CREAR DÍA
-# ------------------------
-
+# ---- Crear día ----
 @app.route("/api/pedidos_historicos",methods=["POST"])
 def crear_pedido_historico():
 
@@ -1726,6 +1720,10 @@ def crear_pedido_historico():
         encargos_lineas=int(datos.get("encargos_lineas",0))
         home_pedidos=int(datos.get("home_delivery_pedidos",0))
         home_lineas=int(datos.get("home_delivery_lineas",0))
+        devoluciones = datos.get("devoluciones")
+        if devoluciones is not None:
+            devoluciones = int(devoluciones)
+        
 
         total_pedidos=(
             mcia_pedidos+
@@ -1772,6 +1770,7 @@ def crear_pedido_historico():
                         home_delivery_lineas,
                         total_pedidos,
                         total_lineas,
+                        devoluciones,
                         id_centro
                     )
                     VALUES(
@@ -1786,6 +1785,7 @@ def crear_pedido_historico():
                         :home_lineas,
                         :total_pedidos,
                         :total_lineas,
+                        :devoluciones,
                         1
                     )
                 """),
@@ -1800,7 +1800,8 @@ def crear_pedido_historico():
                     "home_pedidos":home_pedidos,
                     "home_lineas":home_lineas,
                     "total_pedidos":total_pedidos,
-                    "total_lineas":total_lineas
+                    "total_lineas":total_lineas,
+                    "devoluciones": devoluciones
                 }
             )
 
@@ -1813,10 +1814,7 @@ def crear_pedido_historico():
         ),500
 
 
-# ------------------------
-# EDITAR DÍA
-# ------------------------
-
+# ---- Editar día ----
 @app.route("/api/pedidos_historicos/<int:id_pedido>",methods=["PUT"])
 def actualizar_pedido_historico(id_pedido):
 
@@ -1831,6 +1829,9 @@ def actualizar_pedido_historico(id_pedido):
         encargos_lineas=int(datos.get("encargos_lineas",0))
         home_pedidos=int(datos.get("home_delivery_pedidos",0))
         home_lineas=int(datos.get("home_delivery_lineas",0))
+        devoluciones = datos.get("devoluciones")
+        if devoluciones is not None:
+            devoluciones = int(devoluciones)
 
         total_pedidos=(
             mcia_pedidos+
@@ -1862,6 +1863,7 @@ def actualizar_pedido_historico(id_pedido):
                         home_delivery_pedidos=:home_pedidos,
                         home_delivery_lineas=:home_lineas,
                         total_pedidos=:total_pedidos,
+                        devoluciones=:devoluciones,
                         total_lineas=:total_lineas
                     WHERE id_pedido_historico=:id
                     AND id_centro=1
@@ -1878,7 +1880,8 @@ def actualizar_pedido_historico(id_pedido):
                     "home_pedidos":home_pedidos,
                     "home_lineas":home_lineas,
                     "total_pedidos":total_pedidos,
-                    "total_lineas":total_lineas
+                    "total_lineas":total_lineas,
+                    "devoluciones":devoluciones
                 }
             )
 
@@ -1896,10 +1899,7 @@ def actualizar_pedido_historico(id_pedido):
         ),500
 
 
-# ------------------------
-# ELIMINAR DÍA
-# ------------------------
-
+# ---- Eliminar día ----
 @app.route("/api/pedidos_historicos/<int:id_pedido>",methods=["DELETE"])
 def eliminar_pedido_historico(id_pedido):
 
@@ -1929,32 +1929,21 @@ def eliminar_pedido_historico(id_pedido):
         ),500
 
 
-# ------------------------
-# IMPORTAR EXCEL
-# ------------------------
-
+# ---- Importar desde Excel ----
 @app.route("/api/pedidos_historicos/importar",methods=["POST"])
 def importar_pedidos_historicos():
-
     if "archivo" not in request.files:
-        return jsonify(
-            error="No se ha seleccionado ningún archivo."
-        ),400
+        return jsonify(error="No se ha seleccionado ningún archivo."),400
 
     archivo=request.files["archivo"]
 
     if archivo.filename=="":
-        return jsonify(
-            error="No se ha seleccionado ningún archivo."
-        ),400
+        return jsonify(error="No se ha seleccionado ningún archivo."),400
 
     if not archivo.filename.lower().endswith(".xlsx"):
-        return jsonify(
-            error="El archivo debe estar en formato .xlsx."
-        ),400
+        return jsonify(error="El archivo debe estar en formato .xlsx."),400
 
     try:
-
         df=pd.read_excel(archivo)
 
         columnas_excel=[
@@ -1966,7 +1955,8 @@ def importar_pedidos_historicos():
             "Núm. pedidos ENCARGOS",
             "Núm. líneas ENCARGOS",
             "Núm. pedidos HOME DELIVERY",
-            "Núm. líneas HOME DELIVERY"
+            "Núm. líneas HOME DELIVERY",
+            "Devoluciones"
         ]
 
         faltantes=[
@@ -1997,10 +1987,19 @@ def importar_pedidos_historicos():
                 error="Hay fechas duplicadas en el Excel."
             ),400
 
-        columnas_numericas=columnas_excel[1:]
+        # Columnas de pedidos: no pueden estar vacías
+        columnas_numericas=[
+            "Núm. pedidos 2h MCIA GENERAL",
+            "Núm. Líneas 2h MCIA GENERAL",
+            "Núm. pedidos 2h FOOD",
+            "Núm. líneas 2h FOOD",
+            "Núm. pedidos ENCARGOS",
+            "Núm. líneas ENCARGOS",
+            "Núm. pedidos HOME DELIVERY",
+            "Núm. líneas HOME DELIVERY"
+        ]
 
         for columna in columnas_numericas:
-
             df[columna]=pd.to_numeric(
                 df[columna],
                 errors="coerce"
@@ -2013,8 +2012,13 @@ def importar_pedidos_historicos():
 
             df[columna]=df[columna].astype(int)
 
-        with engine.begin() as conn:
+        # Devoluciones puede estar vacío -> NULL
+        df["Devoluciones"]=pd.to_numeric(
+            df["Devoluciones"],
+            errors="coerce"
+        )
 
+        with engine.begin() as conn:
             for _,fila in df.iterrows():
 
                 fecha=fila["Fecha de venta"].date()
@@ -2051,6 +2055,11 @@ def importar_pedidos_historicos():
                     fila["Núm. líneas HOME DELIVERY"]
                 )
 
+                if pd.isna(fila["Devoluciones"]):
+                    devoluciones=None
+                else:
+                    devoluciones=int(fila["Devoluciones"])
+
                 total_pedidos=(
                     mcia_pedidos+
                     food_pedidos+
@@ -2086,11 +2095,11 @@ def importar_pedidos_historicos():
                     "home_pedidos":home_pedidos,
                     "home_lineas":home_lineas,
                     "total_pedidos":total_pedidos,
-                    "total_lineas":total_lineas
+                    "total_lineas":total_lineas,
+                    "devoluciones":devoluciones
                 }
 
                 if existe:
-
                     conn.execute(
                         text("""
                             UPDATE pedidohistorico
@@ -2104,7 +2113,8 @@ def importar_pedidos_historicos():
                                 home_delivery_pedidos=:home_pedidos,
                                 home_delivery_lineas=:home_lineas,
                                 total_pedidos=:total_pedidos,
-                                total_lineas=:total_lineas
+                                total_lineas=:total_lineas,
+                                devoluciones=:devoluciones
                             WHERE fecha=:fecha
                             AND id_centro=1
                         """),
@@ -2112,7 +2122,6 @@ def importar_pedidos_historicos():
                     )
 
                 else:
-
                     conn.execute(
                         text("""
                             INSERT INTO pedidohistorico(
@@ -2127,6 +2136,7 @@ def importar_pedidos_historicos():
                                 home_delivery_lineas,
                                 total_pedidos,
                                 total_lineas,
+                                devoluciones,
                                 id_centro
                             )
                             VALUES(
@@ -2141,6 +2151,7 @@ def importar_pedidos_historicos():
                                 :home_lineas,
                                 :total_pedidos,
                                 :total_lineas,
+                                :devoluciones,
                                 1
                             )
                         """),
@@ -2153,18 +2164,13 @@ def importar_pedidos_historicos():
         )
 
     except Exception as e:
-
         print("ERROR IMPORTANDO PEDIDOS:",e)
 
         return jsonify(
             error="No se han podido importar los pedidos históricos."
         ),500
 
-
-# ------------------------
-# EXPORTAR EXCEL
-# ------------------------
-
+# ---- Exportar a Excel ----
 @app.route("/api/pedidos_historicos/exportar")
 def exportar_pedidos_historicos():
 
@@ -2182,7 +2188,8 @@ def exportar_pedidos_historicos():
                 home_delivery_pedidos,
                 home_delivery_lineas,
                 total_pedidos,
-                total_lineas
+                total_lineas,
+                devoluciones
             FROM pedidohistorico
             WHERE id_centro = 1
             ORDER BY fecha
@@ -2199,7 +2206,8 @@ def exportar_pedidos_historicos():
             "Núm. pedidos HOME DELIVERY",
             "Núm. líneas HOME DELIVERY",
             "Total PEDIDOS",
-            "Total LÍNEAS"
+            "Total LÍNEAS",
+            "Devoluciones"
         ]
 
         output = BytesIO()
@@ -2234,7 +2242,8 @@ def exportar_pedidos_historicos():
                 "H": 28,
                 "I": 30,
                 "J": 16,
-                "K": 16
+                "K": 16,
+                "L": 16
             }
 
             for columna, ancho in anchos.items():
@@ -2256,15 +2265,19 @@ def exportar_pedidos_historicos():
         return jsonify(
             error="No se han podido exportar los pedidos históricos."
         ), 500
-    
-# ------------------------
-# PREDICCIÓN
-# ------------------------
 
+
+# ============================================================
+# PREDICCIÓN
+# ============================================================
+
+# ---- Vista de predicción ----
 @app.route("/prediccion")
 def prediccion():
     return render_template("prediccion.html")
 
+
+# ---- Obtener predicciones generadas ----
 @app.route("/api/prediccion")
 def api_prediccion():
     try:
@@ -2305,6 +2318,7 @@ def api_prediccion():
         }), 500
 
 
+# ---- Generar nueva predicción ----
 @app.route("/api/prediccion/generar", methods=["POST"])
 def generar_prediccion():
     try:
@@ -2349,17 +2363,25 @@ def generar_prediccion():
         return jsonify({
             "error": str(e)
         }), 500
-# ------------------------
+
+
+# ============================================================
 # PLANIFICACIÓN
-# ------------------------
+# ============================================================
+
 @app.route("/planificacion")
 def planificacion():
     return render_template("planificacion.html")
-# ------------------------
+
+
+# ============================================================
 # CONFIGURACIÓN
-# ------------------------
+# ============================================================
+
 @app.route("/configuracion")
 def configuracion():
     return render_template("configuracion.html")
+
+
 if __name__=="__main__":
     app.run(debug=True)
