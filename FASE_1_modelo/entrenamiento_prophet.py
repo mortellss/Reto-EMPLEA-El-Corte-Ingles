@@ -261,6 +261,7 @@ trimestre = trimestre.merge(
 )
 trimestre['pedidos_acumulados'] = trimestre['pedidos_previstos'].copy()
 trimestre['horas_necesarias'] = trimestre['pedidos_previstos'].apply(calc_horas_totales).round().astype(int)
+trimestre.loc[trimestre['centro_abierto'] == 0, 'horas_necesarias'] = 0
 trimestre['dia_semana'] = trimestre["fecha"].dt.day_name().map({
     "Monday": "Lunes",
     "Tuesday": "Martes",
@@ -271,11 +272,9 @@ trimestre['dia_semana'] = trimestre["fecha"].dt.day_name().map({
     "Sunday": "Domingo",
 })
 
-
-
-
 inicio_trimestre = trimestre['fecha'].min().replace(day=1)
 dias_hasta_primer_domingo = 6 - inicio_trimestre.weekday()
+'''
 inicio_segunda_semana = inicio_trimestre + pd.Timedelta(
     days=dias_hasta_primer_domingo + 1
 )
@@ -284,6 +283,7 @@ fechas_desde_segunda_semana = trimestre['fecha'] >= inicio_segunda_semana
 trimestre.loc[fechas_desde_segunda_semana, "num_semana"] = (
     (trimestre.loc[fechas_desde_segunda_semana, 'fecha'] - inicio_segunda_semana).dt.days // 7
 ) + 2
+'''
 
 
 for i in range(len(trimestre) - 1):
@@ -301,7 +301,7 @@ trimestre["horas_FD"] = 0
 trimestre = trimestre[[
     'fecha',
     'dia_semana',
-    'num_semana',
+    #'num_semana',
     'pedidos_previstos',
     'pedidos_acumulados',
     'horas_necesarias',
@@ -310,6 +310,8 @@ trimestre = trimestre[[
     'fecha_generacion',
     'id_centro'
 ]]
+
+
 
 try:
     with engine.begin() as conn:
@@ -323,6 +325,9 @@ try:
     print("Valores predecidos con éxito")
 except Exception as e:
     print(f"Error: {e}")
+
+print(trimestre.head(30))
+
 
 '''
 

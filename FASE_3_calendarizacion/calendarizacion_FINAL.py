@@ -25,16 +25,15 @@ TURNO_TARDE = 1
 TURNOS = [TURNO_MANANA, TURNO_TARDE]
 
 CONTRATOS_ORDINARIAS = {1, 2, 4, 5, 6, 7}
-CONTRATOS_COMPLEMENTARIAS = {2, 4, 5, 6, 7}
+CONTRATOS_COMPLEMENTARIAS = {2, 4, 5, 6}  # sin el 7 según criterio indicado
 CONTRATOS_FIJO_DISCONTINUO = {3}
+CONTRATOS_JORNADA_EXTRA = {1, 2}
 
-
-# Estas son horas aproximadas -> CAMBIAR PARA QUE SEA MÁS EXACTO
-
+# Horas por turno según contrato
 HORAS_POR_TURNO_CONTRATO = {
     1: 6.25,  # 6 turnos/semana -> 37.5 h/semana
     2: 6.25,  # 6 turnos/semana -> 37.5 h/semana
-    3: 4.0,
+    3: 4.0,   # fijo discontinuo: 4 h/turno, máx 6 días/semana
     4: 5.0,   # 5 turnos/semana -> 25 h/semana
     5: 5.0,   # 3 turnos/semana -> 15 h/semana
     6: 5.0,   # 3 turnos/semana -> 15 h/semana
@@ -56,11 +55,11 @@ CAPACIDAD_MAXIMA_TAREA = {
 
 CAPACIDAD_MAXIMA_DEFECTO = 1
 
+
 def capacidad_maxima(tareas):
-   
-    tarea_nombre =  {
-       t.nombre: id_tarea
-       for id_tarea, t in tareas.items() 
+    tarea_nombre = {
+        t.nombre: id_tarea
+        for id_tarea, t in tareas.items()
     }
 
     capacidad = {}
@@ -75,26 +74,24 @@ def capacidad_maxima(tareas):
     if nombres_sin_encontrar:
         disponibles = ', '.join(f"'{t.nombre}'" for t in tareas.values())
         print(f"Aviso: no se encontraron en `tarea` estos nombres: "
-                f"{', '.join(repr(n) for n in nombres_sin_encontrar)}. "
-                f"Se quedan con el límite por defecto de {CAPACIDAD_MAXIMA_DEFECTO} "
-                f"persona(s) por turno. Nombres disponibles en la tabla: {disponibles}")
+              f"{', '.join(repr(n) for n in nombres_sin_encontrar)}. "
+              f"Se quedan con el límite por defecto de {CAPACIDAD_MAXIMA_DEFECTO} "
+              f"persona(s) por turno. Nombres disponibles en la tabla: {disponibles}")
     return capacidad
 
 
-   
-
-
 opciones_duracion_qh = {
-        1: [25],
-        2: [20, 28],
-        3: [20, 24],
-        4: [16, 20],
-        5: [16, 20, 24],
-        6: [20],
-        7: [20]
-    }
+    1: [25],
+    2: [20, 28],
+    3: [20, 24],
+    4: [16, 20],
+    5: [16, 20, 24],
+    6: [20],
+    7: [20],
+}
 
-QH = 4 
+QH = 4
+
 
 @dataclass
 class Trabajador:
@@ -104,6 +101,8 @@ class Trabajador:
     id_contrato: int
     dias_trabajados_seguidos: int
     domingos_trabajados: int
+    es_fijo_discontinuo: bool = False
+
 
 @dataclass
 class Calendario:
@@ -111,41 +110,37 @@ class Calendario:
     cerrado: dict[date, bool]
     semana_de: dict[date, int]
     segmentos_racha: list[list[date]]
-    horas_necesarias: dict[date,float]
+    horas_necesarias: dict[date, float]
+
 
 @dataclass
 class Tareas:
     id_tarea: int
     nombre: str
 
+
 def horas_a_qh(h: float) -> int:
     return round(h * QH)
- 
+
+
 def qh_a_horas(qh: int) -> float:
     return qh / QH
 
+
 def cargar_trabajadores(fijo_discontinuo: int = 0):
-    query_trabajadores = """
+    """
+    fijo_discontinuo=0 -> plantilla ordinaria (activo=1 AND fijo_discontinuo=0)
+    fijo_discontinuo=1 -> fijos discontinuos (activo=1 AND fijo_discontinuo=1, contrato 3)
+    """
+    query_trabajadores = f"""
     SELECT id_trabajador, nombre, disponibilidad, id_contrato
     FROM trabajador
-    WHERE activo = 1 AND fijo_discontinuo = {fijo_discontinuo}
-    """
-
-    query_calendario_trabajadores = """
-        SELECT id_trabajador, estado
-        FROM calendario_trabajadores
+    WHERE activo = 1 AND fijo_discontinuo = {int(fijo_discontinuo)}
     """
 
     df_trabajadores = pd.read_sql(query_trabajadores, con=engine)
     df_trabajadores['id_trabajador'] = pd.to_numeric(df_trabajadores["id_trabajador"])
     df_trabajadores['id_contrato'] = pd.to_numeric(df_trabajadores["id_contrato"])
-    #df_trabajadores['horas_semanales'] = pd.to_numeric(df_trabajadores["horas_semanales"])
-
-    df_calendario_trabajadores = pd.read_sql(query_calendario_trabajadores, con=engine)
-    df_trabajadores['id_trabajador'] = pd.to_numeric(df_trabajadores["id_trabajador"])
-
-    datos = df_trabajadores.merge(df_calendario_trabajadores, how="left", on="id_trabajador")
-
 
     trabajadores = {}
     for row in df_trabajadores.itertuples(index=False):
@@ -153,13 +148,14 @@ def cargar_trabajadores(fijo_discontinuo: int = 0):
             id_trabajador=row.id_trabajador,
             nombre=row.nombre,
             disponibilidad=row.disponibilidad,
-            id_contrato = row.id_contrato,
-            dias_trabajados_seguidos= 0,
-            domingos_trabajados = 0
+            id_contrato=row.id_contrato,
+            dias_trabajados_seguidos=0,
+            domingos_trabajados=0,
+            es_fijo_discontinuo=(fijo_discontinuo == 1),
         )
-
         trabajadores[row.id_trabajador] = trabajador
     return trabajadores
+
 
 def cargar_calendario():
     query_calendario = """
@@ -179,7 +175,7 @@ def cargar_calendario():
         FROM calendario_trabajadores
         ORDER BY fecha
     """
-    
+
     df_calendario = pd.read_sql(query_calendario, con=engine)
     df_calendario["fecha"] = pd.to_datetime(df_calendario["fecha"]).dt.date
 
@@ -212,8 +208,8 @@ def cargar_calendario():
         for fila in datos.itertuples()
     }
     horas_necesarias = {
-            fila.fecha: float(fila.horas_necesarias) if not pd.isna(fila.horas_necesarias) else 0.0
-            for fila in datos.itertuples()
+        fila.fecha: float(fila.horas_necesarias) if not pd.isna(fila.horas_necesarias) else 0.0
+        for fila in datos.itertuples()
     }
 
     # Segmentos -> segmentos entre que el centro está cerrado
@@ -230,13 +226,14 @@ def cargar_calendario():
 
     return Calendario(dias, cerrado, semana_de, segmentos, horas_necesarias)
 
+
 def cargar_estado_trabajador():
     query_calendario = """
             SELECT fecha, centro_abierto
             FROM calendario
             ORDER BY fecha
         """
-    
+
     query_calendario_trabajadores = """
         SELECT fecha, id_trabajador, estado
         FROM calendario_trabajadores
@@ -256,20 +253,18 @@ def cargar_estado_trabajador():
         (fila.id_trabajador, fila.fecha): int(fila.estado)
         for fila in datos.itertuples()
     }
-    
+
     return estados_dict
 
-def cargar_tareas():
 
+def cargar_tareas():
     query_tareas = """
         SELECT id_tarea, nombre
         FROM tarea
-        WHERE activa = 1 
+        WHERE activa = 1
     """
     df_tarea = pd.read_sql(query_tareas, con=engine)
     df_tarea["id_tarea"] = pd.to_numeric(df_tarea["id_tarea"])
-    #df_tarea["horas_min"] = pd.to_numeric(df_tarea["horas_min"])
-    #df_tarea["horas_max"] = pd.to_numeric(df_tarea["horas_max"])
 
     tareas = {}
     for row in df_tarea.itertuples(index=False):
@@ -280,28 +275,28 @@ def cargar_tareas():
         tareas[row.id_tarea] = tarea
     return tareas
 
+
 def cargar_habilidades():
     query_habilidades = """
-        SELECT id_trabajador, id_tarea 
+        SELECT id_trabajador, id_tarea
         FROM trabajador_tarea
     """
     df_habilidades = pd.read_sql(query_habilidades, con=engine)
-    
+
     habilidades = {}
     for row in df_habilidades.itertuples(index=False):
         t = int(row.id_trabajador)
         tar = int(row.id_tarea)
-        
+
         if t not in habilidades:
             habilidades[t] = []
         habilidades[t].append(tar)
-        
+
     return habilidades
 
 
 def guardar_calendarizacion(solver, calendario, ids_trabajadores, ids_tareas,
                              dias_abiertos, turnos_asignados, tarea_asignada):
-    
     filas = []
     for d in dias_abiertos:
         num_semana = calendario.semana_de[d]
@@ -343,21 +338,28 @@ def guardar_calendarizacion(solver, calendario, ids_trabajadores, ids_tareas,
           f"({dias_abiertos[0]} a {dias_abiertos[-1]}).")
 
 
-def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_trabajadores, tareas, habilidades, objetivo_horas_por_mes):
-
-    ids_trabajadores = list(trabajadores.keys())           # ordinarios
-    ids_trabajadores_fd = list(trabajadores_fd.keys())     # fijos discontinuos
+def crear_calendario_base(
+    trabajadores,
+    trabajadores_fd,
+    calendario,
+    calendario_trabajadores,
+    tareas,
+    habilidades,
+    objetivo_horas_por_mes,
+):
+    ids_trabajadores = list(trabajadores.keys())       
+    ids_trabajadores_fd = list(trabajadores_fd.keys()) 
     ids_todos = ids_trabajadores + ids_trabajadores_fd
-    
+
+    # Unificamos lookup de datos del trabajador
+    todos_trabajadores = {**trabajadores, **trabajadores_fd}
+
     dias_abiertos = [d for d in calendario.dias if not calendario.cerrado[d]]
-    
-    # Inicializamos el modelo
+
     modelo = cp_model.CpModel()
 
-    # Definimos las variables decisión
-
     turnos_asignados = {}
-    for t in ids_trabajadores:
+    for t in ids_todos:
         for d in dias_abiertos:
             for s in TURNOS:
                 nombre_var = f'T{t}_D{d}_S{s}'
@@ -366,15 +368,15 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
     tarea_asignada = {}
     trabaja = {}
     ids_tareas = list(tareas.keys())
-    tareas_permitidas = habilidades.get(t, [])
-    for t in ids_trabajadores:
+
+    for t in ids_todos:
         tareas_permitidas = habilidades.get(t, [])
-        
+
         for d in dias_abiertos:
             for id_tarea in ids_tareas:
                 nombre_var_tarea = f'Tarea_T{t}_D{d}_Tar{id_tarea}'
                 tarea_asignada[(t, d, id_tarea)] = modelo.NewBoolVar(nombre_var_tarea)
-            
+
                 if id_tarea not in tareas_permitidas:
                     modelo.Add(tarea_asignada[(t, d, id_tarea)] == 0)
 
@@ -383,41 +385,40 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
             var_trabaja = modelo.NewBoolVar(f'Aux_Trabaja_T{t}_D{d}')
             modelo.Add(var_trabaja == sum(turnos_asignados[(t, d, s)] for s in TURNOS))
             trabaja[(t, d)] = var_trabaja
-            
+
             modelo.Add(sum(tareas_del_dia) == 1).OnlyEnforceIf(var_trabaja)
             modelo.Add(sum(tareas_del_dia) == 0).OnlyEnforceIf(var_trabaja.Not())
-    
-    # RESTRICCIÓN
-    # - Un trabajador solo puede hacer un máximo de un turno por día
-    for t in ids_trabajadores:
+
+    horas_turno_qh = {}
+    for t in ids_todos:
+        contrato = todos_trabajadores[t].id_contrato
+        h = HORAS_POR_TURNO_CONTRATO.get(contrato)
+        if h is not None:
+            horas_turno_qh[t] = horas_a_qh(h)
+
+    # RESTRICCIÓN: máximo un turno por día
+    for t in ids_todos:
         for d in dias_abiertos:
             turnos_al_dia = [turnos_asignados[(t, d, s)] for s in TURNOS]
             modelo.AddAtMostOne(turnos_al_dia)
-    
-    
-    # RESTRICCION 
-    # - Los trabajadores que tienen disponibilidad "M" pueden ir por la mañana
-    # - Si tiene disponibilidad "T" solo puede ir por la tarde
-    
-    for t in ids_trabajadores:
-        disp = trabajadores[t].disponibilidad
+
+
+    # RESTRICCIÓN: disponibilidad de mañanas, tardes o ambas alternas
+    for t in ids_todos:
+        disp = todos_trabajadores[t].disponibilidad
         for d in dias_abiertos:
             if disp == "M":
                 modelo.Add(turnos_asignados[(t, d, TURNO_TARDE)] == 0)
             elif disp == "T":
                 modelo.Add(turnos_asignados[(t, d, TURNO_MANANA)] == 0)
 
-    # RESTRICCION
-    # - Que haya más trabajadores por la mañana que por la tarde
+    # RESTRICCIÓN: más trabajadores por la mañana que por la tarde
     for d in dias_abiertos:
-        total_manana = sum(turnos_asignados[(t, d, TURNO_MANANA)] for t in ids_trabajadores)
-        total_tarde = sum(turnos_asignados[(t, d, TURNO_TARDE)] for t in ids_trabajadores)
+        total_manana = sum(turnos_asignados[(t, d, TURNO_MANANA)] for t in ids_todos)
+        total_tarde = sum(turnos_asignados[(t, d, TURNO_TARDE)] for t in ids_todos)
         modelo.Add(total_manana >= total_tarde + 1)
 
-
-    # RESTRICCION
-    # - Si la persona tiene disponibilidad "A" - debe de ir una semana de tardes y el otra de mañanas
-
+    # RESTRICCIÓN: disponibilidad "A" -> semanas alternas mañana/tarde
     semanas_completas = {}
     for d in dias_abiertos:
         num_semana = calendario.semana_de[d]
@@ -426,9 +427,9 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
         semanas_completas[num_semana].append(d)
 
     SEMANA_PAR_ES_MANANA = True
-    
-    for t in ids_trabajadores:
-        if trabajadores[t].disponibilidad != "A":
+
+    for t in ids_todos:
+        if todos_trabajadores[t].disponibilidad != "A":
             continue
         for num_semana, dias_semana in semanas_completas.items():
             es_semana_de_manana = (num_semana % 2 == 0) == SEMANA_PAR_ES_MANANA
@@ -436,27 +437,23 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
             for d in dias_semana:
                 modelo.Add(turnos_asignados[(t, d, turno_prohibido)] == 0)
 
-    # RESTRICCIÓN 
-    # - Tenemos en cuenta cuando trabajan (si tienen vacaciones o no)
-    
-    for t in ids_trabajadores:
+    # RESTRICCIÓN: estado del trabajador (vacaciones / disponible)
+    for t in ids_todos:
         for d in dias_abiertos:
             estado_dia = calendario_trabajadores.get((t, d), 1)
 
             turnos_del_dia = [turnos_asignados[(t, d, s)] for s in TURNOS]
-            
+
             if estado_dia == 0:
                 for s in TURNOS:
                     modelo.Add(turnos_asignados[(t, d, s)] == 0)
             elif estado_dia == 1:
                 modelo.AddAtMostOne(turnos_del_dia)
 
+    # RESTRICCIÓN: descanso semanal de 1.5 días a la semana o se puede llegar a extender a 3 días cada dos semanas
 
-    # RESTRICCIÓN -
-    # 1.5 días de descanso a la semana y se puede extender hasta las 2 semanas, en ese caso siendo 3 semanas de vacaciones
-
-    MIN_DESCANSO_SEMANA = 1        # 1.5 días/semana redondeado a la baja porque al final la mañana o la tarde de antes hace el otro medio
-    MIN_DESCANSO_DOS_SEMANAS = 3 
+    MIN_DESCANSO_SEMANA = 1
+    MIN_DESCANSO_DOS_SEMANAS = 3
 
     dias_reales_por_semana = {}
     for d in calendario.dias:
@@ -468,13 +465,11 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
         abiertos = [d for d in dias_reales if not calendario.cerrado[d]]
         return cerrados, abiertos
 
-    
-            
     def anadir_restriccion_descanso(t, dias_reales, cuota):
         cerrados, abiertos = descanso_disponible(dias_reales)
         cuota_pendiente = max(0, cuota - cerrados)
         if cuota_pendiente == 0:
-            return  
+            return
         if len(abiertos) < cuota_pendiente:
             return
         modelo.Add(
@@ -483,7 +478,7 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
 
     semanas_ordenadas = sorted(dias_reales_por_semana.keys())
 
-    for t in ids_trabajadores:
+    for t in ids_todos:
         for num_semana in semanas_ordenadas:
             anadir_restriccion_descanso(t, dias_reales_por_semana[num_semana], MIN_DESCANSO_SEMANA)
 
@@ -492,30 +487,29 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
                 continue
             dias_par = dias_reales_por_semana[num_semana] + dias_reales_por_semana[num_semana + 1]
             anadir_restriccion_descanso(t, dias_par, MIN_DESCANSO_DOS_SEMANAS)
-    
-    # RESTRICCIÓN 
-    # - Si el trabajador no tiene vacaciones esa semana debe completar sus horas semanales
 
-    
+    # RESTRICCIÓN: fijos discontinuos -> máximo 6 días/semana # Esto puede cambiarse
+    for t in ids_trabajadores_fd:
+        for num_semana, dias_semana in semanas_completas.items():
+            dias_abiertos_sem = [d for d in dias_semana if not calendario.cerrado[d]]
+            if dias_abiertos_sem:
+                modelo.Add(
+                    sum(trabaja[(t, d)] for d in dias_abiertos_sem)
+                    <= MAX_DIAS_SEMANA_FIJO_DISCONTINUO
+                )
 
-
-    # RESTRICCIÓN -
-    # Si un trabajador tiene un turno asignado en el día, debe tener asignada exactamente una tarea.
-    # En cada turno (Mañana y Tarde) de un día abierto, se deben estar realizando todas las tareas. Esto significa que necesitamos, como mínimo, 1 trabajador asignado a cada tarea en la mañana, y 1 trabajador asignado a cada tarea en la tarde.
-    
-    CAPACIDAD_MAXIMA_TAREA = capacidad_maxima(tareas)
+    # RESTRICCIÓN: puede haber más de 1 persona en cada tarea pero hay un máximo
+    CAPACIDAD_MAXIMA = capacidad_maxima(tareas)
 
     tareas_cubiertas_total = []
     trabajadores_por_tarea_turno = {}
-    
 
     for d in dias_abiertos:
         for s in TURNOS:
             for id_tarea in ids_tareas:
                 trabajadores_en_tarea_y_turno = []
-                
-                for t in ids_trabajadores:
-                    # Solo evaluamos a los que sí tienen habilidades y variable creada
+
+                for t in ids_todos:
                     if (t, d, id_tarea) in tarea_asignada:
                         en_turno_y_tarea = modelo.NewBoolVar(f'Aux_T{t}_D{d}_S{s}_Tar{id_tarea}')
                         modelo.Add(en_turno_y_tarea <= turnos_asignados[(t, d, s)])
@@ -523,98 +517,155 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
                         trabajadores_en_tarea_y_turno.append(en_turno_y_tarea)
 
                 trabajadores_por_tarea_turno[(d, s, id_tarea)] = trabajadores_en_tarea_y_turno
-                
-                cap = CAPACIDAD_MAXIMA_TAREA.get(id_tarea, CAPACIDAD_MAXIMA_DEFECTO)
+
+                cap = CAPACIDAD_MAXIMA.get(id_tarea, CAPACIDAD_MAXIMA_DEFECTO)
                 modelo.Add(sum(trabajadores_en_tarea_y_turno) <= cap)
 
                 tarea_cubierta = modelo.NewBoolVar(f'Cubierta_D{d}_S{s}_Tar{id_tarea}')
                 modelo.Add(sum(trabajadores_en_tarea_y_turno) >= 1).OnlyEnforceIf(tarea_cubierta)
                 tareas_cubiertas_total.append(tarea_cubierta)
 
-    # RESTRICCIÓN
-    # Se deben de cumplir las horas semanales de cada tipo de contrato y lo más importante de todo, debe sumar mensualmente las horas ordinarias.
 
-    PESO_DEFICIT_HORAS = 3
-    PESO_EXCESO_HORAS = 1
+    
+    PESO_DEFICIT_HO = 5
+    PESO_EXCESO_HO = 8
+    PESO_DEFICIT_HC = 1
+    PESO_EXCESO_HC = 2
+    PESO_DEFICIT_HFD = 1
+    PESO_EXCESO_HFD = 2
 
-    horas_turno_qh_trabajador = {}
-    for t in ids_trabajadores:
-        horas_turno = HORAS_POR_TURNO_CONTRATO.get(trabajadores[t].id_contrato)
-        if horas_turno is not None:
-            horas_turno_qh_trabajador[t] = horas_a_qh(horas_turno)
-    for t in ids_trabajadores_fd:
-        horas_turno_qh_trabajador[t] = horas_a_qh(HORAS_POR_TURNO_CONTRATO[3])  # 4 h
+    PESO_DEFICIT_DIA = 2
+    PESO_EXCESO_DIA = 1
 
-    cota_maxima_qh_por_turno = sum(horas_turno_qh_trabajador.values())
+    terminos_penalizacion = []
 
-    def expr_horas_trabajadas_qh(dias):
+    def expr_horas_qh(ids, dias):
         return sum(
-            horas_turno_qh_trabajador[t] * turnos_asignados[(t, d, s)]
+            horas_turno_qh[t] * turnos_asignados[(t, d, s)]
             for d in dias
             for s in TURNOS
-            for t in ids_trabajadores
-            if t in horas_turno_qh_trabajador
+            for t in ids
+            if t in horas_turno_qh
         )
-
-    def anadir_termino_horas(dias, horas_objetivo, etiqueta):
-        objetivo_qh = horas_a_qh(horas_objetivo)
-        cota_qh = cota_maxima_qh_por_turno * len(TURNOS) * len(dias)
-        cota_var = max(objetivo_qh, cota_qh, 1)
-
-        deficit = modelo.NewIntVar(0, cota_var, f'DeficitHoras_{etiqueta}')
-        exceso = modelo.NewIntVar(0, cota_var, f'ExcesoHoras_{etiqueta}')
-        modelo.Add(expr_horas_trabajadas_qh(dias) - objetivo_qh == exceso - deficit)
-    
-        return deficit, exceso, cota_var
-
-    terminos_horas = []
 
     for d in dias_abiertos:
-        deficit, exceso, cota = anadir_termino_horas(
-            [d], calendario.horas_necesarias.get(d, 0.0), f'D{d}'
-        )
-        terminos_horas.append((deficit, exceso, cota))
+        objetivo_dia_qh = horas_a_qh(calendario.horas_necesarias.get(d, 0.0))
+        cota_dia = max(objetivo_dia_qh * 3, horas_a_qh(50), 1)
+        deficit_dia = modelo.NewIntVar(0, cota_dia, f'DeficitDia_{d}')
+        exceso_dia = modelo.NewIntVar(0, cota_dia, f'ExcesoDia_{d}')
+        modelo.Add(expr_horas_qh(ids_todos, [d]) - objetivo_dia_qh == exceso_dia - deficit_dia)
+        terminos_penalizacion.append(PESO_DEFICIT_DIA * deficit_dia + PESO_EXCESO_DIA * exceso_dia)
 
-    if objetivo_horas_por_mes:
-        dias_por_mes_orden = {}
-        for d in dias_abiertos:
-            dias_por_mes_orden.setdefault((d.year, d.month), []).append(d)
+    # SE DEBEN DE CUMPLIR LAS HORAS MENSUALES
+    dias_por_mes = {}
+    for d in dias_abiertos:
+        dias_por_mes.setdefault((d.year, d.month), []).append(d)
 
-        for indice, clave_mes in enumerate(sorted(dias_por_mes_orden.keys()), start=1):
-            objetivo = objetivo_horas_por_mes.get(indice)
-            if objetivo is None:
-                continue
-            deficit, exceso, cota = anadir_termino_horas(
-                dias_por_mes_orden[clave_mes], objetivo, f'Mes{clave_mes[0]}_{clave_mes[1]}'
-            )
-            terminos_horas.append((deficit, exceso, cota))
-
-    penalizacion_horas = sum(
-        PESO_DEFICIT_HORAS * deficit + PESO_EXCESO_HORAS * exceso
-        for deficit, exceso, _ in terminos_horas
-    )
-
-    cota_penalizacion_maxima = sum(
-        max(PESO_DEFICIT_HORAS, PESO_EXCESO_HORAS) * cota for _, _, cota in terminos_horas
-    )
-    PESO_COBERTURA = cota_penalizacion_maxima + 1
-    
-
-    # RESTRICCIÓN
-    # Intentamos que los trabajadores tengan la misma tarea toda la semana
-    
-    PESO_CONSISTENCIA_NORMAL = 1
-    PESO_CONSISTENCIA_PRIORITARIO = 3  # id_contrato == 1
-
-    bonus_consistencia_terminos = []  # (peso, var_max_dias_en_una_tarea)
-
-    for t in ids_trabajadores:
-        tareas_permitidas_t = habilidades.get(t, [])
-        if len(tareas_permitidas_t) <= 1:
-            
+    for indice, (clave_mes, dias_mes) in enumerate(sorted(dias_por_mes.items()), start=1):
+        obj = objetivo_horas_por_mes.get(indice)
+        if not obj:
             continue
 
-        peso = PESO_CONSISTENCIA_PRIORITARIO if trabajadores[t].id_contrato == 1 else PESO_CONSISTENCIA_NORMAL
+        etiqueta = f'Mes{clave_mes[0]}_{clave_mes[1]}'
+
+        # Horas ordinarias
+        expr_ho = expr_horas_qh(ids_trabajadores, dias_mes)
+        objetivo_ho_qh = horas_a_qh(obj.get("ordinarias", 0.0))
+        cota_ho = max(objetivo_ho_qh * 2, 1)
+
+        deficit_ho = modelo.NewIntVar(0, cota_ho, f'DeficitHO_{etiqueta}')
+        exceso_ho = modelo.NewIntVar(0, cota_ho, f'ExcesoHO_{etiqueta}')
+        modelo.Add(expr_ho - objetivo_ho_qh == exceso_ho - deficit_ho)
+        terminos_penalizacion.append(PESO_DEFICIT_HO * deficit_ho + PESO_EXCESO_HO * exceso_ho)
+
+        # Horas complementarias - el máximo es por persona un 60% de esas horas
+        ids_comp = [
+            t for t in ids_trabajadores
+            if todos_trabajadores[t].id_contrato in CONTRATOS_COMPLEMENTARIAS
+            and t in horas_turno_qh
+        ]
+
+        for t in ids_comp:
+            max_posible = horas_turno_qh[t] * len(dias_mes) * len(TURNOS)
+            total_t = sum(
+                horas_turno_qh[t] * turnos_asignados[(t, d, s)]
+                for d in dias_mes
+                for s in TURNOS
+            )
+            var_ho_t = modelo.NewIntVar(0, max_posible, f'HO_T{t}_{etiqueta}')
+            modelo.Add(var_ho_t == total_t)
+            pass
+
+        if obj.get("complementarias", 0) > 0 and ids_comp:
+            
+            tope_semanal_h = {
+                2: 37.5,
+                4: 25.0,
+                5: 15.0,
+                6: 15.0,
+            }
+            num_semanas_aprox = max(1, len(dias_mes) // 7 + (1 if len(dias_mes) % 7 else 0))
+
+            for t in ids_comp:
+                contrato = todos_trabajadores[t].id_contrato
+                tope_ord_mes = tope_semanal_h.get(contrato, 20.0) * num_semanas_aprox
+                tope_total_mes_qh = horas_a_qh(tope_ord_mes * (1.0 + PORCENTAJE_MAX_COMPLEMENTARIAS))
+                total_t = sum(
+                    horas_turno_qh[t] * turnos_asignados[(t, d, s)]
+                    for d in dias_mes
+                    for s in TURNOS
+                )
+                modelo.Add(total_t <= tope_total_mes_qh)
+
+            
+            objetivo_hc_qh = horas_a_qh(obj["complementarias"])
+            
+            cota_hc = max(objetivo_hc_qh * 3, 1)
+            
+            expr_comp = expr_horas_qh(ids_comp, dias_mes)
+            
+            deficit_hc = modelo.NewIntVar(0, cota_hc, f'DeficitHC_{etiqueta}')
+            exceso_hc = modelo.NewIntVar(0, cota_hc, f'ExcesoHC_{etiqueta}')
+            
+
+            modelo.Add(expr_comp >= 0) 
+            terminos_penalizacion.append(PESO_DEFICIT_HC * deficit_hc + PESO_EXCESO_HC * exceso_hc)
+
+        # Horas fijos discontinuos
+        if obj.get("fijo_discontinuo", 0) > 0 and ids_trabajadores_fd:
+            expr_hfd = expr_horas_qh(ids_trabajadores_fd, dias_mes)
+            objetivo_hfd_qh = horas_a_qh(obj["fijo_discontinuo"])
+            cota_hfd = max(objetivo_hfd_qh * 2, 1)
+
+            deficit_hfd = modelo.NewIntVar(0, cota_hfd, f'DeficitHFD_{etiqueta}')
+            exceso_hfd = modelo.NewIntVar(0, cota_hfd, f'ExcesoHFD_{etiqueta}')
+            modelo.Add(expr_hfd - objetivo_hfd_qh == exceso_hfd - deficit_hfd)
+            terminos_penalizacion.append(
+                PESO_DEFICIT_HFD * deficit_hfd + PESO_EXCESO_HFD * exceso_hfd
+            )
+        elif ids_trabajadores_fd:
+            # Si no hay objetivo HFD este mes, no asignar (o asignar muy poco)
+            for t in ids_trabajadores_fd:
+                for d in dias_mes:
+                    for s in TURNOS:
+                        modelo.Add(turnos_asignados[(t, d, s)] == 0)
+
+    # RESTRICCIÓN (pero esta es blanda) - intentar que se asigne a la misma tarea una misma persona
+    PESO_CONSISTENCIA_NORMAL = 1
+    PESO_CONSISTENCIA_PRIORITARIO = 5
+
+    bonus_consistencia_terminos = []
+
+    for t in ids_todos:
+        tareas_permitidas_t = habilidades.get(t, [])
+        if len(tareas_permitidas_t) <= 1:
+            continue
+
+        peso = (
+            PESO_CONSISTENCIA_PRIORITARIO
+            if todos_trabajadores[t].id_contrato == 1
+            else PESO_CONSISTENCIA_NORMAL
+        )
 
         for num_semana, dias_semana in semanas_completas.items():
             dias_en_tarea_vars = []
@@ -633,26 +684,15 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
                 dias_en_tarea_vars.append(var_dias_en_tarea)
 
             if len(dias_en_tarea_vars) <= 1:
-                continue  
+                continue
 
-            max_dias_en_una_tarea = modelo.NewIntVar(0, len(dias_semana), f'MaxTareaSemana_T{t}_W{num_semana}')
+            max_dias_en_una_tarea = modelo.NewIntVar(
+                0, len(dias_semana), f'MaxTareaSemana_T{t}_W{num_semana}'
+            )
             modelo.AddMaxEquality(max_dias_en_una_tarea, dias_en_tarea_vars)
             bonus_consistencia_terminos.append((peso, max_dias_en_una_tarea, len(dias_semana)))
 
-    # RESTRICCION
-    # - Tope de días para fijos discontinuos
-
-    for t in ids_trabajadores_fd:
-        for num_semana, dias_semana in semanas_completas.items():
-            dias_abiertos_sem = [d for d in dias_semana if not calendario.cerrado[d]]
-            if dias_abiertos_sem:
-                modelo.Add(
-                    sum(trabaja[(t, d)] for d in dias_abiertos_sem)
-                    <= MAX_DIAS_SEMANA_FIJO_DISCONTINUO
-                )
-
-    # RESTRICCIÓN
-    # Máximo de 22 domingos y festivos trabajados al año para trabajadores con más de tres días de trabajo semanales (para id_contratos 1, 2, 5 y 6)
+    # RESTRICCIÓN - máximo de 22 días en el caso de que sea el contrato 1 y 2
 
     MAX_DOMINGOS = 22
     CONTRATO_LIMITE_DOMINGOS = {1, 2}
@@ -660,7 +700,7 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
     todos_domingos = [d for d in calendario.dias if d.weekday() == 6]
 
     for t in ids_trabajadores:
-        if trabajadores[t].id_contrato not in CONTRATO_LIMITE_DOMINGOS:
+        if todos_trabajadores[t].id_contrato not in CONTRATO_LIMITE_DOMINGOS:
             continue
         terminos_domingo = []
         for d in todos_domingos:
@@ -671,20 +711,27 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
         if terminos_domingo:
             modelo.Add(sum(terminos_domingo) <= MAX_DOMINGOS)
 
-    # RESTRICCIÓN
-    # Los trabajadores con más de cinco días de trabajo semanales deberán disfrutar de 9 fines de semana completos (sábado y domingo) de descanso al año.
-    # - Cada 4 semanas un sábado y un domingo libres.
-    # - Cada 4 semanas un domingo y lunes libres.
-   
+    # OBJETIVO
+    penalizacion_horas = sum(terminos_penalizacion)
+
+    cota_penalizacion_maxima = 1
+    for term in terminos_penalizacion:
+        cota_penalizacion_maxima += 10_000
+    PESO_COBERTURA = cota_penalizacion_maxima + 1
 
 
-    modelo.Maximize(PESO_COBERTURA * sum(tareas_cubiertas_total) - penalizacion_horas)
+    bonus_consistencia = sum(
+        peso * var_max for peso, var_max, _ in bonus_consistencia_terminos
+    )
 
-    
-    # Resolvemos el modelo
+    modelo.Maximize(
+        PESO_COBERTURA * sum(tareas_cubiertas_total)
+        - penalizacion_horas
+        + bonus_consistencia
+    )
+
+
     solver = cp_model.CpSolver()
-
-    # Limitamos el tiempo
     solver.parameters.max_time_in_seconds = 120
     solver.parameters.num_search_workers = os.cpu_count() or 8
     solver.parameters.log_search_progress = True
@@ -692,15 +739,16 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
     estado = solver.Solve(modelo)
 
     if solver.StatusName(estado) == "FEASIBLE":
-            print(f"Aviso: se alcanzó el límite de tiempo ({solver.parameters.max_time_in_seconds}s) "
-                  f"sin demostrar optimalidad. Se usa la mejor solución encontrada "
-                  f"(cobertura = {solver.ObjectiveValue()}/{len(tareas_cubiertas_total)}).")
-
-    # Mostrar resultados
+        print(
+            f"Aviso: se alcanzó el límite de tiempo ({solver.parameters.max_time_in_seconds}s) "
+            f"sin demostrar optimalidad. Se usa la mejor solución encontrada "
+            f"(cobertura = {solver.ObjectiveValue()}/{len(tareas_cubiertas_total)})."
+        )
 
     if estado == cp_model.OPTIMAL or estado == cp_model.FEASIBLE:
-    
-        for t in ids_trabajadores:
+
+        # Actualizar rachas
+        for t in ids_todos:
             racha_actual = 0
             racha_maxima = 0
             dia_anterior = None
@@ -718,34 +766,56 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
                 racha_maxima = max(racha_maxima, racha_actual)
                 dia_anterior = d
 
-            trabajadores[t].dias_seguidos_trabajados = racha_maxima
+            todos_trabajadores[t].dias_trabajados_seguidos = racha_maxima
 
+
+        print("\nResumen de las horas por mes")
+        for indice, (clave_mes, dias_mes) in enumerate(sorted(dias_por_mes.items()), start=1):
+            obj = objetivo_horas_por_mes.get(indice, {})
+            ho_real = sum(
+                qh_a_horas(horas_turno_qh[t]) * solver.Value(turnos_asignados[(t, d, s)])
+                for d in dias_mes for s in TURNOS for t in ids_trabajadores
+                if t in horas_turno_qh
+            )
+            hfd_real = sum(
+                qh_a_horas(horas_turno_qh[t]) * solver.Value(turnos_asignados[(t, d, s)])
+                for d in dias_mes for s in TURNOS for t in ids_trabajadores_fd
+                if t in horas_turno_qh
+            )
+            print(
+                f"  Mes {clave_mes[0]}-{clave_mes[1]:02d}: "
+                f"HO objetivo={obj.get('ordinarias', 0):.1f} real={ho_real:.1f} | "
+                f"HC objetivo={obj.get('complementarias', 0):.1f} | "
+                f"HFD objetivo={obj.get('fijo_discontinuo', 0):.1f} real={hfd_real:.1f}"
+            )
+
+        # Mostrar primeros 7 días
         primeros_dias = dias_abiertos[:7]
-        for d in primeros_dias: 
+        for d in primeros_dias:
             print(f'\n--- Día {d} ---')
-            for t in ids_trabajadores:
+            for t in ids_todos:
                 for s in TURNOS:
                     if solver.Value(turnos_asignados[(t, d, s)]) == 1:
-                        # Buscamos qué tarea tiene asignada
                         tarea_realizada = None
                         for id_tarea in ids_tareas:
                             if solver.Value(tarea_asignada[(t, d, id_tarea)]) == 1:
                                 tarea_realizada = id_tarea
                                 break
-                        
-                        print(f'Trabajador {t} asignado al turno {s} - Tarea {tarea_realizada}')
+                        tipo = "FD" if t in ids_trabajadores_fd else "ORD"
+                        print(
+                            f'Trabajador {t} ({tipo}) asignado al turno {s} - Tarea {tarea_realizada}'
+                        )
+
+        # Descomentar para guardar en BD
         '''
         guardar_calendarizacion(
-                    solver, calendario, ids_trabajadores, ids_tareas,
-                    dias_abiertos, turnos_asignados, tarea_asignada,
-                )
+            solver, calendario, ids_todos, ids_tareas,
+            dias_abiertos, turnos_asignados, tarea_asignada,
+        )
         '''
-        
+
     else:
         print("No factible")
-
-
-
 
 
 if __name__ == '__main__':
@@ -762,7 +832,7 @@ if __name__ == '__main__':
     sys.modules[spec.name] = optimizacion_final
     spec.loader.exec_module(optimizacion_final)
 
-    indice_desviacion = 1.3
+    indice_desviacion = 1.1
 
     X_HO_1 = optimizacion_final.X_HO[1]
     X_HO_2 = optimizacion_final.X_HO[2]
@@ -783,47 +853,54 @@ if __name__ == '__main__':
         "X_HC_3": X_HC_3.varValue,
         "X_HFD_1": X_HFD_1.varValue,
         "X_HFD_2": X_HFD_2.varValue,
-        "X_HFD_3": X_HFD_3.varValue ,
+        "X_HFD_3": X_HFD_3.varValue,
     }
 
-
-    trabajadores = cargar_trabajadores()
+    trabajadores = cargar_trabajadores(fijo_discontinuo=0)
+    trabajadores_fd = cargar_trabajadores(fijo_discontinuo=1)
     calendario = cargar_calendario()
     calendario_trabajadores = cargar_estado_trabajador()
     tareas = cargar_tareas()
     habilidades = cargar_habilidades()
 
     objetivo_horas_por_mes = {
-            1: {
-        "ordinarias": round(X_HO_1.varValue / indice_desviacion),
-        "complementarias": round(X_HC_1.varValue / indice_desviacion) if X_HC_1.varValue else 0,
-        "fijo_discontinuo": round(X_HFD_1.varValue / indice_desviacion) if X_HFD_1.varValue else 0,
-    },
-    2: {
-        "ordinarias": round(X_HO_2.varValue / indice_desviacion),
-        "complementarias": round(X_HC_2.varValue / indice_desviacion) if X_HC_2.varValue else 0,
-        "fijo_discontinuo": round(X_HFD_2.varValue / indice_desviacion) if X_HFD_2.varValue else 0,
-    },
-    3: {
-        "ordinarias": round(X_HO_3.varValue / indice_desviacion),
-        "complementarias": round(X_HC_3.varValue / indice_desviacion) if X_HC_3.varValue else 0,
-        "fijo_discontinuo": round(X_HFD_3.varValue / indice_desviacion) if X_HFD_3.varValue else 0,
-    },
-}
+        1: {
+            "ordinarias": round((X_HO_1.varValue or 0) / indice_desviacion),
+            "complementarias": round((X_HC_1.varValue or 0) / indice_desviacion),
+            "fijo_discontinuo": round((X_HFD_1.varValue or 0) / indice_desviacion),
+        },
+        2: {
+            "ordinarias": round((X_HO_2.varValue or 0) / indice_desviacion),
+            "complementarias": round((X_HC_2.varValue or 0) / indice_desviacion),
+            "fijo_discontinuo": round((X_HFD_2.varValue or 0) / indice_desviacion),
+        },
+        3: {
+            "ordinarias": round((X_HO_3.varValue or 0) / indice_desviacion),
+            "complementarias": round((X_HC_3.varValue or 0) / indice_desviacion),
+            "fijo_discontinuo": round((X_HFD_3.varValue or 0) / indice_desviacion),
+        },
+    }
+
+    print("Objetivos mensuales (tras índice de desviación):")
+    for k, v in objetivo_horas_por_mes.items():
+        print(f"  Mes {k}: HO={v['ordinarias']}, HC={v['complementarias']}, HFD={v['fijo_discontinuo']}")
+
+    print(f"\nTrabajadores ordinarios: {len(trabajadores)}")
+    print(f"Trabajadores fijos discontinuos: {len(trabajadores_fd)}")
+
     crear_calendario_base(
-        trabajadores, 
+        trabajadores,
         trabajadores_fd,
-        calendario, 
-        calendario_trabajadores, 
-        tareas, 
+        calendario,
+        calendario_trabajadores,
+        tareas,
         habilidades,
         objetivo_horas_por_mes=objetivo_horas_por_mes,
     )
 
-
-# Cosas que faltan
-# Que por lo menos hayan 5 personas por la mañana
-# Completar las restricciones que están marcadas como que faltan
-# 
-
-    
+# Cosas que faltan / mejoras pendientes
+# - Mínimo 5 personas por la mañana
+# - Separar de forma explícita horas ordinarias vs complementarias por trabajador
+#   (ahora el tope del 60 % se aplica como tope total = jornada teórica × 1.6)
+# - Guardar en BD si la hora es ordinaria o complementaria
+# - Completar restricciones de fines de semana (9 fines de semana libres, etc.)
