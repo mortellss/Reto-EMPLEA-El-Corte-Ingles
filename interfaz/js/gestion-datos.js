@@ -1,20 +1,17 @@
 
 const skills = [
-    "Runner",
-    "Dev a tienda",
-    "Consola",
-    "Dev EDIG",
-    "ECI Express",
-    "C&CAR",
+    "Runner + Dev a tienda",
+    "ECI Express + Click&Car",
     "Home Delivery",
-    "Site to Store",
     "Derivadas",
-    "Gestión de mostrador",
+    "Encargos Muro",
+    "Expedicion",
     "Mostrador",
+    "Consola + Devoluciones EDIG",
+    "Casos Sales Force",
     "Informar",
-    "Informar encargos del muro",
-    "Informar palets",
-    "Sales Force"
+    "Gestión Mostrador",
+    "Site To Store"
 ];
 
 const skillsContainer = document.getElementById("skills-list");

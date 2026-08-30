@@ -29,6 +29,24 @@ df_pedidos["total_lineas"] = pd.to_numeric(
 ).fillna(0)
 df_pedidos["mes"] = df_pedidos["fecha"].dt.to_period("M")
 
+
+query_calendario = """
+SELECT 
+    fecha, 
+    centro_abierto,
+    es_festivo,
+    dia_posterior_festivo
+FROM calendario
+WHERE id_centro = 1
+"""
+df_calendario = pd.read_sql(query_calendario, con=engine)
+df_calendario['fecha'] = pd.to_datetime(df_calendario['fecha'])
+df_calendario = df_calendario.drop_duplicates(subset=['fecha'], keep='last').sort_values('fecha').reset_index(drop=True)
+df_calendario['centro_cerrado'] = 1 - df_calendario['centro_abierto']
+
+df_final = pd.merge(df_pedidos, df_calendario, on='fecha', how='left')
+
+
 pedidos_mes = (
 	df_pedidos.groupby("mes", as_index=True)["total_lineas"]
 	.sum()
@@ -68,18 +86,24 @@ horas_fijas_diarias = (
 )
 horas_por_pedido = horas_pedidos + porcentaje_devoluciones * horas_gestion_devoluciones
 
-horas_mes = pedidos_mes * horas_por_pedido + horas_fijas_diarias * 30
+df_final['horas_necesarias'] = (df_final['total_lineas'] * horas_por_pedido) + horas_fijas_diarias
 
-resultado = pd.DataFrame(
-	{
-		"total_lineas": pedidos_mes,
-		"horas_necesarias": horas_mes,
-	}
+df_final['centro_abierto'] = df_final['centro_abierto'].fillna(1)
+df_final.loc[df_final['centro_abierto'] == 0, 'horas_necesarias'] = 0
+
+resultado = df_final.groupby("mes").agg(
+    total_lineas=('total_lineas', 'sum'),
+    horas_necesarias=('horas_necesarias', 'sum')
+).reindex(
+    pd.period_range(
+        f"{year}-{mes_inicial:02d}", periods=meses_a_calcular, freq="M"
+    ),
+    fill_value=0,
 )
 
-print(f"Total pedido: {pedidos_mes}")
+
 print(f"Horas por pedido: {horas_por_pedido:.9f}")
 print(f"\nHoras necesarias por mes de los primeros {meses_a_calcular} meses de {year}:")
 print(resultado.to_string(float_format=lambda valor: f"{valor:.2f}"))
-print(f"\nTotal pedidos de los primeros {meses_a_calcular} meses de {year}: {pedidos_mes.sum():.0f}")
-print(f"Total horas: {horas_mes.sum():.2f}")
+print(f"\nTotal pedidos de los primeros {meses_a_calcular} meses de {year}: {resultado['total_lineas'].sum():.0f}")
+print(f"Total horas: {resultado['horas_necesarias'].sum():.2f}")

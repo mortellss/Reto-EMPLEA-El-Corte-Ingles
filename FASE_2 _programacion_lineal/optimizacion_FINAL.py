@@ -2,11 +2,19 @@ from sqlalchemy import create_engine
 import pandas as pd
 import pulp
 import math
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+usuario = os.getenv("DB_USER")
+password = os.getenv("DB_PASSWORD")
+
+engine = create_engine(
+    f"mysql+pymysql://{usuario}:{password}@localhost/emplea"
+)
 
 
-# CÓDIGO VÁLIDO PARA LOS MESES QUE SE QUIERAN
-
-engine = create_engine("mysql+pymysql://root:root2004@localhost/emplea")
 
 # Tipos de jornada 
 
@@ -17,6 +25,8 @@ FROM trabajador
 
 df_trabajadores = pd.read_sql(query_trabajadores, con=engine)
 count_tipos_contratos = df_trabajadores['id_contrato'].value_counts().to_dict()
+print(count_tipos_contratos)
+
 
 num_trabajadores_100_C = count_tipos_contratos.get(1)
 horas_100 = 37.5 * 4
@@ -93,7 +103,7 @@ df_prediccion['pedidos_acumulados'] = pd.to_numeric(df_prediccion['pedidos_acumu
 df_prediccion = df_prediccion.sort_values('fecha').reset_index(drop=True)
 df_prediccion['mes'] = df_prediccion['fecha'].dt.to_period('M')
 
-meses_horizonte = df_prediccion['mes'].drop_duplicates().tolist()[:NUM_MESES]
+meses_horizonte = (df_prediccion['mes'].drop_duplicates()).tolist()[:NUM_MESES]
 
 if len(meses_horizonte) < NUM_MESES:
     raise ValueError(f"No hay {NUM_MESES} meses de predicción para calcular el horizonte completo")
@@ -230,7 +240,6 @@ for mes in meses_horizonte:
     else:
         meses_en_periodo_fd.append(False)
 
-
 # Aplicamos restricciones para cada uno de los 12 meses.
 for mes in meses:
     if not meses_en_periodo_fd[mes - 1]:
@@ -243,11 +252,14 @@ prob.solve()
 
 print("Estado del modelo:", pulp.LpStatus[prob.status], "\n")
 
+# Creamos un índice para eliminar las desviaciones que puedan haber debido a los errores en la medición del tiempo
+
+index = 0.15
 
 
 for indice, periodo in enumerate(meses_horizonte, start=1):
-    print(f"{periodo}: horas ordinarias={round(X_HO[indice].varValue)}, "
-          f"complementarias={round(X_HC[indice].varValue)}, "
-          f"FD={round(X_HFD[indice].varValue / 5) * 5}")
+    print(f"{periodo}: horas ordinarias={round((X_HO[indice].varValue) / (1 + index))}, "
+          f"complementarias={round((X_HC[indice].varValue) / (1 + index))}, "
+          f"FD={round(((X_HFD[indice].varValue / 5) * 5) / ( 1 + index))}")
 
 

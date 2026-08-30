@@ -1,0 +1,6 @@
+trabajadores = cargar_trabajadores()
+calendario = cargar_calendario()
+calendario_trabajadores = cargar_estado_trabajador()
+tareas = cargar_tareas()
+habilidades = cargar_habilidades()
+crear_ca
