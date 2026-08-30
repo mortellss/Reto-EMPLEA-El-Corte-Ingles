@@ -406,7 +406,7 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
     for d in dias_abiertos:
         total_manana = sum(turnos_asignados[(t, d, TURNO_MANANA)] for t in ids_trabajadores)
         total_tarde = sum(turnos_asignados[(t, d, TURNO_TARDE)] for t in ids_trabajadores)
-        modelo.Add(total_manana >= total_tarde + 1)
+        modelo.Add(total_manana * 10 >= total_tarde * 6)
 
 
     # RESTRICCION
@@ -461,7 +461,6 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
         cerrados = sum(1 for d in dias_reales if calendario.cerrado[d])
         abiertos = [d for d in dias_reales if not calendario.cerrado[d]]
         return cerrados, abiertos
-
     
             
     def anadir_restriccion_descanso(t, dias_reales, cuota):
@@ -515,6 +514,8 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
                 
                 cap = CAPACIDAD_MAXIMA_TAREA.get(id_tarea, CAPACIDAD_MAXIMA_DEFECTO)
                 modelo.Add(sum(trabajadores_en_tarea_y_turno) <= cap)
+
+                
 
                 tarea_cubierta = modelo.NewBoolVar(f'Cubierta_D{d}_S{s}_Tar{id_tarea}')
                 modelo.Add(sum(trabajadores_en_tarea_y_turno) >= 1).OnlyEnforceIf(tarea_cubierta)
@@ -710,11 +711,13 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
                                 break
                         
                         print(f'Trabajador {t} asignado al turno {s} - Tarea {tarea_realizada}')
-        
+
+        '''
         guardar_calendarizacion(
                     solver, calendario, ids_trabajadores, ids_tareas,
                     dias_abiertos, turnos_asignados, tarea_asignada,
                 )
+        '''
         
         
     else:
