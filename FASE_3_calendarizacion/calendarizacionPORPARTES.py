@@ -124,11 +124,11 @@ def horas_a_qh(h: float) -> int:
 def qh_a_horas(qh: int) -> float:
     return qh / QH
 
-def cargar_trabajadores(fijo_discontinuo: int = 0):
+def cargar_trabajadores():
     query_trabajadores = """
     SELECT id_trabajador, nombre, disponibilidad, id_contrato
     FROM trabajador
-    WHERE activo = 1 AND fijo_discontinuo = {fijo_discontinuo}
+    WHERE activo = 1 AND fijo_discontinuo = 0
     """
 
     query_calendario_trabajadores = """
@@ -343,11 +343,11 @@ def guardar_calendarizacion(solver, calendario, ids_trabajadores, ids_tareas,
           f"({dias_abiertos[0]} a {dias_abiertos[-1]}).")
 
 
-def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_trabajadores, tareas, habilidades, objetivo_horas_por_mes):
+def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tareas, habilidades, objetivo_horas_por_mes):
 
     ids_trabajadores = list(trabajadores.keys())           # ordinarios
-    ids_trabajadores_fd = list(trabajadores_fd.keys())     # fijos discontinuos
-    ids_todos = ids_trabajadores + ids_trabajadores_fd
+    #ids_trabajadores_fd = list(trabajadores_fd.keys())     # fijos discontinuos
+    #ids_todos = ids_trabajadores + ids_trabajadores_fd
     
     dias_abiertos = [d for d in calendario.dias if not calendario.cerrado[d]]
     
@@ -492,12 +492,6 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
                 continue
             dias_par = dias_reales_por_semana[num_semana] + dias_reales_por_semana[num_semana + 1]
             anadir_restriccion_descanso(t, dias_par, MIN_DESCANSO_DOS_SEMANAS)
-    
-    # RESTRICCIÓN 
-    # - Si el trabajador no tiene vacaciones esa semana debe completar sus horas semanales
-
-    
-
 
     # RESTRICCIÓN -
     # Si un trabajador tiene un turno asignado en el día, debe tener asignada exactamente una tarea.
@@ -542,8 +536,8 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
         horas_turno = HORAS_POR_TURNO_CONTRATO.get(trabajadores[t].id_contrato)
         if horas_turno is not None:
             horas_turno_qh_trabajador[t] = horas_a_qh(horas_turno)
-    for t in ids_trabajadores_fd:
-        horas_turno_qh_trabajador[t] = horas_a_qh(HORAS_POR_TURNO_CONTRATO[3])  # 4 h
+    #for t in ids_trabajadores_fd:
+    #    horas_turno_qh_trabajador[t] = horas_a_qh(HORAS_POR_TURNO_CONTRATO[3])  # 4 h
 
     cota_maxima_qh_por_turno = sum(horas_turno_qh_trabajador.values())
 
@@ -642,6 +636,7 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
     # RESTRICCION
     # - Tope de días para fijos discontinuos
 
+    '''
     for t in ids_trabajadores_fd:
         for num_semana, dias_semana in semanas_completas.items():
             dias_abiertos_sem = [d for d in dias_semana if not calendario.cerrado[d]]
@@ -650,6 +645,7 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
                     sum(trabaja[(t, d)] for d in dias_abiertos_sem)
                     <= MAX_DIAS_SEMANA_FIJO_DISCONTINUO
                 )
+    '''
 
     # RESTRICCIÓN
     # Máximo de 22 domingos y festivos trabajados al año para trabajadores con más de tres días de trabajo semanales (para id_contratos 1, 2, 5 y 6)
@@ -734,12 +730,12 @@ def crear_calendario_base(trabajadores, trabajadores_fd, calendario, calendario_
                                 break
                         
                         print(f'Trabajador {t} asignado al turno {s} - Tarea {tarea_realizada}')
-        '''
+        
         guardar_calendarizacion(
                     solver, calendario, ids_trabajadores, ids_tareas,
                     dias_abiertos, turnos_asignados, tarea_asignada,
                 )
-        '''
+        
         
     else:
         print("No factible")
@@ -811,8 +807,7 @@ if __name__ == '__main__':
     },
 }
     crear_calendario_base(
-        trabajadores, 
-        trabajadores_fd,
+        trabajadores,
         calendario, 
         calendario_trabajadores, 
         tareas, 
@@ -820,10 +815,3 @@ if __name__ == '__main__':
         objetivo_horas_por_mes=objetivo_horas_por_mes,
     )
 
-
-# Cosas que faltan
-# Que por lo menos hayan 5 personas por la mañana
-# Completar las restricciones que están marcadas como que faltan
-# 
-
-    
