@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMPLEA | Planificación</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/planificacion.css') }}">
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='img/logo.webp') }}" alt="Logo">
+        </div>
+
+        <nav>
+            <a href="{{ url_for('dashboard') }}">
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{{ url_for('gestion_datos') }}">
+                <i class="fa-solid fa-users"></i>
+                <span>Gestión de datos</span>
+            </a>
+
+            <a href="{{ url_for('historicos') }}">
+                <i class="fa-solid fa-database"></i>
+                <span>Datos históricos</span>
+            </a>
+
+            <a href="{{ url_for('prediccion') }}">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Predicción</span>
+            </a>
+
+            <a href="{{ url_for('planificacion') }}" class="active">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Planificación</span>
+            </a>
+
+            <a href="{{ url_for('configuracion') }}">
+                <i class="fa-solid fa-gear"></i>
+                <span>Configuración</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <h2>Planificación</h2>
+                <p>Consulta y organiza la planificación semanal de los trabajadores.</p>
+            </div>
+
+            <div class="user">
+                <button>
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+
+                <div class="user-info">
+                    <span>Usuario</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="content">
+
+            <div class="planning-header">
+                <div>
+                    <h2>Planificación semanal</h2>
+                    <p>Distribución de trabajadores por días, turnos y tareas.</p>
+                </div>
+
+                <div class="week-selector">
+                    <button type="button" id="semanaAnterior" class="secondary-button">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+
+                    <div class="week-info">
+                        <span id="semanaActual">Semana del 22 al 27 de junio</span>
+                    </div>
+
+                    <button type="button" id="semanaSiguiente" class="secondary-button">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="planning-legend">
+                <div class="legend-item">
+                    <span class="legend-color trabajador-normal"></span>
+                    <span>Trabajador</span>
+                </div>
+
+                <div class="legend-item">
+                    <span class="legend-color fijo-discontinuo"></span>
+                    <span>Fijo discontinuo</span>
+                </div>
+            </div>
+
+            <!-- MAÑANAS -->
+
+            <section class="planning-section">
+                <div class="planning-section-header">
+                    <h2>
+                        <i class="fa-solid fa-sun"></i>
+                        Turnos de mañana
+                    </h2>
+                    <p>Trabajadores asignados al turno de mañana.</p>
+                </div>
+
+                <div class="planning-table-container">
+                    <table class="planning-table">
+                        <thead id="cabeceraMananas"></thead>
+                        <tbody id="tablaMananas"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TARDES -->
+
+            <section class="planning-section">
+                <div class="planning-section-header">
+                    <h2>
+                        <i class="fa-solid fa-moon"></i>
+                        Turnos de tarde
+                    </h2>
+                    <p>Trabajadores asignados al turno de tarde.</p>
+                </div>
+
+                <div class="planning-table-container">
+                    <table class="planning-table">
+                        <thead id="cabeceraTardes"></thead>
+                        <tbody id="tablaTardes"></tbody>
+                    </table>
+                </div>
+            </section>
+
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/planificacion.js') }}"></script>
+</body>
+</html>
