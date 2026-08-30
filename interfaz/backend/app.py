@@ -3,28 +3,12 @@ from sqlalchemy import text
 import pandas as pd
 from db import engine
 from io import BytesIO
-from dotenv import load_dotenv
-import os
-from sqlalchemy import create_engine
-
 
 
 app = Flask(__name__)
 
 
-<<<<<<< HEAD
-load_dotenv()
-usuario = os.getenv("DB_USER")
-password = os.getenv("DB_PASSWORD")
-
-print(f"ATENCIÓN - Intentando conectar con usuario: {usuario} y contraseña: {password}")
-
-engine = create_engine(f"mysql+pymysql://{usuario}:{password}@localhost/emplea")
-
-# ------------------------
-=======
 # ============================================================
->>>>>>> f9ec1c2020f9019e97b96b9500240b30acfc967c
 # DASHBOARD
 # ============================================================
 
