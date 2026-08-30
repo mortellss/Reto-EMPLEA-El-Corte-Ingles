@@ -224,6 +224,7 @@ document.addEventListener("DOMContentLoaded",()=>{
                     <td>${encargos??0}</td>
                     <td>${home??0}</td>
                     <td><strong>${total??0}</strong></td>
+                    <td>${p.devoluciones??"—"}</td>
                     <td class="acciones">
                         <button
                             class="edit-button"
@@ -324,7 +325,8 @@ document.addEventListener("DOMContentLoaded",()=>{
             "homePedidos",
             "homeLineas",
             "totalPedidos",
-            "totalLineas"
+            "totalLineas",
+            "devoluciones"
         ].forEach(id=>{
             const elemento=document.getElementById(id);
 
@@ -376,6 +378,9 @@ document.addEventListener("DOMContentLoaded",()=>{
 
             document.getElementById("homeLineas").value=
                 pedido.home_delivery_lineas??0;
+
+            document.getElementById("devoluciones").value=
+                pedido.devoluciones??"";
 
             actualizarTotales();
 
@@ -431,7 +436,12 @@ document.addEventListener("DOMContentLoaded",()=>{
                 Number(document.getElementById("totalPedidos").value)||0,
 
             total_lineas:
-                Number(document.getElementById("totalLineas").value)||0
+                Number(document.getElementById("totalLineas").value)||0,
+
+            devoluciones:
+                document.getElementById("devoluciones").value === ""
+                ? null
+                : Number(document.getElementById("devoluciones").value)
         };
 
         if(!datos.fecha){

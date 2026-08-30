@@ -807,12 +807,11 @@ def crear_calendario_base(
                         )
 
         # Descomentar para guardar en BD
-        '''
+        
         guardar_calendarizacion(
             solver, calendario, ids_todos, ids_tareas,
             dias_abiertos, turnos_asignados, tarea_asignada,
         )
-        '''
 
     else:
         print("No factible")
@@ -898,9 +897,4 @@ if __name__ == '__main__':
         objetivo_horas_por_mes=objetivo_horas_por_mes,
     )
 
-# Cosas que faltan / mejoras pendientes
-# - Mínimo 5 personas por la mañana
-# - Separar de forma explícita horas ordinarias vs complementarias por trabajador
-#   (ahora el tope del 60 % se aplica como tope total = jornada teórica × 1.6)
-# - Guardar en BD si la hora es ordinaria o complementaria
-# - Completar restricciones de fines de semana (9 fines de semana libres, etc.)
+
