@@ -1,0 +1,678 @@
+<<<<<<< HEAD
+/* =========================
+   CABECERA
+========================= */
+
+.planning-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.planning-header h2 {
+    margin: 0 0 5px;
+}
+
+.planning-header p {
+    margin: 0;
+}
+
+
+/* =========================
+   SEMANA
+========================= */
+
+.week-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.week-info {
+    min-width: 230px;
+    text-align: center;
+    font-weight: 500;
+}
+
+
+/* =========================
+   LEYENDA
+========================= */
+
+.planning-legend {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.trabajador-normal {
+    background: #ffffff;
+    border: 1px solid #cccccc;
+}
+
+.fijo-discontinuo {
+    background: #e6c84a;
+    border: none;
+    border-radius: 50%;
+}
+
+/* =========================
+   SECCIONES
+========================= */
+
+.planning-section {
+    margin-bottom: 40px;
+}
+
+.planning-section-header {
+    margin-bottom: 15px;
+}
+
+.planning-section-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 5px;
+}
+
+.planning-section-header p {
+    margin: 0;
+    color: #777;
+    font-size: 14px;
+}
+
+
+/* =========================
+   CONTENEDOR TABLA
+========================= */
+
+.planning-table-container {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 10px;
+}
+
+
+/* =========================
+   TABLA
+========================= */
+
+.planning-table {
+    width: 100%;
+    min-width: 950px;
+    border-collapse: collapse;
+    background: #ffffff;
+    font-size: 13px;
+}
+
+
+/* =========================
+   CABECERA DE DÍAS
+========================= */
+
+.planning-table thead th {
+    background: #087f3f;
+    color: #ffffff;
+    padding: 13px 8px;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid #222;
+    white-space: nowrap;
+}
+
+.planning-table thead th:first-child {
+    width: 190px;
+}
+
+.dia-nombre {
+    display: block;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.dia-numero {
+    display: block;
+    font-size: 12px;
+    margin-top: 3px;
+    color: #ffffff;
+}
+
+
+/* =========================
+   CUERPO DE LA TABLA
+========================= */
+
+.planning-table tbody td {
+    border: 1px solid #c7c7c7;
+    text-align: center;
+    vertical-align: middle;
+}
+
+
+/* =========================
+   COLUMNA TAREA
+========================= */
+
+.tarea-cell {
+    width: 190px;
+    min-width: 190px;
+    padding: 12px 14px;
+    text-align: left !important;
+    background: #e8faf0;
+    font-weight: 600;
+    font-size: 13px;
+    color: #173b2a;
+}
+
+
+/* =========================
+   CELDAS DE PLANIFICACIÓN
+========================= */
+
+.planificacion-cell {
+    min-width: 125px;
+    height: 72px;
+    padding: 5px;
+    background: #ffffff;
+}
+
+
+/* =========================
+   ASIGNACIÓN
+========================= */
+
+.asignacion {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 9px 8px;
+    margin: 0;
+
+    background: transparent;
+}
+
+
+/* =========================
+   NOMBRE DEL TRABAJADOR
+========================= */
+
+.asignacion-nombre {
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.2;
+    color: #172033;
+}
+
+
+/* =========================
+   HORARIO
+========================= */
+
+.asignacion-horario {
+    margin-top: 4px;
+
+    font-size: 12px;
+    font-weight: 400;
+
+    color: #68717d;
+
+    line-height: 1.2;
+}
+
+/* =========================
+   FIJO DISCONTINUO
+========================= */
+
+.asignacion.fijo-discontinuo {
+    background: transparent;
+    border: none;
+}
+
+.asignacion.fijo-discontinuo .asignacion-nombre {
+    color: #172033;
+}
+
+.asignacion.fijo-discontinuo .asignacion-nombre::before {
+    content: "";
+    display: inline-block;
+
+    width: 8px;
+    height: 8px;
+
+    margin-right: 7px;
+
+    border-radius: 50%;
+
+    background: #e6c84a;
+
+    vertical-align: middle;
+}
+
+
+/* =========================
+   SEPARACIÓN ENTRE TRABAJADORES
+========================= */
+
+.planificacion-cell .asignacion + .asignacion {
+    margin-top: 0;
+    padding-top: 9px;
+
+    border-top: 1px solid #d9d9d9;
+}
+
+
+/* =========================
+   SIN ASIGNACIÓN
+========================= */
+
+.sin-asignacion {
+    color: #aaa;
+    font-size: 18px;
+}
+
+
+/* =========================
+   HOVER
+========================= */
+
+.planning-table tbody tr:hover .tarea-cell {
+    background: #dff6e8;
+}
+
+.planning-table tbody td:hover {
+    background: #f7fbf8;
+}
+
+.planning-table tbody td:hover .asignacion {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+
+/* =========================
+   SEPARACIÓN ENTRE TABLAS
+========================= */
+
+.planning-section + .planning-section {
+    margin-top: 45px;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 900px) {
+
+    .planning-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .week-selector {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .planning-table {
+        min-width: 850px;
+    }
+
+=======
+/* =========================
+   CABECERA
+========================= */
+
+.planning-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.planning-header h2 {
+    margin: 0 0 5px;
+}
+
+.planning-header p {
+    margin: 0;
+}
+
+
+/* =========================
+   SEMANA
+========================= */
+
+.week-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.week-info {
+    min-width: 230px;
+    text-align: center;
+    font-weight: 500;
+}
+
+
+/* =========================
+   LEYENDA
+========================= */
+
+.planning-legend {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.trabajador-normal {
+    background: #ffffff;
+    border: 1px solid #cccccc;
+}
+
+.fijo-discontinuo {
+    background: #e6c84a;
+    border: none;
+    border-radius: 50%;
+}
+
+/* =========================
+   SECCIONES
+========================= */
+
+.planning-section {
+    margin-bottom: 40px;
+}
+
+.planning-section-header {
+    margin-bottom: 15px;
+}
+
+.planning-section-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 5px;
+}
+
+.planning-section-header p {
+    margin: 0;
+    color: #777;
+    font-size: 14px;
+}
+
+
+/* =========================
+   CONTENEDOR TABLA
+========================= */
+
+.planning-table-container {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 10px;
+}
+
+
+/* =========================
+   TABLA
+========================= */
+
+.planning-table {
+    width: 100%;
+    min-width: 950px;
+    border-collapse: collapse;
+    background: #ffffff;
+    font-size: 13px;
+}
+
+
+/* =========================
+   CABECERA DE DÍAS
+========================= */
+
+.planning-table thead th {
+    background: #087f3f;
+    color: #ffffff;
+    padding: 13px 8px;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid #222;
+    white-space: nowrap;
+}
+
+.planning-table thead th:first-child {
+    width: 190px;
+}
+
+.dia-nombre {
+    display: block;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.dia-numero {
+    display: block;
+    font-size: 12px;
+    margin-top: 3px;
+    color: #ffffff;
+}
+
+
+/* =========================
+   CUERPO DE LA TABLA
+========================= */
+
+.planning-table tbody td {
+    border: 1px solid #c7c7c7;
+    text-align: center;
+    vertical-align: middle;
+}
+
+
+/* =========================
+   COLUMNA TAREA
+========================= */
+
+.tarea-cell {
+    width: 190px;
+    min-width: 190px;
+    padding: 12px 14px;
+    text-align: left !important;
+    background: #e8faf0;
+    font-weight: 600;
+    font-size: 13px;
+    color: #173b2a;
+}
+
+
+/* =========================
+   CELDAS DE PLANIFICACIÓN
+========================= */
+
+.planificacion-cell {
+    min-width: 125px;
+    height: 72px;
+    padding: 5px;
+    background: #ffffff;
+}
+
+
+/* =========================
+   ASIGNACIÓN
+========================= */
+
+.asignacion {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 9px 8px;
+    margin: 0;
+
+    background: transparent;
+}
+
+
+/* =========================
+   NOMBRE DEL TRABAJADOR
+========================= */
+
+.asignacion-nombre {
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.2;
+    color: #172033;
+}
+
+
+/* =========================
+   HORARIO
+========================= */
+
+.asignacion-horario {
+    margin-top: 4px;
+
+    font-size: 12px;
+    font-weight: 400;
+
+    color: #68717d;
+
+    line-height: 1.2;
+}
+
+/* =========================
+   FIJO DISCONTINUO
+========================= */
+
+.asignacion.fijo-discontinuo {
+    background: transparent;
+    border: none;
+}
+
+.asignacion.fijo-discontinuo .asignacion-nombre {
+    color: #172033;
+}
+
+.asignacion.fijo-discontinuo .asignacion-nombre::before {
+    content: "";
+    display: inline-block;
+
+    width: 8px;
+    height: 8px;
+
+    margin-right: 7px;
+
+    border-radius: 50%;
+
+    background: #e6c84a;
+
+    vertical-align: middle;
+}
+
+
+/* =========================
+   SEPARACIÓN ENTRE TRABAJADORES
+========================= */
+
+.planificacion-cell .asignacion + .asignacion {
+    margin-top: 0;
+    padding-top: 9px;
+
+    border-top: 1px solid #d9d9d9;
+}
+
+
+/* =========================
+   SIN ASIGNACIÓN
+========================= */
+
+.sin-asignacion {
+    color: #aaa;
+    font-size: 18px;
+}
+
+
+/* =========================
+   HOVER
+========================= */
+
+.planning-table tbody tr:hover .tarea-cell {
+    background: #dff6e8;
+}
+
+.planning-table tbody td:hover {
+    background: #f7fbf8;
+}
+
+.planning-table tbody td:hover .asignacion {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+
+/* =========================
+   SEPARACIÓN ENTRE TABLAS
+========================= */
+
+.planning-section + .planning-section {
+    margin-top: 45px;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 900px) {
+
+    .planning-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .week-selector {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .planning-table {
+        min-width: 850px;
+    }
+
+>>>>>>> 7272d8b7712ca2cdbebb1ea46dddda1e4456ff7e
+}
