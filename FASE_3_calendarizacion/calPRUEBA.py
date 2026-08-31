@@ -418,7 +418,7 @@ def guardar_calendarizacion(solver, calendario, ids_trabajadores, ids_tareas,
           f"({dias_abiertos[0]} a {dias_abiertos[-1]}).")
 
 
-def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tareas, habilidades, objetivo_horas_por_mes, objetivo_horas_fd_por_mes=None):
+def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tareas, habilidades, objetivo_horas_por_mes, objetivo_horas_fd_por_mes=None, turnos_fijados=None):
 
     ids_trabajadores = list(trabajadores.keys())
     
@@ -435,6 +435,12 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
             for s in TURNOS:
                 nombre_var = f'T{t}_D{d}_S{s}'
                 turnos_asignados[(t, d, s)] = modelo.NewBoolVar(nombre_var)
+
+    if turnos_fijados is not None:
+        for (t, d, s), valor_forzado in turnos_fijados.items():
+            if (t, d, s) in turnos_asignados:
+                # valor_forzado será 1 (asignado manualmente) o 0 (quitado manualmente)
+                modelo.Add(turnos_asignados[(t, d, s)] == valor_forzado)
 
     tarea_asignada = {}
     trabaja = {}
@@ -835,7 +841,9 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
     # Mostrar resultados
 
     if estado == cp_model.OPTIMAL or estado == cp_model.FEASIBLE:
-    
+
+        horas_semanales_asignadas = {}
+
         for t in ids_trabajadores:
             racha_actual = 0
             racha_maxima = 0
@@ -867,15 +875,29 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
                         for id_tarea in ids_tareas:
                             if solver.Value(tarea_asignada[(t, d, id_tarea)]) == 1:
                                 tarea_realizada = id_tarea
+                                horas_este_turno = HORAS_POR_TURNO_CONTRATO.get(trabajadores[t].id_contrato, 0)
+                                clave_semana = (t, num_semana)
+                                horas_semanales_asignadas[clave_semana] = horas_semanales_asignadas.get(clave_semana, 0) + horas_este_turno
+
+
                                 break
                         
                         print(f'Trabajador {t} asignado al turno {s} - Tarea {tarea_realizada}')
-        '''
+
+
+        print("\n--- RESUMEN DE HORAS SEMANALES ---")
+        filas_horas = []
+        for (t, num_semana), horas_totales in horas_semanales_asignadas.items():
+            filas_horas.append({
+                "id_trabajador": t,
+                "num_semana": num_semana,
+                "horas_asignadas": horas_totales
+            })
+    
         guardar_calendarizacion(
                     solver, calendario, ids_trabajadores, ids_tareas,
                     dias_abiertos, turnos_asignados, tarea_asignada,
                 )
-        '''
         
         
     else:
