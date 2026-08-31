@@ -19,7 +19,8 @@ function obtenerNombreDia(fecha) {
         "MIÉRCOLES",
         "JUEVES",
         "VIERNES",
-        "SÁBADO"
+        "SÁBADO",
+        "DOMINGO"
     ];
 
     return dias[
@@ -29,14 +30,14 @@ function obtenerNombreDia(fecha) {
 
 
 // =====================================================
-// OBTENER LOS 6 DÍAS DE LA SEMANA
+// OBTENER LOS 7 DÍAS DE LA SEMANA
 // =====================================================
 
 function obtenerDiasSemana(fechaInicio) {
 
     const dias = [];
 
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 7; i++) {
 
         const fecha = new Date(fechaInicio);
 
