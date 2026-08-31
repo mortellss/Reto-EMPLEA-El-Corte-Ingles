@@ -81,9 +81,6 @@ def capacidad_maxima(tareas):
     return capacidad
 
 
-   
-
-
 opciones_duracion_qh = {
         1: [25],
         2: [20, 28],

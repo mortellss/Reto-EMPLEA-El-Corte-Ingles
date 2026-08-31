@@ -1,3 +1,8 @@
+#CAPACIDAD_MAXIMA_TAREA porque se pasa
+# Máximo de 1 por tarea
+# Meter a fijos discontinuos
+# se tiene en cuenta el contrato semanal? (las )
+
 from pathlib import Path
 import sys
 from sqlalchemy import create_engine, text, bindparam
@@ -9,7 +14,6 @@ import pandas as pd
 from ortools.sat.python import cp_model
 from dotenv import load_dotenv
 import os
-
 
 load_dotenv()
 
@@ -55,7 +59,23 @@ CAPACIDAD_MAXIMA_TAREA = {
     "CONSOLA + DEV. EDIG": 2,
 }
 
-CAPACIDAD_MAXIMA_DEFECTO = 1
+CAPACIDAD_MAXIMA_DEFECTO = 4
+
+CAPACIDAD_MINIMA_TAREA = {
+    "MOSTRADOR": 1,
+    "INFORMAR": 1,
+    "INFORMAR DE LOS ENCARGOS DEL MURO": 0,
+    "HOME DELIVERY": 0,
+    "SITE TO STORE": 0,
+    "ECI EXPRESS + CLICK&CAR": 0,
+    "RUNNER + DEV A TIENDA": 1,
+    "DERIVADAS": 0,
+    "GESTIÓN MOSTRADOR": 0,
+    "INFORMAR PALETS/EXPEDICIÓN": 1,
+    "CONSOLA + DEV. EDIG": 1,
+}
+
+CAPACIDAD_MINIMA_DEFECTO = 0
 
 def capacidad_maxima(tareas):
    
@@ -81,6 +101,29 @@ def capacidad_maxima(tareas):
                 f"persona(s) por turno. Nombres disponibles en la tabla: {disponibles}")
     return capacidad
 
+def capacidad_minima(tareas):
+
+    tarea_nombre = {
+        t.nombre: id_tarea
+        for id_tarea, t in tareas.items()
+    }
+
+    capacidad = {}
+    nombres_sin_encontrar = []
+    for nombre, cap in CAPACIDAD_MINIMA_TAREA.items():
+        id_tarea = tarea_nombre.get(nombre)
+        if id_tarea is None:
+            nombres_sin_encontrar.append(nombre)
+        else:
+            capacidad[id_tarea] = cap
+
+    if nombres_sin_encontrar:
+        disponibles = ', '.join(f"'{t.nombre}'" for t in tareas.values())
+        print(f"Aviso: no se encontraron en `tarea` estos nombres: "
+                f"{', '.join(repr(n) for n in nombres_sin_encontrar)}. "
+                f"Se quedan con el mínimo por defecto de {CAPACIDAD_MINIMA_DEFECTO} "
+                f"persona(s) por turno. Nombres disponibles en la tabla: {disponibles}")
+    return capacidad
 
    
 
@@ -103,8 +146,10 @@ class Trabajador:
     nombre: str
     disponibilidad: str
     id_contrato: int
+    fijo_discontinuo: bool
     dias_trabajados_seguidos: int
     domingos_trabajados: int
+    
 
 @dataclass
 class Calendario:
@@ -127,9 +172,9 @@ def qh_a_horas(qh: int) -> float:
 
 def cargar_trabajadores():
     query_trabajadores = """
-    SELECT id_trabajador, nombre, disponibilidad, id_contrato
+    SELECT id_trabajador, nombre, disponibilidad, id_contrato, fijo_discontinuo
     FROM trabajador
-    WHERE activo = 1 AND fijo_discontinuo = 0
+    WHERE activo = 1
     """
 
     query_calendario_trabajadores = """
@@ -141,6 +186,7 @@ def cargar_trabajadores():
     df_trabajadores['id_trabajador'] = pd.to_numeric(df_trabajadores["id_trabajador"])
     df_trabajadores['id_contrato'] = pd.to_numeric(df_trabajadores["id_contrato"])
     #df_trabajadores['horas_semanales'] = pd.to_numeric(df_trabajadores["horas_semanales"])
+    df_trabajadores['fijo_discontinuo'] = pd.to_numeric(df_trabajadores["fijo_discontinuo"])
 
     df_calendario_trabajadores = pd.read_sql(query_calendario_trabajadores, con=engine)
     df_trabajadores['id_trabajador'] = pd.to_numeric(df_trabajadores["id_trabajador"])
@@ -156,7 +202,8 @@ def cargar_trabajadores():
             disponibilidad=row.disponibilidad,
             id_contrato = row.id_contrato,
             dias_trabajados_seguidos= 0,
-            domingos_trabajados = 0
+            domingos_trabajados = 0,
+            fijo_discontinuo=bool(row.fijo_discontinuo),
         )
 
         trabajadores[row.id_trabajador] = trabajador
@@ -344,7 +391,7 @@ def guardar_calendarizacion(solver, calendario, ids_trabajadores, ids_tareas,
           f"({dias_abiertos[0]} a {dias_abiertos[-1]}).")
 
 
-def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tareas, habilidades, objetivo_horas_por_mes):
+def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tareas, habilidades, objetivo_horas_por_mes, objetivo_horas_fd_por_mes=None):
 
     ids_trabajadores = list(trabajadores.keys())
     
@@ -365,17 +412,22 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
     tarea_asignada = {}
     trabaja = {}
     ids_tareas = list(tareas.keys())
-    tareas_permitidas = habilidades.get(t, [])
+
+    asignaciones_sin_habilidad = []
+
     for t in ids_trabajadores:
         tareas_permitidas = habilidades.get(t, [])
         
         for d in dias_abiertos:
             for id_tarea in ids_tareas:
                 nombre_var_tarea = f'Tarea_T{t}_D{d}_Tar{id_tarea}'
-                tarea_asignada[(t, d, id_tarea)] = modelo.NewBoolVar(nombre_var_tarea)
+                var_tarea = modelo.NewBoolVar(nombre_var_tarea)
+                tarea_asignada[(t, d, id_tarea)] = var_tarea
+                #tarea_asignada[(t, d, id_tarea)] = modelo.NewBoolVar(nombre_var_tarea)
             
                 if id_tarea not in tareas_permitidas:
-                    modelo.Add(tarea_asignada[(t, d, id_tarea)] == 0)
+                    #modelo.Add(tarea_asignada[(t, d, id_tarea)] == 0)
+                    asignaciones_sin_habilidad.append(var_tarea)
 
             tareas_del_dia = [tarea_asignada[(t, d, id_tarea)] for id_tarea in ids_tareas]
 
@@ -411,7 +463,7 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
     for d in dias_abiertos:
         total_manana = sum(turnos_asignados[(t, d, TURNO_MANANA)] for t in ids_trabajadores)
         total_tarde = sum(turnos_asignados[(t, d, TURNO_TARDE)] for t in ids_trabajadores)
-        modelo.Add(total_manana * 10 >= total_tarde * 6)
+        modelo.Add(total_manana >= total_tarde + 1)
 
 
     # RESTRICCION
@@ -424,13 +476,16 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
             semanas_completas[num_semana] = []
         semanas_completas[num_semana].append(d)
 
-    SEMANA_PAR_ES_MANANA = True
+    contador_alternos = 0
     
     for t in ids_trabajadores:
         if trabajadores[t].disponibilidad != "A":
             continue
+        empieza_manana = (contador_alternos % 2 == 0)
+        contador_alternos += 1
         for num_semana, dias_semana in semanas_completas.items():
-            es_semana_de_manana = (num_semana % 2 == 0) == SEMANA_PAR_ES_MANANA
+            es_semana_de_manana = (num_semana % 2 == 0) == empieza_manana
+            
             turno_prohibido = TURNO_TARDE if es_semana_de_manana else TURNO_MANANA
             for d in dias_semana:
                 modelo.Add(turnos_asignados[(t, d, turno_prohibido)] == 0)
@@ -497,6 +552,8 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
     # En cada turno (Mañana y Tarde) de un día abierto, se deben estar realizando todas las tareas. Esto significa que necesitamos, como mínimo, 1 trabajador asignado a cada tarea en la mañana, y 1 trabajador asignado a cada tarea en la tarde.
     
     CAPACIDAD_MAXIMA_TAREA = capacidad_maxima(tareas)
+    CAPACIDAD_MINIMA_TAREA = capacidad_minima(tareas)
+
 
     tareas_cubiertas_total = []
     trabajadores_por_tarea_turno = {}
@@ -513,15 +570,18 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
                         en_turno_y_tarea = modelo.NewBoolVar(f'Aux_T{t}_D{d}_S{s}_Tar{id_tarea}')
                         modelo.Add(en_turno_y_tarea <= turnos_asignados[(t, d, s)])
                         modelo.Add(en_turno_y_tarea <= tarea_asignada[(t, d, id_tarea)])
+                        modelo.Add(en_turno_y_tarea >= turnos_asignados[(t, d, s)] + tarea_asignada[(t, d, id_tarea)] - 1)  # <- falta esto
                         trabajadores_en_tarea_y_turno.append(en_turno_y_tarea)
 
                 trabajadores_por_tarea_turno[(d, s, id_tarea)] = trabajadores_en_tarea_y_turno
                 
-                cap = CAPACIDAD_MAXIMA_TAREA.get(id_tarea, CAPACIDAD_MAXIMA_DEFECTO)
-                modelo.Add(sum(trabajadores_en_tarea_y_turno) <= cap)
+                cap_max = CAPACIDAD_MAXIMA_TAREA.get(id_tarea, CAPACIDAD_MAXIMA_DEFECTO)
+                #cap_min = CAPACIDAD_MINIMA_TAREA.get(id_tarea, CAPACIDAD_MINIMA_DEFECTO)
 
-                
+                modelo.Add(sum(trabajadores_en_tarea_y_turno) <= cap_max)
+                #modelo.Add(sum(trabajadores_en_tarea_y_turno) >= cap_min)
 
+                    
                 tarea_cubierta = modelo.NewBoolVar(f'Cubierta_D{d}_S{s}_Tar{id_tarea}')
                 modelo.Add(sum(trabajadores_en_tarea_y_turno) >= 1).OnlyEnforceIf(tarea_cubierta)
                 tareas_cubiertas_total.append(tarea_cubierta)
@@ -540,34 +600,60 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
 
     cota_maxima_qh_por_turno = sum(horas_turno_qh_trabajador.values())
 
-    def expr_horas_trabajadas_qh(dias):
+    ids_ordinarios = [t for t in ids_trabajadores if not trabajadores[t].fijo_discontinuo]
+    ids_fijos_discontinuos = [t for t in ids_trabajadores if trabajadores[t].fijo_discontinuo]
+
+    def expr_horas_trabajadas_qh(dias, turnos=TURNOS, trabajadores_incl=None):
+        ids = trabajadores_incl if trabajadores_incl is not None else ids_trabajadores
         return sum(
             horas_turno_qh_trabajador[t] * turnos_asignados[(t, d, s)]
             for d in dias
-            for s in TURNOS
-            for t in ids_trabajadores
+            for s in turnos
+            for t in ids
             if t in horas_turno_qh_trabajador
         )
 
-    def anadir_termino_horas(dias, horas_objetivo, etiqueta):
+    def anadir_termino_horas(dias, horas_objetivo, etiqueta, turnos = TURNOS, trabajadores_incl=None):
         objetivo_qh = horas_a_qh(horas_objetivo)
-        cota_qh = cota_maxima_qh_por_turno * len(TURNOS) * len(dias)
+        cota_qh = cota_maxima_qh_por_turno * len(turnos) * len(dias)
         cota_var = max(objetivo_qh, cota_qh, 1)
 
         deficit = modelo.NewIntVar(0, cota_var, f'DeficitHoras_{etiqueta}')
         exceso = modelo.NewIntVar(0, cota_var, f'ExcesoHoras_{etiqueta}')
-        modelo.Add(expr_horas_trabajadas_qh(dias) - objetivo_qh == exceso - deficit)
+        horas_calculadas = expr_horas_trabajadas_qh(dias, turnos=turnos, trabajadores_incl=trabajadores_incl)
+        modelo.Add(horas_calculadas - objetivo_qh == exceso - deficit)
     
         return deficit, exceso, cota_var
+
+    def penalizacion_y_cota(terminos):
+        penal = sum(PESO_DEFICIT_HORAS * deficit + PESO_EXCESO_HORAS * exceso for deficit, exceso, _ in terminos)
+        cota = sum(max(PESO_DEFICIT_HORAS, PESO_EXCESO_HORAS) * cota_t for _, _, cota_t in terminos)
+        return penal, cota
+
+    PORCENTAJE_HORAS_MANANA = 0.6
+    PORCENTAJE_HORAS_TARDE = 0.4
 
     terminos_horas = []
 
     for d in dias_abiertos:
-        deficit, exceso, cota = anadir_termino_horas(
-            [d], calendario.horas_necesarias.get(d, 0.0), f'D{d}'
-        )
-        terminos_horas.append((deficit, exceso, cota))
+        horas_dia = calendario.horas_necesarias.get(d, 0.0)
 
+        deficit_m, exceso_m, cota_m = anadir_termino_horas(
+            [d], horas_dia * PORCENTAJE_HORAS_MANANA, f'D{d}_Manana', turnos=[TURNO_MANANA]
+        )
+        terminos_horas.append((deficit_m, exceso_m, cota_m))
+
+        deficit_t, exceso_t, cota_t = anadir_termino_horas(
+                    [d], horas_dia * PORCENTAJE_HORAS_TARDE, f'D{d}_Tarde', turnos=[TURNO_TARDE]
+                )
+        terminos_horas.append((deficit_t, exceso_t, cota_t))
+
+    dias_por_mes_orden = {}
+    for d in dias_abiertos:
+        dias_por_mes_orden.setdefault((d.year, d.month), []).append(d)
+    meses_ordenados = sorted(dias_por_mes_orden.keys())
+
+    terminos_horas_ordinarios = []
     if objetivo_horas_por_mes:
         dias_por_mes_orden = {}
         for d in dias_abiertos:
@@ -578,17 +664,47 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
             if objetivo is None:
                 continue
             deficit, exceso, cota = anadir_termino_horas(
-                dias_por_mes_orden[clave_mes], objetivo, f'Mes{clave_mes[0]}_{clave_mes[1]}'
+                dias_por_mes_orden[clave_mes], objetivo, f'Mes_ord{clave_mes[0]}_{clave_mes[1]}',
+                trabajadores_incl=ids_ordinarios
             )
-            terminos_horas.append((deficit, exceso, cota))
 
-    penalizacion_horas = sum(
-        PESO_DEFICIT_HORAS * deficit + PESO_EXCESO_HORAS * exceso
-        for deficit, exceso, _ in terminos_horas
+            terminos_horas_ordinarios.append((deficit, exceso, cota))
+    terminos_horas_fd = []
+    if objetivo_horas_fd_por_mes:
+        for indice, clave_mes in enumerate(meses_ordenados, start=1):
+            objetivo = objetivo_horas_fd_por_mes.get(indice)
+            if objetivo is None:
+                continue
+
+            dias_mes = dias_por_mes_orden[clave_mes]
+
+            if objetivo == 0:
+                for t in ids_fijos_discontinuos:
+                    for d in dias_mes:
+                        modelo.Add(trabaja[(t, d)] == 0)
+            else:
+                deficit, exceso, cota = anadir_termino_horas(
+                    dias_mes, objetivo, f'MesFD{clave_mes[0]}_{clave_mes[1]}',
+                    trabajadores_incl=ids_fijos_discontinuos
+                )
+                terminos_horas_fd.append((deficit, exceso, cota))
+
+    penal_fd, cota_fd = penalizacion_y_cota(terminos_horas_fd)
+    PESO_PRIORIDAD_ORDINARIOS = cota_fd + 1  # domina cualquier penalización posible de los FD
+
+    penal_total, cota_total = penalizacion_y_cota(terminos_horas)
+    penal_ordinarios, cota_ordinarios = penalizacion_y_cota(terminos_horas_ordinarios)
+
+    penalizacion_horas = (
+        penal_total
+        + PESO_PRIORIDAD_ORDINARIOS * penal_ordinarios
+        + penal_fd
     )
 
-    cota_penalizacion_maxima = sum(
-        max(PESO_DEFICIT_HORAS, PESO_EXCESO_HORAS) * cota for _, _, cota in terminos_horas
+    cota_penalizacion_maxima = (
+        cota 
+        + PESO_PRIORIDAD_ORDINARIOS + cota_ordinarios
+        + cota_fd
     )
     PESO_COBERTURA = cota_penalizacion_maxima + 1
 
@@ -603,7 +719,6 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
     for t in ids_trabajadores:
         tareas_permitidas_t = habilidades.get(t, [])
         if len(tareas_permitidas_t) <= 1:
-            
             continue
 
         peso = PESO_CONSISTENCIA_PRIORITARIO if trabajadores[t].id_contrato == 1 else PESO_CONSISTENCIA_NORMAL
@@ -658,8 +773,15 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
     # - Cada 4 semanas un domingo y lunes libres.
    
 
+    PESO_FALTA_HABILIDAD = 10 
+    
+    modelo.Maximize(
+        (PESO_COBERTURA * sum(tareas_cubiertas_total)) 
+        - penalizacion_horas 
+        - (PESO_FALTA_HABILIDAD * sum(asignaciones_sin_habilidad))
+    )
 
-    modelo.Maximize(PESO_COBERTURA * sum(tareas_cubiertas_total) - penalizacion_horas)
+    #modelo.Maximize(PESO_COBERTURA * sum(tareas_cubiertas_total) - penalizacion_horas)
 
     
     # Resolvemos el modelo
@@ -671,6 +793,7 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
     solver.parameters.log_search_progress = True
 
     estado = solver.Solve(modelo)
+    modelo.Validate()
 
     if solver.StatusName(estado) == "FEASIBLE":
             print(f"Aviso: se alcanzó el límite de tiempo ({solver.parameters.max_time_in_seconds}s) "
@@ -701,7 +824,7 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
 
             trabajadores[t].dias_seguidos_trabajados = racha_maxima
 
-        primeros_dias = dias_abiertos[:7]
+        primeros_dias = dias_abiertos[:8]
         for d in primeros_dias: 
             print(f'\n--- Día {d} ---')
             for t in ids_trabajadores:
@@ -715,18 +838,16 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
                                 break
                         
                         print(f'Trabajador {t} asignado al turno {s} - Tarea {tarea_realizada}')
-
+        '''
         guardar_calendarizacion(
                     solver, calendario, ids_trabajadores, ids_tareas,
                     dias_abiertos, turnos_asignados, tarea_asignada,
                 )
+        '''
         
         
     else:
         print("No factible")
-
-
-
 
 
 if __name__ == '__main__':
@@ -743,7 +864,7 @@ if __name__ == '__main__':
     sys.modules[spec.name] = optimizacion_final
     spec.loader.exec_module(optimizacion_final)
 
-    indice_desviacion = 1.3
+    indice_desviacion = 1.1
 
     X_HO_1 = optimizacion_final.X_HO[1]
     X_HO_2 = optimizacion_final.X_HO[2]
@@ -779,13 +900,17 @@ if __name__ == '__main__':
             2: round(X_HO_2.varValue / indice_desviacion),
             3: round(X_HO_3.varValue / indice_desviacion),
     }
+
+    objetivo_horas_fd_por_mes = {
+            1: round(X_HFD_1.varValue / indice_desviacion),
+            2: round(X_HFD_2.varValue / indice_desviacion),
+            3: round(X_HFD_3.varValue / indice_desviacion),
+    }
+
     crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tareas, habilidades,
-                          objetivo_horas_por_mes=objetivo_horas_por_mes)
+                          objetivo_horas_por_mes=objetivo_horas_por_mes, objetivo_horas_fd_por_mes=objetivo_horas_fd_por_mes)
 
 
 # Cosas que faltan
 # Que por lo menos hayan 5 personas por la mañana
 # Completar las restricciones que están marcadas como que faltan
-# 
-
-    
