@@ -19,11 +19,16 @@
 <body>
 
     <aside class="sidebar">
+
         <div class="logo">
-            <img src="{{ url_for('static', filename='img/logo.webp') }}" alt="Logo">
+            <img
+                src="{{ url_for('static', filename='img/logo.webp') }}"
+                alt="Logo"
+            >
         </div>
 
         <nav>
+
             <a href="{{ url_for('dashboard') }}">
                 <i class="fa-solid fa-house"></i>
                 <span>Dashboard</span>
@@ -53,18 +58,25 @@
                 <i class="fa-solid fa-gear"></i>
                 <span>Configuración</span>
             </a>
+
         </nav>
+
     </aside>
+
 
     <main class="main-content">
 
         <header class="topbar">
+
             <div>
                 <h2>Planificación</h2>
-                <p>Consulta y organiza la planificación semanal de los trabajadores.</p>
+                <p>
+                    Consulta y organiza la planificación semanal de los trabajadores.
+                </p>
             </div>
 
             <div class="user">
+
                 <button>
                     <i class="fa-regular fa-bell"></i>
                 </button>
@@ -72,85 +84,191 @@
                 <div class="user-info">
                     <span>Usuario</span>
                 </div>
+
             </div>
+
         </header>
+
 
         <section class="content">
 
-            <div class="planning-header">
-                <div>
-                    <h2>Planificación semanal</h2>
-                    <p>Distribución de trabajadores por días, turnos y tareas.</p>
-                </div>
 
-                <div class="week-selector">
-                    <button type="button" id="semanaAnterior" class="secondary-button">
-                        <i class="fa-solid fa-chevron-left"></i>
+            <!-- ==================================================
+                 BOTONES DE ACCIÓN
+            =================================================== -->
+
+            <div class="planning-top-actions">
+
+                <div></div>
+
+                <div class="planning-actions">
+
+                    <a href="{{ url_for('calendarios_trabajadores') }}" class="generate-button">
+                        <i class="fa-solid fa-calendar-user"></i>
+                        Ver calendarios por trabajador
+                    </a>
+
+                    <button
+                        type="button"
+                        id="exportarExcel"
+                        class="export-button"
+                    >
+                        <i class="fa-solid fa-file-excel"></i>
+                        Exportar Excel
                     </button>
 
-                    <div class="week-info">
-                        <span id="semanaActual">Semana del 22 al 27 de junio</span>
-                    </div>
-
-                    <button type="button" id="semanaSiguiente" class="secondary-button">
-                        <i class="fa-solid fa-chevron-right"></i>
+                    <button
+                        type="button"
+                        id="generarPlanificacion"
+                        class="generate-button"
+                    >
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                        Generar planificación
                     </button>
+
                 </div>
+
             </div>
+
+
+            <!-- ==================================================
+                 LEYENDA
+            =================================================== -->
 
             <div class="planning-legend">
+
                 <div class="legend-item">
+
                     <span class="legend-color trabajador-normal"></span>
+
                     <span>Trabajador</span>
+
                 </div>
 
                 <div class="legend-item">
+
                     <span class="legend-color fijo-discontinuo"></span>
+
                     <span>Fijo discontinuo</span>
+
                 </div>
+
             </div>
 
-            <!-- MAÑANAS -->
+
+            <!-- ==================================================
+                 NAVEGACIÓN DE SEMANA
+            =================================================== -->
+
+            <div class="week-navigation">
+
+                <button
+                    type="button"
+                    id="semanaAnterior"
+                    class="week-nav-button"
+                    aria-label="Semana anterior"
+                >
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+
+
+                <div class="week-info">
+
+                    <span id="semanaActual">
+                        Semana del 22 al 27 de junio
+                    </span>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    id="semanaSiguiente"
+                    class="week-nav-button"
+                    aria-label="Semana siguiente"
+                >
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+
+            </div>
+
+
+            <!-- ==================================================
+                 MAÑANAS
+            =================================================== -->
 
             <section class="planning-section">
+
                 <div class="planning-section-header">
+
                     <h2>
                         <i class="fa-solid fa-sun"></i>
                         Turnos de mañana
                     </h2>
-                    <p>Trabajadores asignados al turno de mañana.</p>
+
+                    <p>
+                        Trabajadores asignados al turno de mañana.
+                    </p>
+
                 </div>
+
 
                 <div class="planning-table-container">
+
                     <table class="planning-table">
+
                         <thead id="cabeceraMananas"></thead>
+
                         <tbody id="tablaMananas"></tbody>
+
                     </table>
+
                 </div>
+
             </section>
 
-            <!-- TARDES -->
+
+            <!-- ==================================================
+                 TARDES
+            =================================================== -->
 
             <section class="planning-section">
+
                 <div class="planning-section-header">
+
                     <h2>
                         <i class="fa-solid fa-moon"></i>
                         Turnos de tarde
                     </h2>
-                    <p>Trabajadores asignados al turno de tarde.</p>
+
+                    <p>
+                        Trabajadores asignados al turno de tarde.
+                    </p>
+
                 </div>
+
 
                 <div class="planning-table-container">
+
                     <table class="planning-table">
+
                         <thead id="cabeceraTardes"></thead>
+
                         <tbody id="tablaTardes"></tbody>
+
                     </table>
+
                 </div>
+
             </section>
 
+
         </section>
+
     </main>
 
+
     <script src="{{ url_for('static', filename='js/planificacion.js') }}"></script>
+
 </body>
 </html>

@@ -3,6 +3,9 @@ from sqlalchemy import text
 import pandas as pd
 from db import engine
 from io import BytesIO
+import subprocess
+import sys
+from pathlib import Path
 
 
 app = Flask(__name__)
@@ -2373,6 +2376,812 @@ def generar_prediccion():
 def planificacion():
     return render_template("planificacion.html")
 
+# ============================================================
+# PLANIFICACIÓN — DATOS DE CALENDARIZACIÓN
+# ============================================================
+
+@app.route("/api/planificacion")
+def api_planificacion():
+
+    try:
+
+        df = pd.read_sql("""
+            SELECT
+                c.fecha,
+                c.num_semana,
+                c.id_tarea,
+                t.nombre AS tarea,
+                c.id_trabajador,
+                tr.nombre AS trabajador,
+                tr.apellidos AS apellidos,
+                tr.fijo_discontinuo,
+                c.turno
+
+            FROM calendarizacion c
+
+            INNER JOIN tarea t
+                ON c.id_tarea = t.id_tarea
+
+            INNER JOIN trabajador tr
+                ON c.id_trabajador = tr.id_trabajador
+
+            WHERE tr.activo = 1
+
+            ORDER BY
+                c.fecha,
+                c.turno,
+                t.nombre,
+                tr.nombre
+
+        """, engine)
+
+        df = df.astype(object).where(pd.notna(df), None)
+
+        datos = df.to_dict(orient="records")
+
+        for fila in datos:
+
+            if fila.get("fecha") is not None:
+                fila["fecha"] = fila["fecha"].strftime("%Y-%m-%d")
+
+            fila["fijo_discontinuo"] = bool(
+                fila.get("fijo_discontinuo")
+            )
+
+        return jsonify(datos)
+
+    except Exception as e:
+
+        print("ERROR PLANIFICACIÓN:", e)
+
+        return jsonify({
+            "error": "No se ha podido cargar la planificación."
+        }), 500
+
+
+# ============================================================
+# PLANIFICACIÓN — TAREAS
+# ============================================================
+
+@app.route("/api/tareas")
+def api_tareas():
+
+    try:
+
+        df = pd.read_sql("""
+            SELECT
+                id_tarea,
+                nombre
+            FROM tarea
+            WHERE activa = 1
+            ORDER BY id_tarea
+        """, engine)
+
+        return jsonify(
+            df.to_dict(orient="records")
+        )
+
+    except Exception as e:
+
+        print("ERROR TAREAS:", e)
+
+        return jsonify({
+            "error": "No se han podido cargar las tareas."
+        }), 500
+
+
+# EXPORTAR PLANIFICACIÓN
+@app.route("/api/planificacion/exportar")
+def exportar_planificacion():
+
+    try:
+
+        query = """
+            SELECT
+                c.fecha,
+                c.id_tarea,
+                t.nombre AS tarea,
+                c.id_trabajador,
+                tr.nombre AS trabajador,
+                c.turno
+            FROM calendarizacion c
+            JOIN tarea t
+                ON c.id_tarea = t.id_tarea
+            JOIN trabajador tr
+                ON c.id_trabajador = tr.id_trabajador
+            WHERE t.activa = 1
+            ORDER BY c.fecha, c.id_tarea, c.turno, c.id_trabajador
+        """
+
+        df = pd.read_sql(query, engine)
+
+        if df.empty:
+            return jsonify({
+                "error": "No hay planificación para exportar."
+            }), 404
+
+        df["fecha"] = pd.to_datetime(df["fecha"]).dt.date
+
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.utils import get_column_letter
+
+        wb = Workbook()
+
+        # Eliminamos la hoja que crea Excel automáticamente
+        hoja_inicial = wb.active
+        wb.remove(hoja_inicial)
+
+        # ----------------------------------------------------
+        # FECHAS
+        # ----------------------------------------------------
+
+        fechas = pd.date_range(
+            start=df["fecha"].min(),
+            end=df["fecha"].max(),
+            freq="D"
+        ).date
+
+        # ----------------------------------------------------
+        # TAREAS ACTIVAS
+        # ----------------------------------------------------
+
+        tareas = (
+            df[["id_tarea", "tarea"]]
+            .drop_duplicates()
+            .sort_values("id_tarea")
+        )
+
+        # ----------------------------------------------------
+        # ESTILOS
+        # ----------------------------------------------------
+
+        borde = Border(
+            left=Side(style="thin", color="CCCCCC"),
+            right=Side(style="thin", color="CCCCCC"),
+            top=Side(style="thin", color="CCCCCC"),
+            bottom=Side(style="thin", color="CCCCCC")
+        )
+
+        def crear_hoja(nombre_hoja, turno):
+
+            ws = wb.create_sheet(nombre_hoja)
+
+            # ----------------------------------------------
+            # CABECERA
+            # ----------------------------------------------
+
+            ws.cell(
+                row=1,
+                column=1,
+                value="TAREA"
+            )
+
+            for columna, fecha in enumerate(fechas, start=2):
+
+                celda = ws.cell(
+                    row=1,
+                    column=columna,
+                    value=fecha
+                )
+
+                celda.number_format = "dd/mm/yyyy"
+
+            # ----------------------------------------------
+            # ESTILO CABECERA
+            # ----------------------------------------------
+
+            for celda in ws[1]:
+
+                celda.font = Font(
+                    bold=True,
+                    color="FFFFFF"
+                )
+
+                celda.fill = PatternFill(
+                    fill_type="solid",
+                    fgColor="087F3F"
+                )
+
+                celda.alignment = Alignment(
+                    horizontal="center",
+                    vertical="center"
+                )
+
+                celda.border = borde
+
+            ws.row_dimensions[1].height = 30
+
+            # ----------------------------------------------
+            # TAREAS
+            # ----------------------------------------------
+
+            fila = 2
+
+            for _, tarea in tareas.iterrows():
+
+                id_tarea = tarea["id_tarea"]
+
+                ws.cell(
+                    row=fila,
+                    column=1,
+                    value=tarea["tarea"]
+                )
+
+                # Estilo nombre tarea
+                celda_tarea = ws.cell(
+                    row=fila,
+                    column=1
+                )
+
+                celda_tarea.font = Font(
+                    bold=True
+                )
+
+                celda_tarea.fill = PatternFill(
+                    fill_type="solid",
+                    fgColor="E8FAF0"
+                )
+
+                celda_tarea.alignment = Alignment(
+                    vertical="center",
+                    wrap_text=True
+                )
+
+                celda_tarea.border = borde
+
+                # ------------------------------------------
+                # CADA DÍA
+                # ------------------------------------------
+
+                for columna, fecha in enumerate(
+                    fechas,
+                    start=2
+                ):
+
+                    registros = df[
+                        (df["id_tarea"] == id_tarea)
+                        &
+                        (df["fecha"] == fecha)
+                        &
+                        (df["turno"] == turno)
+                    ]
+
+                    if registros.empty:
+
+                        valor = "—"
+
+                    else:
+
+                        trabajadores = []
+
+                        for _, trabajador in registros.iterrows():
+
+                            trabajadores.append(
+                                trabajador["trabajador"]
+                            )
+
+                        valor = "\n".join(
+                            trabajadores
+                        )
+
+                    celda = ws.cell(
+                        row=fila,
+                        column=columna,
+                        value=valor
+                    )
+
+                    celda.alignment = Alignment(
+                        horizontal="center",
+                        vertical="center",
+                        wrap_text=True
+                    )
+
+                    celda.border = borde
+
+                ws.row_dimensions[fila].height = 60
+
+                fila += 1
+
+            # ----------------------------------------------
+            # ANCHOS
+            # ----------------------------------------------
+
+            ws.column_dimensions["A"].width = 35
+
+            for columna in range(
+                2,
+                len(fechas) + 2
+            ):
+
+                letra = get_column_letter(
+                    columna
+                )
+
+                ws.column_dimensions[
+                    letra
+                ].width = 18
+
+            # ----------------------------------------------
+            # CONGELAR
+            # ----------------------------------------------
+
+            ws.freeze_panes = "B2"
+
+            # ----------------------------------------------
+            # FILTRO
+            # ----------------------------------------------
+
+            ws.auto_filter.ref = (
+                f"A1:"
+                f"{get_column_letter(len(fechas) + 1)}"
+                f"{fila - 1}"
+            )
+
+            return ws
+
+        # ----------------------------------------------------
+        # CREAR LAS DOS HOJAS
+        # ----------------------------------------------------
+
+        crear_hoja(
+            "Mañanas",
+            0
+        )
+
+        crear_hoja(
+            "Tardes",
+            1
+        )
+
+        # ----------------------------------------------------
+        # GENERAR ARCHIVO
+        # ----------------------------------------------------
+
+        archivo = BytesIO()
+
+        wb.save(archivo)
+
+        archivo.seek(0)
+
+        return send_file(
+            archivo,
+            as_attachment=True,
+            download_name="planificacion.xlsx",
+            mimetype=(
+                "application/vnd.openxmlformats-officedocument."
+                "spreadsheetml.sheet"
+            )
+        )
+
+    except Exception as e:
+
+        print(
+            "ERROR EXPORTANDO PLANIFICACIÓN:",
+            e
+        )
+
+        return jsonify({
+            "error": "No se ha podido generar el Excel."
+        }), 500
+
+# GENERAR PLANIFICACIÓN
+@app.route("/api/planificacion/generar", methods=["POST"])
+def generar_planificacion():
+
+    try:
+
+        ruta_script = (
+            Path(__file__).resolve().parents[2]
+            / "FASE_3_calendarizacion"
+            / "calPRUEBA.py"
+        )
+
+        resultado = subprocess.run(
+            [
+                sys.executable,
+                str(ruta_script)
+            ],
+            capture_output=True,
+            text=True,
+            cwd=str(ruta_script.parent)
+        )
+
+        if resultado.returncode != 0:
+
+            print("ERROR CALPRUEBA:")
+            print(resultado.stdout)
+            print(resultado.stderr)
+
+            return jsonify({
+                "ok": False,
+                "error": "No se ha podido generar la planificación.",
+                "detalle": resultado.stderr
+            }), 500
+
+        print("CALPRUEBA EJECUTADO CORRECTAMENTE:")
+        print(resultado.stdout)
+
+        return jsonify({
+            "ok": True,
+            "mensaje": "Planificación generada correctamente."
+        })
+
+    except Exception as e:
+
+        print("ERROR EJECUTANDO CALPRUEBA:", e)
+
+        return jsonify({
+            "ok": False,
+            "error": str(e)
+        }), 500
+
+# ============================================================
+# PLANIFICACIÓN - CALENDARIO INDIVIDUAL DEL TRABAJADOR
+# ============================================================
+
+@app.route("/calendarios-trabajadores")
+def calendarios_trabajadores():
+    return render_template("calendarios_trabajadores.html")
+
+@app.route("/calendario-trabajador/<int:id_trabajador>")
+def calendario_trabajador(id_trabajador):
+    return render_template(
+        "calendario_trabajador.html",
+        id_trabajador=id_trabajador
+    )
+
+def convertir_valor(valor):
+
+    if pd.isna(valor):
+        return None
+
+    if hasattr(valor, "item"):
+        return valor.item()
+
+    return valor
+
+@app.route("/api/calendario-trabajador/<int:id_trabajador>")
+def api_calendario_trabajador(id_trabajador):
+
+    try:
+
+        # ====================================================
+        # CALENDARIZACIÓN
+        # ====================================================
+
+        df = pd.read_sql("""
+            SELECT
+                c.fecha,
+                c.id_trabajador,
+                c.id_tarea,
+                c.turno,
+                t.nombre AS tarea
+            FROM calendarizacion c
+            LEFT JOIN tarea t
+                ON c.id_tarea = t.id_tarea
+            WHERE c.id_trabajador = %s
+            ORDER BY c.fecha
+        """, engine, params=(id_trabajador,))
+
+
+        # ====================================================
+        # TRABAJADOR
+        # ====================================================
+
+        trabajador = pd.read_sql("""
+            SELECT
+                tr.id_trabajador,
+                tr.numero_vendedor,
+                tr.nombre,
+                tr.apellidos,
+                tr.correo,
+                tr.activo,
+                tr.id_contrato,
+                tr.id_centro,
+                tr.estado,
+                tr.disponibilidad,
+                tr.fijo_discontinuo,
+
+                co.nombre AS contrato,
+                co.jornada,
+                co.horas_por_turno
+
+            FROM trabajador tr
+
+            LEFT JOIN contrato co
+                ON tr.id_contrato = co.id_contrato
+
+            WHERE tr.id_trabajador = %s
+
+            LIMIT 1
+        """, engine, params=(id_trabajador,))
+
+
+        if trabajador.empty:
+
+            return jsonify({
+                "error": "Trabajador no encontrado."
+            }), 404
+
+
+        # ====================================================
+        # DISPONIBILIDAD / VACACIONES
+        # ====================================================
+
+        disponibilidad = pd.read_sql("""
+            SELECT
+                id_disponibilidad,
+                id_trabajador,
+                fecha_inicio,
+                fecha_fin,
+                motivo,
+                turno,
+                id_turno
+            FROM disponibilidad
+            WHERE id_trabajador = %s
+            ORDER BY fecha_inicio
+        """, engine, params=(id_trabajador,))
+
+
+        # ====================================================
+        # CALENDARIZACIÓN → JSON
+        # ====================================================
+
+        registros = []
+
+        for _, fila in df.iterrows():
+
+            registros.append({
+
+                "fecha": (
+                    fila["fecha"].strftime("%Y-%m-%d")
+                    if pd.notna(fila["fecha"])
+                    else None
+                ),
+
+                "turno": convertir_valor(
+                    fila["turno"]
+                ),
+
+                "tarea": (
+                    str(fila["tarea"])
+                    if pd.notna(fila["tarea"])
+                    else None
+                )
+            })
+
+
+        # ====================================================
+        # DISPONIBILIDAD → JSON
+        # ====================================================
+
+        vacaciones = []
+
+        for _, fila in disponibilidad.iterrows():
+
+            vacaciones.append({
+
+                "fecha_inicio": (
+                    fila["fecha_inicio"].strftime("%Y-%m-%d")
+                    if pd.notna(fila["fecha_inicio"])
+                    else None
+                ),
+
+                "fecha_fin": (
+                    fila["fecha_fin"].strftime("%Y-%m-%d")
+                    if pd.notna(fila["fecha_fin"])
+                    else None
+                ),
+
+                "motivo": (
+                    str(fila["motivo"])
+                    if pd.notna(fila["motivo"])
+                    else None
+                ),
+
+                "turno": convertir_valor(
+                    fila["turno"]
+                )
+            })
+
+
+        # ====================================================
+        # INFORMACIÓN DEL TRABAJADOR
+        # ====================================================
+
+        tr = trabajador.iloc[0]
+
+        datos_trabajador = {
+
+            "id_trabajador":
+                int(tr["id_trabajador"])
+                if pd.notna(tr["id_trabajador"])
+                else None,
+
+            "numero_vendedor":
+                convertir_valor(tr["numero_vendedor"]),
+
+            "nombre":
+                str(tr["nombre"])
+                if pd.notna(tr["nombre"])
+                else None,
+
+            "apellidos":
+                str(tr["apellidos"])
+                if pd.notna(tr["apellidos"])
+                else None,
+
+            "correo":
+                str(tr["correo"])
+                if pd.notna(tr["correo"])
+                else None,
+
+            "activo":
+                bool(tr["activo"])
+                if pd.notna(tr["activo"])
+                else None,
+
+            "id_contrato":
+                int(tr["id_contrato"])
+                if pd.notna(tr["id_contrato"])
+                else None,
+
+            "contrato":
+                str(tr["contrato"])
+                if pd.notna(tr["contrato"])
+                else None,
+
+            "jornada":
+                float(tr["jornada"])
+                if pd.notna(tr["jornada"])
+                else None,
+
+            "horas_por_turno":
+                float(tr["horas_por_turno"])
+                if pd.notna(tr["horas_por_turno"])
+                else None,
+
+            "id_centro":
+                int(tr["id_centro"])
+                if pd.notna(tr["id_centro"])
+                else None,
+
+            "estado":
+                convertir_valor(tr["estado"]),
+
+            "disponibilidad":
+                convertir_valor(tr["disponibilidad"]),
+
+            "fijo_discontinuo":
+                bool(tr["fijo_discontinuo"])
+                if pd.notna(tr["fijo_discontinuo"])
+                else None
+        }
+
+
+        # ====================================================
+        # RESPUESTA
+        # ====================================================
+
+        return jsonify({
+
+            "trabajador":
+                datos_trabajador,
+
+            "calendarizacion":
+                registros,
+
+            "disponibilidad":
+                vacaciones
+
+        })
+
+
+    except Exception as e:
+
+        print(
+            "ERROR CALENDARIO TRABAJADOR:"
+        )
+
+        print(e)
+
+        return jsonify({
+
+            "error":
+                "No se ha podido cargar el calendario del trabajador."
+
+        }), 500
+
+
+# ============================================================
+# LISTA DE TRABAJADORES
+# ============================================================
+
+@app.route("/api/calendarios-trabajadores")
+def api_calendarios_trabajadores():
+
+    try:
+
+        df = pd.read_sql("""
+            SELECT
+                id_trabajador,
+                nombre,
+                apellidos,
+                numero_vendedor,
+                activo,
+                fijo_discontinuo
+            FROM trabajador
+            WHERE id_centro = 1
+              AND activo = 1
+            ORDER BY apellidos, nombre
+        """, engine)
+
+
+        df = df.astype(object).where(
+            pd.notna(df),
+            None
+        )
+
+
+        # Convertir valores numpy a tipos Python
+
+        datos = []
+
+        for _, fila in df.iterrows():
+
+            datos.append({
+
+                "id_trabajador":
+                    int(fila["id_trabajador"])
+                    if fila["id_trabajador"] is not None
+                    else None,
+
+                "nombre":
+                    str(fila["nombre"])
+                    if fila["nombre"] is not None
+                    else None,
+
+                "apellidos":
+                    str(fila["apellidos"])
+                    if fila["apellidos"] is not None
+                    else None,
+
+                "numero_vendedor":
+                    convertir_valor(
+                        fila["numero_vendedor"]
+                    ),
+
+                "activo":
+                    bool(fila["activo"])
+                    if fila["activo"] is not None
+                    else None,
+
+                "fijo_discontinuo":
+                    bool(fila["fijo_discontinuo"])
+                    if fila["fijo_discontinuo"] is not None
+                    else None
+            })
+
+
+        return jsonify(datos)
+
+
+    except Exception as e:
+
+        print(
+            "ERROR TRABAJADORES:"
+        )
+
+        print(e)
+
+        return jsonify({
+
+            "error":
+                "No se han podido cargar los trabajadores."
+
+        }), 500
+
 
 # ============================================================
 # CONFIGURACIÓN
@@ -2383,5 +3192,5 @@ def configuracion():
     return render_template("configuracion.html")
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     app.run(debug=True)

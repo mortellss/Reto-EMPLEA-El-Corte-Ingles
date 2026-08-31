@@ -1,449 +1,683 @@
-const dias = [
-    { corto: "LUNES", numero: "22" },
-    { corto: "MARTES", numero: "23" },
-    { corto: "MIÉRCOLES", numero: "24" },
-    { corto: "JUEVES", numero: "25" },
-    { corto: "VIERNES", numero: "26" },
-    { corto: "SÁBADO", numero: "27" }
-];
+// =====================================================
+// CONFIGURACIÓN
+// =====================================================
+
+let datosPlanificacion = [];
+let tareas = [];
+let fechaInicioSemana = null;
+
+// =====================================================
+// OBTENER NOMBRE DEL DÍA
+// =====================================================
+
+function obtenerNombreDia(fecha) {
+
+    const dias = [
+        "DOMINGO",
+        "LUNES",
+        "MARTES",
+        "MIÉRCOLES",
+        "JUEVES",
+        "VIERNES",
+        "SÁBADO",
+        "DOMINGO"
+    ];
+
+    return dias[
+        new Date(fecha + "T00:00:00").getDay()
+    ];
+}
 
 
-const trabajadores = [
+// =====================================================
+// OBTENER LOS 7 DÍAS DE LA SEMANA
+// =====================================================
 
-    {
-        nombre: "Héctor",
-        fijoDiscontinuo: false,
-        turno: "mañana",
-        tarea: "RUNNER",
-        horarios: [
-            "9:45 - 16:00",
-            "9:45 - 16:00",
-            "",
-            "9:45 - 16:00",
-            "9:45 - 16:00",
-            "9:45 - 16:00"
-        ]
-    },
+function obtenerDiasSemana(fechaInicio) {
 
-    {
-        nombre: "Samuel",
-        fijoDiscontinuo: false,
-        turno: "mañana",
-        tarea: "RUNNER",
-        horarios: [
-            "9:45 - 16:00",
-            "C 21:00 - 06:00",
-            "",
-            "9:45 - 16:00",
-            "9:45 - 16:00",
-            "9:45 - 16:00"
-        ]
-    },
+    const dias = [];
 
-    {
-        nombre: "Alejandro",
-        fijoDiscontinuo: false,
-        turno: "mañana",
-        tarea: "DEV A TIENDA",
-        horarios: [
-            "",
-            "",
-            "",
-            "9:45 - 16:00",
-            "9:45 - 16:00",
-            ""
-        ]
-    },
+    for (let i = 0; i < 7; i++) {
 
-    {
-        nombre: "Ángela",
-        fijoDiscontinuo: false,
-        turno: "mañana",
-        tarea: "CONSOLA / DEV EDIG",
-        horarios: [
-            "9:00 - 15:00",
-            "9:00 - 15:00",
-            "",
-            "9:00 - 15:00",
-            "9:00 - 15:00",
-            "9:00 - 15:00"
-        ]
-    },
+        const fecha = new Date(fechaInicio);
 
-    {
-        nombre: "Rubén",
-        fijoDiscontinuo: false,
-        turno: "mañana",
-        tarea: "ECI EXPRESS / C&CAR",
-        horarios: [
-            "9:00 - 16:00",
-            "9:00 - 16:00",
-            "",
-            "9:00 - 16:00",
-            "9:00 - 16:00",
-            "10:00 - 19:00"
-        ]
-    },
+        fecha.setDate(
+            fecha.getDate() + i
+        );
 
-    {
-        nombre: "Nirvana",
-        fijoDiscontinuo: false,
-        turno: "mañana",
-        tarea: "HOME DELIVERY",
-        horarios: [
-            "9:45 - 16:00",
-            "9:45 - 16:00",
-            "",
-            "9:45 - 16:00",
-            "9:45 - 16:00",
-            "11:00 - 20:00"
-        ]
-    },
+        const año = fecha.getFullYear();
+        const mes = String(
+            fecha.getMonth() + 1
+        ).padStart(2, "0");
 
-    {
-        nombre: "Carmen",
-        fijoDiscontinuo: true,
-        turno: "mañana",
-        tarea: "MOSTRADOR",
-        horarios: [
-            "9:00 - 16:00",
-            "21:00 - 06:00",
-            "",
-            "9:45 - 16:00",
-            "9:45 - 16:00",
-            "9:45 - 16:00"
-        ]
-    },
+        const dia = String(
+            fecha.getDate()
+        ).padStart(2, "0");
 
+        const fechaTexto =
+            `${año}-${mes}-${dia}`;
 
-    // =========================
-    // TARDES
-    // =========================
-
-    {
-        nombre: "Tonet",
-        fijoDiscontinuo: false,
-        turno: "tarde",
-        tarea: "RUNNER",
-        horarios: [
-            "16:00 - 22:15",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ]
-    },
-
-    {
-        nombre: "Roberto",
-        fijoDiscontinuo: false,
-        turno: "tarde",
-        tarea: "CONSOLA / DEV EDIG",
-        horarios: [
-            "DOMINGO - LUNES",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ]
-    },
-
-    {
-        nombre: "Ron",
-        fijoDiscontinuo: false,
-        turno: "tarde",
-        tarea: "DEV EDIG / C&CAR",
-        horarios: [
-            "16:00 - 22:15",
-            "",
-            "",
-            "11:00 - 20:00",
-            "",
-            "9:45 - 16:00"
-        ]
-    },
-
-    {
-        nombre: "Diego",
-        fijoDiscontinuo: false,
-        turno: "tarde",
-        tarea: "C&CAR",
-        horarios: [
-            "16:00 - 22:15",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ]
-    },
-
-    {
-        nombre: "Natalia",
-        fijoDiscontinuo: true,
-        turno: "tarde",
-        tarea: "GESTIÓN DE MOSTRADOR",
-        horarios: [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "16:00 - 22:15"
-        ]
-    },
-
-    {
-        nombre: "Adrián",
-        fijoDiscontinuo: false,
-        turno: "tarde",
-        tarea: "MOSTRADOR",
-        horarios: [
-            "16:00 - 22:15",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ]
+        dias.push({
+            fecha: fechaTexto,
+            nombre: obtenerNombreDia(fechaTexto),
+            numero: dia
+        });
     }
 
-];
+    return dias;
+}
 
 
 // =====================================================
-// CABECERA
+// CABECERA DE LA TABLA
 // =====================================================
 
-function crearCabecera() {
+function crearCabecera(dias) {
+
     const fila = document.createElement("tr");
 
-    const tarea = document.createElement("th");
-    tarea.textContent = "TAREA";
-    tarea.classList.add("tarea-header");
-    fila.appendChild(tarea);
+    const thTarea =
+        document.createElement("th");
+
+    thTarea.textContent = "TAREA";
+
+    fila.appendChild(thTarea);
+
 
     dias.forEach(dia => {
-        const th = document.createElement("th");
+
+        const th =
+            document.createElement("th");
 
         th.innerHTML = `
-            <span class="dia-nombre">${dia.corto}</span>
-            <span class="dia-numero">${dia.numero}</span>
+            <span class="dia-nombre">
+                ${dia.nombre}
+            </span>
+
+            <span class="dia-numero">
+                ${dia.numero}
+            </span>
         `;
 
         fila.appendChild(th);
+
     });
+
 
     return fila;
 }
 
 
 // =====================================================
-// AGRUPAR TRABAJADORES POR TAREA
+// TEXTO DE LA SEMANA
 // =====================================================
 
-function agruparPorTarea(trabajadoresTurno) {
+function actualizarTextoSemana(dias) {
 
-    const tareas = {};
+    const elemento =
+        document.getElementById(
+            "semanaActual"
+        );
 
-    trabajadoresTurno.forEach(trabajador => {
+    if (!elemento || dias.length === 0) {
+        return;
+    }
 
-        if (!tareas[trabajador.tarea]) {
-            tareas[trabajador.tarea] = [];
-        }
 
-        tareas[trabajador.tarea].push(trabajador);
+    const primera =
+        new Date(
+            dias[0].fecha + "T00:00:00"
+        );
 
-    });
+    const ultima =
+        new Date(
+            dias[5].fecha + "T00:00:00"
+        );
 
-    return tareas;
+
+    const opciones = {
+        day: "numeric",
+        month: "long"
+    };
+
+
+    elemento.textContent =
+        `Semana del ${
+            primera.toLocaleDateString(
+                "es-ES",
+                opciones
+            )
+        } al ${
+            ultima.toLocaleDateString(
+                "es-ES",
+                opciones
+            )
+        }`;
 }
 
 
 // =====================================================
-// CREAR CELDA DE UN DÍA
+// AGRUPAR DATOS POR TAREA
 // =====================================================
 
-function crearCeldaDia(trabajadores, diaIndex) {
+function agruparPorTarea(datos) {
 
-    const celda = document.createElement("td");
+    const tareasAgrupadas = {};
 
-    celda.classList.add("planificacion-cell");
+    tareas.forEach(tarea => {
 
-
-    trabajadores.forEach(trabajador => {
-
-        const horario = trabajador.horarios[diaIndex];
-
-
-        // Si ese trabajador no trabaja ese día
-        if (!horario) {
-            return;
-        }
-
-
-        const trabajadorDiv = document.createElement("div");
-
-        trabajadorDiv.classList.add("asignacion");
-
-
-        // Fijo discontinuo
-        if (trabajador.fijoDiscontinuo) {
-            trabajadorDiv.classList.add("fijo-discontinuo");
-        }
-
-
-        trabajadorDiv.innerHTML = `
-            <div class="asignacion-nombre">
-                ${trabajador.nombre}
-            </div>
-
-            <div class="asignacion-horario">
-                ${horario}
-            </div>
-        `;
-
-
-        celda.appendChild(trabajadorDiv);
+        tareasAgrupadas[tarea.id_tarea] = {
+            id_tarea: tarea.id_tarea,
+            nombre: tarea.nombre,
+            datos: []
+        };
 
     });
 
 
-    // Si no hay nadie asignado
-    if (celda.children.length === 0) {
+    datos.forEach(dato => {
 
-        celda.innerHTML = `
-            <span class="sin-asignacion">—</span>
-        `;
+        if (!tareasAgrupadas[dato.id_tarea]) {
+
+            tareasAgrupadas[dato.id_tarea] = {
+                id_tarea: dato.id_tarea,
+                nombre: dato.tarea,
+                datos: []
+            };
+
+        }
+
+        tareasAgrupadas[dato.id_tarea].datos.push(
+            dato
+        );
+
+    });
+
+
+    return Object.values(tareasAgrupadas);
+}
+// =====================================================
+// CREAR TRABAJADOR
+// =====================================================
+
+function crearAsignacion(dato) {
+
+    const asignacion =
+        document.createElement("div");
+
+    asignacion.classList.add(
+        "asignacion"
+    );
+
+
+    // Fijo discontinuo
+    if (dato.fijo_discontinuo) {
+
+        asignacion.classList.add(
+            "fijo-discontinuo"
+        );
 
     }
 
 
-    return celda;
+    asignacion.innerHTML = `
+        <a
+            href="/calendario-trabajador/${dato.id_trabajador}"
+            class="asignacion-nombre"
+        >
+            ${dato.trabajador}
+        </a>
+    `;
+
+
+    return asignacion;
 }
 
-
 // =====================================================
-// CREAR FILA DE TAREA
+// CREAR FILA DE UNA TAREA
 // =====================================================
 
-function crearFilasTareas(trabajadoresTurno, tabla) {
-    const tareas = [
-        ...new Set(
-            trabajadoresTurno.map(trabajador => trabajador.tarea)
-        )
-    ];
+function crearFilaTarea(
+    tarea,
+    dias
+) {
 
-    tareas.forEach(tarea => {
-        const trabajadoresTarea = trabajadoresTurno.filter(
-            trabajador => trabajador.tarea === tarea
+    const fila =
+        document.createElement("tr");
+
+
+    // -----------------------------------------------
+    // NOMBRE DE LA TAREA
+    // -----------------------------------------------
+
+    const celdaTarea =
+        document.createElement("td");
+
+    celdaTarea.classList.add(
+        "tarea-cell"
+    );
+
+    celdaTarea.textContent =
+        tarea.nombre;
+
+    fila.appendChild(
+        celdaTarea
+    );
+
+
+    // -----------------------------------------------
+    // DÍAS
+    // -----------------------------------------------
+
+    dias.forEach(dia => {
+
+        const celda =
+            document.createElement("td");
+
+        celda.classList.add(
+            "planificacion-cell"
         );
 
-        trabajadoresTarea.forEach((trabajador, index) => {
-            const fila = crearFilaTrabajador(
-                trabajador,
-                index === 0,
-                trabajadoresTarea.length
+
+        // Trabajadores de esta tarea
+        // en este día
+
+        const trabajadores =
+            tarea.datos.filter(
+                dato =>
+                    dato.fecha === dia.fecha
             );
 
-            tabla.appendChild(fila);
-        });
+
+        if (trabajadores.length === 0) {
+
+            celda.innerHTML = `
+                <span class="sin-asignacion">
+                    —
+                </span>
+            `;
+
+        } else {
+
+            trabajadores.forEach(
+                dato => {
+
+                    celda.appendChild(
+                        crearAsignacion(dato)
+                    );
+
+                }
+            );
+
+        }
+
+
+        fila.appendChild(
+            celda
+        );
+
     });
+
+
+    return fila;
 }
 
 
 // =====================================================
-// CARGAR TABLA
+// CREAR TABLA
 // =====================================================
 
-function cargarTabla(turno, cabeceraId, tablaId) {
-    const cabecera = document.getElementById(cabeceraId);
-    const tabla = document.getElementById(tablaId);
+function crearTabla(
+    datos,
+    tabla,
+    dias
+) {
+
+    tabla.innerHTML = "";
+
+
+    const tareas =
+        agruparPorTarea(datos);
+
+
+    tareas.forEach(tarea => {
+
+        const fila =
+            crearFilaTarea(
+                tarea,
+                dias
+            );
+
+        tabla.appendChild(
+            fila
+        );
+
+    });
+
+}
+
+
+// =====================================================
+// CARGAR UNA DE LAS DOS TABLAS
+// =====================================================
+
+function cargarTabla(
+    turno,
+    cabeceraId,
+    tablaId,
+    dias
+) {
+
+    const cabecera =
+        document.getElementById(
+            cabeceraId
+        );
+
+    const tabla =
+        document.getElementById(
+            tablaId
+        );
+
 
     cabecera.innerHTML = "";
     tabla.innerHTML = "";
 
-    cabecera.appendChild(crearCabecera());
 
-    const trabajadoresTurno = trabajadores.filter(
-        trabajador => trabajador.turno === turno
+    // Cabecera
+    cabecera.appendChild(
+        crearCabecera(dias)
     );
 
-    crearFilasTareas(trabajadoresTurno, tabla);
+
+    // Filtrar mañana / tarde
+    const datosTurno =
+        datosPlanificacion.filter(
+            dato =>
+                Number(dato.turno) === turno &&
+                dias.some(
+                    dia =>
+                        dia.fecha === dato.fecha
+                )
+        );
+
+
+    crearTabla(
+        datosTurno,
+        tabla,
+        dias
+    );
 }
 
+
 // =====================================================
-// INICIAR PLANIFICACIÓN
+// CARGAR PLANIFICACIÓN
 // =====================================================
 
 function cargarPlanificacion() {
 
+    const dias =
+        obtenerDiasSemana(
+            fechaInicioSemana
+        );
+
+
+    actualizarTextoSemana(
+        dias
+    );
+
+
+    // MAÑANA
     cargarTabla(
-        "mañana",
+        0,
         "cabeceraMananas",
-        "tablaMananas"
+        "tablaMananas",
+        dias
     );
 
 
+    // TARDE
     cargarTabla(
-        "tarde",
+        1,
         "cabeceraTardes",
-        "tablaTardes"
+        "tablaTardes",
+        dias
     );
-
 }
 
+
+// =====================================================
+// OBTENER PRIMERA FECHA DISPONIBLE
+// =====================================================
+
+function obtenerPrimeraFecha() {
+
+    if (
+        !datosPlanificacion ||
+        datosPlanificacion.length === 0
+    ) {
+
+        return new Date();
+
+    }
+
+
+    const fechas =
+        datosPlanificacion
+            .map(
+                dato =>
+                    new Date(
+                        dato.fecha +
+                        "T00:00:00"
+                    )
+            )
+            .sort(
+                (a, b) => a - b
+            );
+
+
+    return fechas[0];
+}
+
+
+// =====================================================
+// CARGAR DATOS DESDE FLASK
+// =====================================================
+
+async function cargarDatos() {
+
+    try {
+
+        const [
+            respuestaPlanificacion,
+            respuestaTareas
+        ] = await Promise.all([
+
+            fetch("/api/planificacion"),
+
+            fetch("/api/tareas")
+
+        ]);
+
+
+        if (
+            !respuestaPlanificacion.ok ||
+            !respuestaTareas.ok
+        ) {
+
+            throw new Error(
+                "No se han podido cargar los datos"
+            );
+
+        }
+
+
+        datosPlanificacion =
+            await respuestaPlanificacion.json();
+
+        tareas =
+            await respuestaTareas.json();
+
+
+        if (
+            datosPlanificacion.error
+        ) {
+
+            throw new Error(
+                datosPlanificacion.error
+            );
+
+        }
+
+
+        if (
+            tareas.error
+        ) {
+
+            throw new Error(
+                tareas.error
+            );
+
+        }
+
+
+        fechaInicioSemana =
+            obtenerPrimeraFecha();
+
+
+        cargarPlanificacion();
+
+
+    } catch (error) {
+
+        console.error(
+            "Error cargando planificación:",
+            error
+        );
+
+    }
+}
+
+// =====================================================
+// CAMBIAR SEMANA
+// =====================================================
+
+function cambiarSemana(
+    numeroSemanas
+) {
+
+    fechaInicioSemana.setDate(
+        fechaInicioSemana.getDate() +
+        numeroSemanas * 7
+    );
+
+
+    cargarPlanificacion();
+}
+
+
+// =====================================================
+// BOTONES
+// =====================================================
 
 document.addEventListener(
     "DOMContentLoaded",
-    cargarPlanificacion
+    () => {
+
+        document
+            .getElementById(
+                "semanaAnterior"
+            )
+            .addEventListener(
+                "click",
+                () => {
+                    cambiarSemana(-1);
+                }
+            );
+
+
+        document
+            .getElementById(
+                "semanaSiguiente"
+            )
+            .addEventListener(
+                "click",
+                () => {
+                    cambiarSemana(1);
+                }
+            );
+
+
+        cargarDatos();
+
+    }
 );
 
-function crearFilaTrabajador(trabajador, incluirTarea, rowspan) {
-    const fila = document.createElement("tr");
 
-    if (incluirTarea) {
-        const celdaTarea = document.createElement("td");
+// EXPORTAR A EXCEL
+document
+    .getElementById("exportarExcel")
+    .addEventListener("click", () => {
 
-        celdaTarea.classList.add("tarea-cell");
-        celdaTarea.textContent = trabajador.tarea;
-        celdaTarea.rowSpan = rowspan;
+        window.location.href =
+            "/api/planificacion/exportar";
 
-        fila.appendChild(celdaTarea);
-    }
-
-    trabajador.horarios.forEach(horario => {
-        const celda = document.createElement("td");
-        celda.classList.add("planificacion-cell");
-
-        if (horario) {
-            const asignacion = document.createElement("div");
-            asignacion.classList.add("asignacion");
-
-            if (trabajador.fijoDiscontinuo) {
-                asignacion.classList.add("fijo-discontinuo");
-            }
-
-            asignacion.innerHTML = `
-                <div class="asignacion-nombre">
-                    ${trabajador.nombre}
-                </div>
-                <div class="asignacion-horario">
-                    ${horario}
-                </div>
-            `;
-
-            celda.appendChild(asignacion);
-        } else {
-            celda.innerHTML = `
-                <span class="sin-asignacion">—</span>
-            `;
-        }
-
-        fila.appendChild(celda);
     });
 
-    return fila;
-}
+// GENERAR PLANIFICACIÓN
+document
+    .getElementById("generarPlanificacion")
+    .addEventListener("click", async () => {
+
+        const boton = document.getElementById(
+            "generarPlanificacion"
+        );
+
+        boton.disabled = true;
+
+        const textoOriginal = boton.innerHTML;
+
+        boton.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Generando...';
+
+        try {
+
+            const respuesta = await fetch(
+                "/api/planificacion/generar",
+                {
+                    method: "POST"
+                }
+            );
+
+            const datos = await respuesta.json();
+
+            if (!respuesta.ok || !datos.ok) {
+                throw new Error(
+                    datos.error ||
+                    "No se ha podido generar la planificación."
+                );
+            }
+
+            alert(
+                "La planificación se ha generado correctamente."
+            );
+
+            // Volver a cargar los datos de la interfaz
+            cargarDatos();
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Error al generar la planificación:\n" +
+                error.message
+            );
+
+        } finally {
+
+            boton.disabled = false;
+            boton.innerHTML = textoOriginal;
+
+        }
+
+    });

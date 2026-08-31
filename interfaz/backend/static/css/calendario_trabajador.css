@@ -1,0 +1,756 @@
+/* ============================================================
+   CALENDARIO DEL TRABAJADOR
+   ============================================================ */
+
+.content {
+    padding-bottom: 40px;
+}
+
+
+/* ------------------------------------------------------------
+   VOLVER
+   ------------------------------------------------------------ */
+
+.volver-calendarios {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 25px;
+
+    color: #555;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+
+    transition: color 0.2s ease;
+}
+
+.volver-calendarios:hover {
+    color: #222;
+}
+
+
+/* ------------------------------------------------------------
+   CABECERA DEL TRABAJADOR
+   ------------------------------------------------------------ */
+
+.trabajador-header {
+    background: white;
+    border-radius: 14px;
+    padding: 25px 30px;
+    margin-bottom: 20px;
+
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.trabajador-header h1 {
+    margin: 0 0 6px;
+    font-size: 24px;
+    font-weight: 600;
+    color: #222;
+}
+
+.trabajador-header p {
+    margin: 0;
+    color: #777;
+    font-size: 14px;
+}
+
+
+/* ------------------------------------------------------------
+   LEYENDA
+   ------------------------------------------------------------ */
+
+.calendario-leyenda {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+
+    background: white;
+    border-radius: 14px;
+    padding: 16px 25px;
+    margin-bottom: 20px;
+
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.calendario-leyenda div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    font-size: 13px;
+    color: #555;
+}
+
+.leyenda-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.leyenda-color.manana {
+    background: #81c995;
+}
+
+.leyenda-color.tarde {
+    background: #c8e6c9;
+}
+
+.leyenda-color.libre {
+    background: #e5e5e5;
+}
+
+.leyenda-color.vacaciones {
+    background: #ffe082;
+}
+
+
+/* ------------------------------------------------------------
+   NAVEGACIÓN DEL MES
+   ------------------------------------------------------------ */
+
+.calendario-navegacion {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 25px;
+
+    margin-bottom: 15px;
+}
+
+.calendario-navegacion h2 {
+    min-width: 220px;
+    margin: 0;
+
+    text-align: center;
+
+    font-size: 20px;
+    font-weight: 600;
+    color: #222;
+}
+
+.calendario-navegacion button {
+    width: 38px;
+    height: 38px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: white;
+    color: #555;
+
+    cursor: pointer;
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.calendario-navegacion button:hover {
+    background: #f1f1f1;
+    transform: scale(1.05);
+}
+
+
+/* ------------------------------------------------------------
+   CALENDARIO
+   ------------------------------------------------------------ */
+
+.calendario {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+
+/* Días de la semana */
+
+.calendario-dias-semana {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+
+    margin-bottom: 8px;
+}
+
+.calendario-dias-semana div {
+    text-align: center;
+
+    padding: 10px 5px;
+
+    font-size: 12px;
+    font-weight: 600;
+    color: #777;
+}
+
+
+/* Grid */
+
+.calendario-grid {
+    display:grid;
+    grid-template-columns:repeat(7,minmax(0,1fr));
+    gap:8px;
+    width:100%;
+    box-sizing:border-box;
+}
+
+.calendario-grid > *{
+    min-width:0;
+    box-sizing:border-box;
+}
+
+
+/* ------------------------------------------------------------
+   DÍAS
+   ------------------------------------------------------------ */
+
+.dia-calendario {
+    position: relative;
+
+    min-height: 90px;
+
+    border-radius: 10px;
+    padding: 10px;
+
+    box-sizing: border-box;
+
+    cursor: default;
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+    min-width:0;
+    overflow:hidden;
+}
+
+.dia-calendario:not(.vacio):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10);
+}
+
+
+/* Número */
+
+.numero-dia {
+    font-size: 14px;
+    font-weight: 600;
+
+    color: #333;
+
+    margin-bottom: 8px;
+}
+
+
+/* Estado */
+
+.estado-dia {
+    font-size: 12px;
+    font-weight: 600;
+
+    margin-bottom: 4px;
+}
+
+
+/* Horario */
+
+.horario {
+    font-size: 11px;
+    color: #555;
+}
+
+
+/* ------------------------------------------------------------
+   COLORES DE LOS TURNOS
+   ------------------------------------------------------------ */
+
+/* Mañana */
+
+.dia-calendario.manana {
+    background: #81c995;
+}
+
+.dia-calendario.manana .estado-dia {
+    color: #1b5e20;
+}
+
+
+/* Tarde */
+
+.dia-calendario.tarde {
+    background: #c8e6c9;
+}
+
+.dia-calendario.tarde .estado-dia {
+    color: #2e7d32;
+}
+
+
+/* Libre */
+
+.dia-calendario.libre {
+    background: #e5e5e5;
+}
+
+.dia-calendario.libre .estado-dia {
+    color: #777;
+}
+
+
+/* Vacaciones */
+
+.dia-calendario.vacaciones {
+    background: #ffe082;
+}
+
+.dia-calendario.vacaciones .estado-dia {
+    color: #795548;
+}
+
+
+/* Días vacíos del calendario */
+
+.dia-calendario.vacio {
+    background: transparent;
+}
+
+
+/* ------------------------------------------------------------
+   TOOLTIP DE TAREA
+   ------------------------------------------------------------ */
+
+.dia-calendario[data-tarea]::after {
+    content: "Tarea: " attr(data-tarea);
+
+    position: absolute;
+
+    left: 50%;
+    bottom: calc(100% + 8px);
+
+    transform: translateX(-50%) translateY(5px);
+
+    background: #333;
+    color: white;
+
+    padding: 8px 12px;
+
+    border-radius: 7px;
+
+    font-size: 11px;
+    font-weight: 400;
+
+    white-space: nowrap;
+
+    opacity: 0;
+    visibility: hidden;
+
+    pointer-events: none;
+
+    z-index: 20;
+
+    transition:
+        opacity 0.15s ease,
+        transform 0.15s ease;
+}
+
+
+/* Flechita del tooltip */
+
+.dia-calendario[data-tarea]::before {
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+    bottom: calc(100% + 2px);
+
+    transform: translateX(-50%);
+
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #333;
+
+    opacity: 0;
+    visibility: hidden;
+
+    z-index: 21;
+}
+
+
+/* Mostrar tooltip */
+
+.dia-calendario[data-tarea]:hover::after,
+.dia-calendario[data-tarea]:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+.dia-calendario[data-tarea]:hover::after {
+    transform: translateX(-50%) translateY(0);
+}
+
+
+/* ------------------------------------------------------------
+   ERROR
+   ------------------------------------------------------------ */
+
+.error-calendario {
+    grid-column: 1 / -1;
+
+    padding: 30px;
+
+    text-align: center;
+
+    color: #b00020;
+}
+
+
+/* ------------------------------------------------------------
+   RESPONSIVE
+   ------------------------------------------------------------ */
+
+@media (max-width: 900px) {
+
+    .calendario-leyenda {
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .dia-calendario {
+        min-height: 75px;
+        padding: 7px;
+    }
+
+    .horario {
+        font-size: 10px;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .calendario {
+        padding: 10px;
+    }
+
+    .calendario-grid,
+    .calendario-dias-semana {
+        gap: 4px;
+    }
+
+    .dia-calendario {
+        min-height: 65px;
+        padding: 5px;
+    }
+
+    .numero-dia {
+        font-size: 12px;
+    }
+
+    .estado-dia {
+        font-size: 10px;
+    }
+
+    .horario {
+        display: none;
+    }
+
+    .calendario-navegacion {
+        gap: 10px;
+    }
+
+    .calendario-navegacion h2 {
+        min-width: 170px;
+        font-size: 17px;
+    }
+}
+
+/* ============================================================
+   TAREAS EN EL CALENDARIO
+   ============================================================ */
+
+.tarea-dia {
+    font-size: 11px;
+    font-weight: 500;
+    color: #333;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    margin-top: 5px;
+}
+
+.mas-tareas {
+    font-size: 10px;
+    color: #555;
+    margin-top: 2px;
+}
+
+
+/* ============================================================
+   MODAL DEL DÍA
+   ============================================================ */
+
+.modal-dia {
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.35);
+
+    opacity: 0;
+    visibility: hidden;
+
+    z-index: 1000;
+
+    transition: opacity 0.2s ease;
+}
+
+.modal-dia.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+
+.modal-dia-contenido {
+    position: relative;
+
+    width: 90%;
+    max-width: 500px;
+
+    max-height: 80vh;
+    overflow-y: auto;
+
+    background: white;
+    border-radius: 16px;
+
+    padding: 30px;
+
+    box-sizing: border-box;
+
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
+
+    transform: translateY(10px);
+
+    transition: transform 0.2s ease;
+}
+
+.modal-dia.visible .modal-dia-contenido {
+    transform: translateY(0);
+}
+
+
+.cerrar-modal {
+    position: absolute;
+
+    top: 18px;
+    right: 18px;
+
+    width: 34px;
+    height: 34px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #f1f1f1;
+
+    color: #555;
+
+    cursor: pointer;
+
+    font-size: 16px;
+}
+
+.cerrar-modal:hover {
+    background: #e5e5e5;
+}
+
+
+/* Cabecera */
+
+.modal-dia-cabecera {
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    padding-right: 35px;
+
+    margin-bottom: 25px;
+}
+
+.modal-dia-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    border-radius: 10px;
+
+    background: #f1f1f1;
+
+    color: #555;
+}
+
+.modal-dia-cabecera h2 {
+    margin: 0;
+
+    font-size: 19px;
+    font-weight: 600;
+}
+
+.modal-dia-cabecera p {
+    margin: 3px 0 0;
+
+    font-size: 12px;
+    color: #888;
+}
+
+
+/* Turno */
+
+.detalle-turno-principal {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 15px;
+
+    border-radius: 10px;
+
+    background: #f5f5f5;
+
+    margin-bottom: 22px;
+}
+
+.detalle-turno-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 35px;
+    height: 35px;
+
+    border-radius: 8px;
+
+    background: white;
+}
+
+.detalle-turno-principal span {
+    display: block;
+
+    font-size: 11px;
+    color: #888;
+}
+
+.detalle-turno-principal strong {
+    display: block;
+
+    font-size: 14px;
+    color: #333;
+}
+
+
+/* Secciones */
+
+.detalle-seccion h3 {
+    margin: 0 0 12px;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.detalle-seccion h3 i {
+    margin-right: 7px;
+}
+
+
+/* Tareas */
+
+.detalle-tarea {
+    padding: 13px 15px;
+
+    border: 1px solid #eee;
+    border-radius: 9px;
+
+    margin-bottom: 8px;
+}
+
+.detalle-tarea-nombre {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+}
+
+
+/* Estados */
+
+.detalle-estado {
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    padding: 18px;
+
+    border-radius: 10px;
+}
+
+.detalle-estado.libre {
+    background: #eeeeee;
+}
+
+.detalle-estado.vacaciones {
+    background: #fff3cd;
+}
+
+.detalle-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 40px;
+    height: 40px;
+
+    border-radius: 9px;
+
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.detalle-estado strong {
+    display: block;
+
+    font-size: 14px;
+}
+
+.detalle-estado p {
+    margin: 4px 0 0;
+
+    font-size: 12px;
+    color: #777;
+}
+
+.distintivo-fijo-discontinuo{
+    display:inline-flex;
+    align-items:center;
+    margin-left:10px;
+    padding:5px 10px;
+    border-radius:20px;
+    background:#fff3c4;
+    color:#8a6d00;
+    font-size:11px;
+    font-weight:600;
+    vertical-align:middle;
+}
