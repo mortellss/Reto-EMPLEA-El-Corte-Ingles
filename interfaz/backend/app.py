@@ -3,6 +3,9 @@ from sqlalchemy import text
 import pandas as pd
 from db import engine
 from io import BytesIO
+import subprocess
+import sys
+from pathlib import Path
 
 
 app = Flask(__name__)
@@ -2373,7 +2376,447 @@ def generar_prediccion():
 def planificacion():
     return render_template("planificacion.html")
 
+# ============================================================
+# PLANIFICACIÓN — DATOS DE CALENDARIZACIÓN
+# ============================================================
 
+@app.route("/api/planificacion")
+def api_planificacion():
+
+    try:
+
+        df = pd.read_sql("""
+            SELECT
+                c.fecha,
+                c.num_semana,
+                c.id_tarea,
+                t.nombre AS tarea,
+                c.id_trabajador,
+                tr.nombre AS trabajador,
+                tr.apellidos AS apellidos,
+                tr.fijo_discontinuo,
+                c.turno
+
+            FROM calendarizacion c
+
+            INNER JOIN tarea t
+                ON c.id_tarea = t.id_tarea
+
+            INNER JOIN trabajador tr
+                ON c.id_trabajador = tr.id_trabajador
+
+            WHERE tr.activo = 1
+
+            ORDER BY
+                c.fecha,
+                c.turno,
+                t.nombre,
+                tr.nombre
+
+        """, engine)
+
+        df = df.astype(object).where(pd.notna(df), None)
+
+        datos = df.to_dict(orient="records")
+
+        for fila in datos:
+
+            if fila.get("fecha") is not None:
+                fila["fecha"] = fila["fecha"].strftime("%Y-%m-%d")
+
+            fila["fijo_discontinuo"] = bool(
+                fila.get("fijo_discontinuo")
+            )
+
+        return jsonify(datos)
+
+    except Exception as e:
+
+        print("ERROR PLANIFICACIÓN:", e)
+
+        return jsonify({
+            "error": "No se ha podido cargar la planificación."
+        }), 500
+
+
+# ============================================================
+# PLANIFICACIÓN — TAREAS
+# ============================================================
+
+@app.route("/api/tareas")
+def api_tareas():
+
+    try:
+
+        df = pd.read_sql("""
+            SELECT
+                id_tarea,
+                nombre
+            FROM tarea
+            WHERE activa = 1
+            ORDER BY id_tarea
+        """, engine)
+
+        return jsonify(
+            df.to_dict(orient="records")
+        )
+
+    except Exception as e:
+
+        print("ERROR TAREAS:", e)
+
+        return jsonify({
+            "error": "No se han podido cargar las tareas."
+        }), 500
+
+
+# EXPORTAR PLANIFICACIÓN
+@app.route("/api/planificacion/exportar")
+def exportar_planificacion():
+
+    try:
+
+        query = """
+            SELECT
+                c.fecha,
+                c.id_tarea,
+                t.nombre AS tarea,
+                c.id_trabajador,
+                tr.nombre AS trabajador,
+                c.turno
+            FROM calendarizacion c
+            JOIN tarea t
+                ON c.id_tarea = t.id_tarea
+            JOIN trabajador tr
+                ON c.id_trabajador = tr.id_trabajador
+            WHERE t.activa = 1
+            ORDER BY c.fecha, c.id_tarea, c.turno, c.id_trabajador
+        """
+
+        df = pd.read_sql(query, engine)
+
+        if df.empty:
+            return jsonify({
+                "error": "No hay planificación para exportar."
+            }), 404
+
+        df["fecha"] = pd.to_datetime(df["fecha"]).dt.date
+
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.utils import get_column_letter
+
+        wb = Workbook()
+
+        # Eliminamos la hoja que crea Excel automáticamente
+        hoja_inicial = wb.active
+        wb.remove(hoja_inicial)
+
+        # ----------------------------------------------------
+        # FECHAS
+        # ----------------------------------------------------
+
+        fechas = pd.date_range(
+            start=df["fecha"].min(),
+            end=df["fecha"].max(),
+            freq="D"
+        ).date
+
+        # ----------------------------------------------------
+        # TAREAS ACTIVAS
+        # ----------------------------------------------------
+
+        tareas = (
+            df[["id_tarea", "tarea"]]
+            .drop_duplicates()
+            .sort_values("id_tarea")
+        )
+
+        # ----------------------------------------------------
+        # ESTILOS
+        # ----------------------------------------------------
+
+        borde = Border(
+            left=Side(style="thin", color="CCCCCC"),
+            right=Side(style="thin", color="CCCCCC"),
+            top=Side(style="thin", color="CCCCCC"),
+            bottom=Side(style="thin", color="CCCCCC")
+        )
+
+        def crear_hoja(nombre_hoja, turno):
+
+            ws = wb.create_sheet(nombre_hoja)
+
+            # ----------------------------------------------
+            # CABECERA
+            # ----------------------------------------------
+
+            ws.cell(
+                row=1,
+                column=1,
+                value="TAREA"
+            )
+
+            for columna, fecha in enumerate(fechas, start=2):
+
+                celda = ws.cell(
+                    row=1,
+                    column=columna,
+                    value=fecha
+                )
+
+                celda.number_format = "dd/mm/yyyy"
+
+            # ----------------------------------------------
+            # ESTILO CABECERA
+            # ----------------------------------------------
+
+            for celda in ws[1]:
+
+                celda.font = Font(
+                    bold=True,
+                    color="FFFFFF"
+                )
+
+                celda.fill = PatternFill(
+                    fill_type="solid",
+                    fgColor="087F3F"
+                )
+
+                celda.alignment = Alignment(
+                    horizontal="center",
+                    vertical="center"
+                )
+
+                celda.border = borde
+
+            ws.row_dimensions[1].height = 30
+
+            # ----------------------------------------------
+            # TAREAS
+            # ----------------------------------------------
+
+            fila = 2
+
+            for _, tarea in tareas.iterrows():
+
+                id_tarea = tarea["id_tarea"]
+
+                ws.cell(
+                    row=fila,
+                    column=1,
+                    value=tarea["tarea"]
+                )
+
+                # Estilo nombre tarea
+                celda_tarea = ws.cell(
+                    row=fila,
+                    column=1
+                )
+
+                celda_tarea.font = Font(
+                    bold=True
+                )
+
+                celda_tarea.fill = PatternFill(
+                    fill_type="solid",
+                    fgColor="E8FAF0"
+                )
+
+                celda_tarea.alignment = Alignment(
+                    vertical="center",
+                    wrap_text=True
+                )
+
+                celda_tarea.border = borde
+
+                # ------------------------------------------
+                # CADA DÍA
+                # ------------------------------------------
+
+                for columna, fecha in enumerate(
+                    fechas,
+                    start=2
+                ):
+
+                    registros = df[
+                        (df["id_tarea"] == id_tarea)
+                        &
+                        (df["fecha"] == fecha)
+                        &
+                        (df["turno"] == turno)
+                    ]
+
+                    if registros.empty:
+
+                        valor = "—"
+
+                    else:
+
+                        trabajadores = []
+
+                        for _, trabajador in registros.iterrows():
+
+                            trabajadores.append(
+                                trabajador["trabajador"]
+                            )
+
+                        valor = "\n".join(
+                            trabajadores
+                        )
+
+                    celda = ws.cell(
+                        row=fila,
+                        column=columna,
+                        value=valor
+                    )
+
+                    celda.alignment = Alignment(
+                        horizontal="center",
+                        vertical="center",
+                        wrap_text=True
+                    )
+
+                    celda.border = borde
+
+                ws.row_dimensions[fila].height = 60
+
+                fila += 1
+
+            # ----------------------------------------------
+            # ANCHOS
+            # ----------------------------------------------
+
+            ws.column_dimensions["A"].width = 35
+
+            for columna in range(
+                2,
+                len(fechas) + 2
+            ):
+
+                letra = get_column_letter(
+                    columna
+                )
+
+                ws.column_dimensions[
+                    letra
+                ].width = 18
+
+            # ----------------------------------------------
+            # CONGELAR
+            # ----------------------------------------------
+
+            ws.freeze_panes = "B2"
+
+            # ----------------------------------------------
+            # FILTRO
+            # ----------------------------------------------
+
+            ws.auto_filter.ref = (
+                f"A1:"
+                f"{get_column_letter(len(fechas) + 1)}"
+                f"{fila - 1}"
+            )
+
+            return ws
+
+        # ----------------------------------------------------
+        # CREAR LAS DOS HOJAS
+        # ----------------------------------------------------
+
+        crear_hoja(
+            "Mañanas",
+            0
+        )
+
+        crear_hoja(
+            "Tardes",
+            1
+        )
+
+        # ----------------------------------------------------
+        # GENERAR ARCHIVO
+        # ----------------------------------------------------
+
+        archivo = BytesIO()
+
+        wb.save(archivo)
+
+        archivo.seek(0)
+
+        return send_file(
+            archivo,
+            as_attachment=True,
+            download_name="planificacion.xlsx",
+            mimetype=(
+                "application/vnd.openxmlformats-officedocument."
+                "spreadsheetml.sheet"
+            )
+        )
+
+    except Exception as e:
+
+        print(
+            "ERROR EXPORTANDO PLANIFICACIÓN:",
+            e
+        )
+
+        return jsonify({
+            "error": "No se ha podido generar el Excel."
+        }), 500
+
+# GENERAR PLANIFICACIÓN
+@app.route("/api/planificacion/generar", methods=["POST"])
+def generar_planificacion():
+
+    try:
+
+        ruta_script = (
+            Path(__file__).resolve().parents[2]
+            / "FASE_3_calendarizacion"
+            / "calPRUEBA.py"
+        )
+
+        resultado = subprocess.run(
+            [
+                sys.executable,
+                str(ruta_script)
+            ],
+            capture_output=True,
+            text=True,
+            cwd=str(ruta_script.parent)
+        )
+
+        if resultado.returncode != 0:
+
+            print("ERROR CALPRUEBA:")
+            print(resultado.stdout)
+            print(resultado.stderr)
+
+            return jsonify({
+                "ok": False,
+                "error": "No se ha podido generar la planificación.",
+                "detalle": resultado.stderr
+            }), 500
+
+        print("CALPRUEBA EJECUTADO CORRECTAMENTE:")
+        print(resultado.stdout)
+
+        return jsonify({
+            "ok": True,
+            "mensaje": "Planificación generada correctamente."
+        })
+
+    except Exception as e:
+
+        print("ERROR EJECUTANDO CALPRUEBA:", e)
+
+        return jsonify({
+            "ok": False,
+            "error": str(e)
+        }), 500
+        
+    
 # ============================================================
 # CONFIGURACIÓN
 # ============================================================

@@ -896,5 +896,3 @@ if __name__ == '__main__':
         habilidades,
         objetivo_horas_por_mes=objetivo_horas_por_mes,
     )
-
-

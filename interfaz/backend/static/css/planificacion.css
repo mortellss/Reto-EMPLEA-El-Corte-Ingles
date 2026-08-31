@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /* =========================
    CABECERA
 ========================= */
@@ -8,11 +7,11 @@
     justify-content: space-between;
     align-items: center;
     gap: 20px;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .planning-header h2 {
-    margin: 0 0 5px;
+    margin: 0 0 7px;
 }
 
 .planning-header p {
@@ -21,19 +20,74 @@
 
 
 /* =========================
-   SEMANA
+   NAVEGACIÓN DE SEMANA
 ========================= */
 
 .week-selector {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
+}
+
+.week-selector button {
+    width: 50px;
+    height: 50px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #087f3f;
+    color: #ffffff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    font-size: 26px;
+    font-weight: 500;
+
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.week-selector button:hover {
+    background: #066b35;
+
+    transform: translateY(-2px);
+
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.16);
+}
+
+.week-selector button:active {
+    transform: translateY(0);
 }
 
 .week-info {
-    min-width: 230px;
+    min-width: 330px;
+
     text-align: center;
-    font-weight: 500;
+
+    font-size: 17px;
+    font-weight: 600;
+
+    color: #172033;
+}
+
+
+/* =========================
+   ACCIONES
+========================= */
+
+.planning-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
 }
 
 
@@ -44,45 +98,57 @@
 .planning-legend {
     display: flex;
     align-items: center;
-    gap: 25px;
-    margin-bottom: 25px;
+
+    gap: 28px;
+
+    margin-top: 22px;
+    margin-bottom: 52px;
 }
 
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-}
-
-.legend-color {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-    display: inline-block;
-}
-
-.trabajador-normal {
-    background: #ffffff;
-    border: 1px solid #cccccc;
-}
-
-.fijo-discontinuo {
-    background: #e6c84a;
-    border: none;
-    border-radius: 50%;
-}
 
 /* =========================
    SECCIONES
 ========================= */
 
 .planning-section {
-    margin-bottom: 40px;
+    margin-bottom: 52px;
 }
 
 .planning-section-header {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.planning-section-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin: 0 0 7px;
+
+    font-size: 26px;
+}
+
+.planning-section-header p {
+    margin: 0;
+
+    color: #777;
+
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+
+
+/* =========================
+   SECCIONES
+========================= */
+
+.planning-section {
+    margin-bottom: 48px;
+}
+
+.planning-section-header {
+    margin-bottom: 20px;
 }
 
 .planning-section-header h2 {
@@ -335,344 +401,344 @@
     .planning-table {
         min-width: 850px;
     }
-
-=======
-/* =========================
-   CABECERA
-========================= */
-
-.planning-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 20px;
 }
-
-.planning-header h2 {
-    margin: 0 0 5px;
-}
-
-.planning-header p {
-    margin: 0;
-}
-
 
 /* =========================
-   SEMANA
+   BOTONES DE PLANIFICACIÓN
 ========================= */
 
-.week-selector {
+.export-button {
+    height: 38px;
+    padding: 0 15px;
+    border: 1px solid #087f3f;
+    border-radius: 8px;
+    background: #087f3f;
+    color: #ffffff;
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.week-info {
-    min-width: 230px;
-    text-align: center;
+.export-button:hover {
+    background: #066b35;
+    border-color: #066b35;
+}
+
+.export-button:active {
+    transform: scale(0.97);
+}
+
+
+.generate-button {
+    height: 38px;
+    padding: 0 15px;
+    border: 1px solid #173b2a;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #173b2a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+    font-size: 13px;
     font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.generate-button:hover {
+    background: #f0f7f3;
+    border-color: #087f3f;
+}
+
+.generate-button:disabled {
+    opacity: 0.6;
+    cursor: wait;
 }
 
 
 /* =========================
-   LEYENDA
+   ESPACIADO SUPERIOR
 ========================= */
 
 .planning-legend {
-    display: flex;
-    align-items: center;
-    gap: 25px;
-    margin-bottom: 25px;
+    margin-bottom: 28px;
 }
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-}
-
-.legend-color {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-    display: inline-block;
-}
-
-.trabajador-normal {
-    background: #ffffff;
-    border: 1px solid #cccccc;
-}
-
-.fijo-discontinuo {
-    background: #e6c84a;
-    border: none;
-    border-radius: 50%;
-}
-
-/* =========================
-   SECCIONES
-========================= */
 
 .planning-section {
     margin-bottom: 40px;
 }
 
 .planning-section-header {
-    margin-bottom: 15px;
+    margin-bottom: 16px;
+}
+
+/* =========================================================
+   AJUSTE FINAL - PLANIFICACIÓN
+========================================================= */
+
+
+/* =========================================================
+   BOTONES SUPERIORES
+========================================================= */
+
+.planning-top-actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.planning-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+
+/* =========================================================
+   EXPORTAR EXCEL
+========================================================= */
+
+.export-button {
+    height: 42px;
+    padding: 0 18px;
+
+    border: 1px solid #087f3f;
+    border-radius: 9px;
+
+    background: #087f3f;
+    color: #ffffff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+.export-button:hover {
+    background: #066b35;
+    border-color: #066b35;
+}
+
+
+/* =========================================================
+   GENERAR PLANIFICACIÓN
+========================================================= */
+
+.generate-button {
+    height: 42px;
+    padding: 0 18px;
+
+    border: 1px solid #087f3f;
+    border-radius: 9px;
+
+    background: #ffffff;
+    color: #173b2a;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+.generate-button:hover {
+    background: #f0f7f3;
+}
+
+
+/* =========================================================
+   LEYENDA
+========================================================= */
+
+.planning-legend {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+
+    margin: 0 0 32px 0;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    font-size: 14px;
+    color: #172033;
+}
+
+.legend-color {
+    width: 17px;
+    height: 17px;
+
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.trabajador-normal {
+    background: #ffffff;
+    border: 1px solid #aeb4ba;
+    border-radius: 4px;
+}
+
+.fijo-discontinuo {
+    background: #e6c84a;
+    border-radius: 50%;
+}
+
+
+/* =========================================================
+   NAVEGACIÓN DE SEMANA
+========================================================= */
+
+.week-navigation {
+    width: 100%;
+    height: 82px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 55px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e8eb;
+    border-radius: 12px;
+
+    box-sizing: border-box;
+
+    margin-bottom: 42px;
+
+    padding: 0 30px;
+
+    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.05);
+}
+
+
+/* =========================================================
+   FLECHAS
+========================================================= */
+
+.week-nav-button {
+    width: 50px;
+    height: 50px;
+
+    min-width: 50px;
+    min-height: 50px;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #087f3f;
+    color: #ffffff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 21px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.week-nav-button:hover {
+    background: #066b35;
+
+    transform: translateY(-2px);
+
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.16);
+}
+
+.week-nav-button:active {
+    transform: translateY(0);
+}
+
+
+/* =========================================================
+   TEXTO DE LA SEMANA
+========================================================= */
+
+.week-info {
+    min-width: 430px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    color: #172033;
+
+    font-size: 18px;
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   SECCIONES DE PLANIFICACIÓN
+========================================================= */
+
+.planning-section {
+    margin-bottom: 55px;
+}
+
+.planning-section-header {
+    margin-bottom: 20px;
 }
 
 .planning-section-header h2 {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin: 0 0 5px;
+
+    margin: 0 0 7px;
+
+    font-size: 26px;
 }
 
 .planning-section-header p {
     margin: 0;
+
     color: #777;
+
     font-size: 14px;
-}
-
-
-/* =========================
-   CONTENEDOR TABLA
-========================= */
-
-.planning-table-container {
-    width: 100%;
-    overflow-x: auto;
-    border-radius: 10px;
-}
-
-
-/* =========================
-   TABLA
-========================= */
-
-.planning-table {
-    width: 100%;
-    min-width: 950px;
-    border-collapse: collapse;
-    background: #ffffff;
-    font-size: 13px;
-}
-
-
-/* =========================
-   CABECERA DE DÍAS
-========================= */
-
-.planning-table thead th {
-    background: #087f3f;
-    color: #ffffff;
-    padding: 13px 8px;
-    text-align: center;
-    font-weight: 600;
-    border: 1px solid #222;
-    white-space: nowrap;
-}
-
-.planning-table thead th:first-child {
-    width: 190px;
-}
-
-.dia-nombre {
-    display: block;
-    font-weight: 600;
-    color: #ffffff;
-}
-
-.dia-numero {
-    display: block;
-    font-size: 12px;
-    margin-top: 3px;
-    color: #ffffff;
-}
-
-
-/* =========================
-   CUERPO DE LA TABLA
-========================= */
-
-.planning-table tbody td {
-    border: 1px solid #c7c7c7;
-    text-align: center;
-    vertical-align: middle;
-}
-
-
-/* =========================
-   COLUMNA TAREA
-========================= */
-
-.tarea-cell {
-    width: 190px;
-    min-width: 190px;
-    padding: 12px 14px;
-    text-align: left !important;
-    background: #e8faf0;
-    font-weight: 600;
-    font-size: 13px;
-    color: #173b2a;
-}
-
-
-/* =========================
-   CELDAS DE PLANIFICACIÓN
-========================= */
-
-.planificacion-cell {
-    min-width: 125px;
-    height: 72px;
-    padding: 5px;
-    background: #ffffff;
-}
-
-
-/* =========================
-   ASIGNACIÓN
-========================= */
-
-.asignacion {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    padding: 9px 8px;
-    margin: 0;
-
-    background: transparent;
-}
-
-
-/* =========================
-   NOMBRE DEL TRABAJADOR
-========================= */
-
-.asignacion-nombre {
-    font-weight: 600;
-    font-size: 14px;
-    line-height: 1.2;
-    color: #172033;
-}
-
-
-/* =========================
-   HORARIO
-========================= */
-
-.asignacion-horario {
-    margin-top: 4px;
-
-    font-size: 12px;
-    font-weight: 400;
-
-    color: #68717d;
-
-    line-height: 1.2;
-}
-
-/* =========================
-   FIJO DISCONTINUO
-========================= */
-
-.asignacion.fijo-discontinuo {
-    background: transparent;
-    border: none;
-}
-
-.asignacion.fijo-discontinuo .asignacion-nombre {
-    color: #172033;
-}
-
-.asignacion.fijo-discontinuo .asignacion-nombre::before {
-    content: "";
-    display: inline-block;
-
-    width: 8px;
-    height: 8px;
-
-    margin-right: 7px;
-
-    border-radius: 50%;
-
-    background: #e6c84a;
-
-    vertical-align: middle;
-}
-
-
-/* =========================
-   SEPARACIÓN ENTRE TRABAJADORES
-========================= */
-
-.planificacion-cell .asignacion + .asignacion {
-    margin-top: 0;
-    padding-top: 9px;
-
-    border-top: 1px solid #d9d9d9;
-}
-
-
-/* =========================
-   SIN ASIGNACIÓN
-========================= */
-
-.sin-asignacion {
-    color: #aaa;
-    font-size: 18px;
-}
-
-
-/* =========================
-   HOVER
-========================= */
-
-.planning-table tbody tr:hover .tarea-cell {
-    background: #dff6e8;
-}
-
-.planning-table tbody td:hover {
-    background: #f7fbf8;
-}
-
-.planning-table tbody td:hover .asignacion {
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-}
-
-
-/* =========================
-   SEPARACIÓN ENTRE TABLAS
-========================= */
-
-.planning-section + .planning-section {
-    margin-top: 45px;
-}
-
-
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 900px) {
-
-    .planning-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .week-selector {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .planning-table {
-        min-width: 850px;
-    }
-
->>>>>>> 7272d8b7712ca2cdbebb1ea46dddda1e4456ff7e
+    line-height: 1.5;
 }
