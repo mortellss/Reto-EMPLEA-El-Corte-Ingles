@@ -2815,8 +2815,374 @@ def generar_planificacion():
             "ok": False,
             "error": str(e)
         }), 500
-        
-    
+
+# ============================================================
+# PLANIFICACIÓN - CALENDARIO INDIVIDUAL DEL TRABAJADOR
+# ============================================================
+
+@app.route("/calendarios-trabajadores")
+def calendarios_trabajadores():
+    return render_template("calendarios_trabajadores.html")
+
+@app.route("/calendario-trabajador/<int:id_trabajador>")
+def calendario_trabajador(id_trabajador):
+    return render_template(
+        "calendario_trabajador.html",
+        id_trabajador=id_trabajador
+    )
+
+def convertir_valor(valor):
+
+    if pd.isna(valor):
+        return None
+
+    if hasattr(valor, "item"):
+        return valor.item()
+
+    return valor
+
+@app.route("/api/calendario-trabajador/<int:id_trabajador>")
+def api_calendario_trabajador(id_trabajador):
+
+    try:
+
+        # ====================================================
+        # CALENDARIZACIÓN
+        # ====================================================
+
+        df = pd.read_sql("""
+            SELECT
+                c.fecha,
+                c.id_trabajador,
+                c.id_tarea,
+                c.turno,
+                t.nombre AS tarea
+            FROM calendarizacion c
+            LEFT JOIN tarea t
+                ON c.id_tarea = t.id_tarea
+            WHERE c.id_trabajador = %s
+            ORDER BY c.fecha
+        """, engine, params=(id_trabajador,))
+
+
+        # ====================================================
+        # TRABAJADOR
+        # ====================================================
+
+        trabajador = pd.read_sql("""
+            SELECT
+                tr.id_trabajador,
+                tr.numero_vendedor,
+                tr.nombre,
+                tr.apellidos,
+                tr.correo,
+                tr.activo,
+                tr.id_contrato,
+                tr.id_centro,
+                tr.estado,
+                tr.disponibilidad,
+                tr.fijo_discontinuo,
+
+                co.nombre AS contrato,
+                co.jornada,
+                co.horas_por_turno
+
+            FROM trabajador tr
+
+            LEFT JOIN contrato co
+                ON tr.id_contrato = co.id_contrato
+
+            WHERE tr.id_trabajador = %s
+
+            LIMIT 1
+        """, engine, params=(id_trabajador,))
+
+
+        if trabajador.empty:
+
+            return jsonify({
+                "error": "Trabajador no encontrado."
+            }), 404
+
+
+        # ====================================================
+        # DISPONIBILIDAD / VACACIONES
+        # ====================================================
+
+        disponibilidad = pd.read_sql("""
+            SELECT
+                id_disponibilidad,
+                id_trabajador,
+                fecha_inicio,
+                fecha_fin,
+                motivo,
+                turno,
+                id_turno
+            FROM disponibilidad
+            WHERE id_trabajador = %s
+            ORDER BY fecha_inicio
+        """, engine, params=(id_trabajador,))
+
+
+        # ====================================================
+        # CALENDARIZACIÓN → JSON
+        # ====================================================
+
+        registros = []
+
+        for _, fila in df.iterrows():
+
+            registros.append({
+
+                "fecha": (
+                    fila["fecha"].strftime("%Y-%m-%d")
+                    if pd.notna(fila["fecha"])
+                    else None
+                ),
+
+                "turno": convertir_valor(
+                    fila["turno"]
+                ),
+
+                "tarea": (
+                    str(fila["tarea"])
+                    if pd.notna(fila["tarea"])
+                    else None
+                )
+            })
+
+
+        # ====================================================
+        # DISPONIBILIDAD → JSON
+        # ====================================================
+
+        vacaciones = []
+
+        for _, fila in disponibilidad.iterrows():
+
+            vacaciones.append({
+
+                "fecha_inicio": (
+                    fila["fecha_inicio"].strftime("%Y-%m-%d")
+                    if pd.notna(fila["fecha_inicio"])
+                    else None
+                ),
+
+                "fecha_fin": (
+                    fila["fecha_fin"].strftime("%Y-%m-%d")
+                    if pd.notna(fila["fecha_fin"])
+                    else None
+                ),
+
+                "motivo": (
+                    str(fila["motivo"])
+                    if pd.notna(fila["motivo"])
+                    else None
+                ),
+
+                "turno": convertir_valor(
+                    fila["turno"]
+                )
+            })
+
+
+        # ====================================================
+        # INFORMACIÓN DEL TRABAJADOR
+        # ====================================================
+
+        tr = trabajador.iloc[0]
+
+        datos_trabajador = {
+
+            "id_trabajador":
+                int(tr["id_trabajador"])
+                if pd.notna(tr["id_trabajador"])
+                else None,
+
+            "numero_vendedor":
+                convertir_valor(tr["numero_vendedor"]),
+
+            "nombre":
+                str(tr["nombre"])
+                if pd.notna(tr["nombre"])
+                else None,
+
+            "apellidos":
+                str(tr["apellidos"])
+                if pd.notna(tr["apellidos"])
+                else None,
+
+            "correo":
+                str(tr["correo"])
+                if pd.notna(tr["correo"])
+                else None,
+
+            "activo":
+                bool(tr["activo"])
+                if pd.notna(tr["activo"])
+                else None,
+
+            "id_contrato":
+                int(tr["id_contrato"])
+                if pd.notna(tr["id_contrato"])
+                else None,
+
+            "contrato":
+                str(tr["contrato"])
+                if pd.notna(tr["contrato"])
+                else None,
+
+            "jornada":
+                float(tr["jornada"])
+                if pd.notna(tr["jornada"])
+                else None,
+
+            "horas_por_turno":
+                float(tr["horas_por_turno"])
+                if pd.notna(tr["horas_por_turno"])
+                else None,
+
+            "id_centro":
+                int(tr["id_centro"])
+                if pd.notna(tr["id_centro"])
+                else None,
+
+            "estado":
+                convertir_valor(tr["estado"]),
+
+            "disponibilidad":
+                convertir_valor(tr["disponibilidad"]),
+
+            "fijo_discontinuo":
+                bool(tr["fijo_discontinuo"])
+                if pd.notna(tr["fijo_discontinuo"])
+                else None
+        }
+
+
+        # ====================================================
+        # RESPUESTA
+        # ====================================================
+
+        return jsonify({
+
+            "trabajador":
+                datos_trabajador,
+
+            "calendarizacion":
+                registros,
+
+            "disponibilidad":
+                vacaciones
+
+        })
+
+
+    except Exception as e:
+
+        print(
+            "ERROR CALENDARIO TRABAJADOR:"
+        )
+
+        print(e)
+
+        return jsonify({
+
+            "error":
+                "No se ha podido cargar el calendario del trabajador."
+
+        }), 500
+
+
+# ============================================================
+# LISTA DE TRABAJADORES
+# ============================================================
+
+@app.route("/api/calendarios-trabajadores")
+def api_calendarios_trabajadores():
+
+    try:
+
+        df = pd.read_sql("""
+            SELECT
+                id_trabajador,
+                nombre,
+                apellidos,
+                numero_vendedor,
+                activo,
+                fijo_discontinuo
+            FROM trabajador
+            WHERE id_centro = 1
+              AND activo = 1
+            ORDER BY apellidos, nombre
+        """, engine)
+
+
+        df = df.astype(object).where(
+            pd.notna(df),
+            None
+        )
+
+
+        # Convertir valores numpy a tipos Python
+
+        datos = []
+
+        for _, fila in df.iterrows():
+
+            datos.append({
+
+                "id_trabajador":
+                    int(fila["id_trabajador"])
+                    if fila["id_trabajador"] is not None
+                    else None,
+
+                "nombre":
+                    str(fila["nombre"])
+                    if fila["nombre"] is not None
+                    else None,
+
+                "apellidos":
+                    str(fila["apellidos"])
+                    if fila["apellidos"] is not None
+                    else None,
+
+                "numero_vendedor":
+                    convertir_valor(
+                        fila["numero_vendedor"]
+                    ),
+
+                "activo":
+                    bool(fila["activo"])
+                    if fila["activo"] is not None
+                    else None,
+
+                "fijo_discontinuo":
+                    bool(fila["fijo_discontinuo"])
+                    if fila["fijo_discontinuo"] is not None
+                    else None
+            })
+
+
+        return jsonify(datos)
+
+
+    except Exception as e:
+
+        print(
+            "ERROR TRABAJADORES:"
+        )
+
+        print(e)
+
+        return jsonify({
+
+            "error":
+                "No se han podido cargar los trabajadores."
+
+        }), 500
+
+
 # ============================================================
 # CONFIGURACIÓN
 # ============================================================
@@ -2826,5 +3192,5 @@ def configuracion():
     return render_template("configuracion.html")
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     app.run(debug=True)
