@@ -2329,6 +2329,55 @@ def generar_prediccion():
         import sys
         import os
 
+        # ====================================================
+        # RECIBIR FECHAS DESDE LA INTERFAZ
+        # ====================================================
+
+        datos = request.get_json()
+
+        if not datos:
+            return jsonify({
+                "error": "No se han recibido las fechas."
+            }), 400
+
+        fecha_inicio = datos.get("fecha_inicio")
+        fecha_fin = datos.get("fecha_fin")
+
+        if not fecha_inicio or not fecha_fin:
+            return jsonify({
+                "error": "Debes seleccionar una fecha de inicio y una fecha de fin."
+            }), 400
+
+        # Comprobar que el periodo es válido
+
+        from datetime import datetime
+
+        try:
+            inicio = datetime.strptime(
+                fecha_inicio,
+                "%Y-%m-%d"
+            ).date()
+
+            fin = datetime.strptime(
+                fecha_fin,
+                "%Y-%m-%d"
+            ).date()
+
+        except ValueError:
+            return jsonify({
+                "error": "El formato de las fechas no es válido."
+            }), 400
+
+        if inicio > fin:
+            return jsonify({
+                "error": "La fecha de inicio no puede ser posterior a la fecha de fin."
+            }), 400
+
+
+        # ====================================================
+        # EJECUTAR MODELO
+        # ====================================================
+
         script = os.path.join(
             os.path.dirname(__file__),
             "..",
@@ -2338,26 +2387,45 @@ def generar_prediccion():
         )
 
         resultado = subprocess.run(
-            [sys.executable, script],
+            [
+                sys.executable,
+                script,
+                "--fecha-inicio",
+                fecha_inicio,
+                "--fecha-fin",
+                fecha_fin
+            ],
             capture_output=True,
             text=True
         )
 
+
+        # ====================================================
+        # COMPROBAR RESULTADO
+        # ====================================================
+
         if resultado.returncode != 0:
+
             print("ERROR ENTRENAMIENTO:")
             print(resultado.stderr)
 
             return jsonify({
-                "error": "No se ha podido generar la predicción."
+                "error": "No se ha podido generar la predicción.",
+                "detalle": resultado.stderr
             }), 500
+
 
         print("PREDICCIÓN GENERADA:")
         print(resultado.stdout)
 
+
         return jsonify({
             "ok": True,
-            "mensaje": "Predicción generada correctamente."
+            "mensaje": "Predicción generada correctamente.",
+            "fecha_inicio": fecha_inicio,
+            "fecha_fin": fecha_fin
         })
+
 
     except Exception as e:
 
@@ -2368,6 +2436,7 @@ def generar_prediccion():
         }), 500
 
 
+    
 # ============================================================
 # PLANIFICACIÓN
 # ============================================================

@@ -229,7 +229,6 @@ function crearAsignacion(dato) {
         </a>
     `;
 
-
     return asignacion;
 }
 

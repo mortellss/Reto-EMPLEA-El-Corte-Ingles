@@ -54,51 +54,82 @@ document.addEventListener("DOMContentLoaded",()=>{
         }
     }
 
-    async function generarPrediccion(){
+    async function generarPrediccion() {
 
-        const boton=document.getElementById("generarPrediccion");
+        const fechaInicio =
+            document.getElementById("fechaInicio").value;
 
-        try{
+        const fechaFin =
+            document.getElementById("fechaFin").value;
 
-            boton.disabled=true;
-            boton.innerHTML=
-                '<i class="fa-solid fa-spinner fa-spin"></i> Generando...';
+        // Comprobar que se han introducido las dos fechas
+        if (!fechaInicio || !fechaFin) {
+            alert("Selecciona una fecha de inicio y una fecha de fin.");
+            return;
+        }
 
-            const respuesta=await fetch(
+        // Comprobar que el periodo es válido
+        if (fechaInicio > fechaFin) {
+            alert("La fecha de inicio no puede ser posterior a la fecha de fin.");
+            return;
+        }
+        const boton =
+            document.getElementById("generarPrediccion");
+        try {
+            boton.disabled = true;
+            boton.innerHTML = `
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                Generando predicción...
+            `;
+            const respuesta = await fetch(
                 "/api/prediccion/generar",
                 {
-                    method:"POST"
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        fecha_inicio: fechaInicio,
+                        fecha_fin: fechaFin
+                    })
                 }
             );
+            const datos =
+                await respuesta.json();
+            if (!respuesta.ok) {
 
-            const datos=await respuesta.json();
-
-            if(!respuesta.ok){
                 throw new Error(
-                    datos.error||
+                    datos.error ||
                     "No se ha podido generar la predicción."
                 );
             }
+            alert(
+                "Predicción generada correctamente."
+            );
 
-            alert("Predicción generada correctamente.");
+            // Recargar los datos de la predicción
 
             await cargarPrediccion();
 
-        }catch(error){
+        } catch (error) {
 
-            console.error(error);
-
-            alert(
-                "Error al generar la predicción: "+
-                error.message
+            console.error(
+                "ERROR GENERANDO PREDICCIÓN:",
+                error
             );
 
-        }finally{
+            alert(
+                error.message ||
+                "No se ha podido generar la predicción."
+            );
 
-            boton.disabled=false;
+        } finally {
 
-            boton.innerHTML=
-                '<i class="fa-solid fa-chart-line"></i> Generar predicción';
+            boton.disabled = false;
+            boton.innerHTML = `
+                <i class="fa-solid fa-chart-line"></i>
+                Generar predicción
+            `;
         }
     }
 
