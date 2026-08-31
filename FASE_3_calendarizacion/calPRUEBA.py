@@ -16,13 +16,14 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
+'''
+usuario = os.getenv("DB_USER")
+password = os.getenv("DB_PASSWORD")
 
-#usuario = os.getenv("DB_USER")
-#password = os.getenv("DB_PASSWORD")
-
-#engine = create_engine(
-#    f"mysql+pymysql://{usuario}:{password}@localhost/emplea"
-#)
+engine = create_engine(
+    f"mysql+pymysql://{usuario}:{password}@localhost/emplea"
+)
+'''
 
 import os
 from sqlalchemy import create_engine
@@ -30,12 +31,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 DB_NAME = os.getenv("DB_NAME")
 DB_SSL_CA = os.getenv("DB_SSL_CA")
+
 
 engine = create_engine(
     f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}",
@@ -46,6 +49,7 @@ engine = create_engine(
     },
     pool_pre_ping=True
 )
+
 
 TURNO_MANANA = 0
 TURNO_TARDE = 1
@@ -436,21 +440,22 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
     trabaja = {}
     ids_tareas = list(tareas.keys())
 
-    asignaciones_sin_habilidad = []
+    #asignaciones_sin_habilidad = []
 
     for t in ids_trabajadores:
         tareas_permitidas = habilidades.get(t, [])
         
         for d in dias_abiertos:
             for id_tarea in ids_tareas:
-                nombre_var_tarea = f'Tarea_T{t}_D{d}_Tar{id_tarea}'
-                var_tarea = modelo.NewBoolVar(nombre_var_tarea)
-                tarea_asignada[(t, d, id_tarea)] = var_tarea
+                nombre_var_tarea = f'Tarea_T{t}_D{d}_Tar{id_tarea}'     
+                tarea_asignada[(t, d, id_tarea)] = modelo.NewBoolVar(nombre_var_tarea)          
+                #var_tarea = modelo.NewBoolVar(nombre_var_tarea)
+                #tarea_asignada[(t, d, id_tarea)] = var_tarea
                 #tarea_asignada[(t, d, id_tarea)] = modelo.NewBoolVar(nombre_var_tarea)
             
                 if id_tarea not in tareas_permitidas:
-                    #modelo.Add(tarea_asignada[(t, d, id_tarea)] == 0)
-                    asignaciones_sin_habilidad.append(var_tarea)
+                    modelo.Add(tarea_asignada[(t, d, id_tarea)] == 0)
+                    #asignaciones_sin_habilidad.append(var_tarea)
 
             tareas_del_dia = [tarea_asignada[(t, d, id_tarea)] for id_tarea in ids_tareas]
 
@@ -796,6 +801,8 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
     # - Cada 4 semanas un domingo y lunes libres.
    
 
+    
+    '''
     PESO_FALTA_HABILIDAD = 10 
     
     modelo.Maximize(
@@ -804,7 +811,9 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
         - (PESO_FALTA_HABILIDAD * sum(asignaciones_sin_habilidad))
     )
 
-    #modelo.Maximize(PESO_COBERTURA * sum(tareas_cubiertas_total) - penalizacion_horas)
+    '''
+
+    modelo.Maximize(PESO_COBERTURA * sum(tareas_cubiertas_total) - penalizacion_horas)
 
     
     # Resolvemos el modelo

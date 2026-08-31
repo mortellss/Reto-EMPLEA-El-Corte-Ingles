@@ -5,20 +5,24 @@ import math
 import os
 from dotenv import load_dotenv
 
+'''
 load_dotenv()
 
-#usuario = os.getenv("DB_USER")
-#password = os.getenv("DB_PASSWORD")
+usuario = os.getenv("DB_USER")
+password = os.getenv("DB_PASSWORD")
 
-#engine = create_engine(
-#    f"mysql+pymysql://{usuario}:{password}@localhost/emplea"
-#)
+engine = create_engine(
+    f"mysql+pymysql://{usuario}:{password}@localhost/emplea"
+)
 
+'''
 import os
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
 
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
@@ -36,6 +40,7 @@ engine = create_engine(
     },
     pool_pre_ping=True
 )
+
 
 
 
