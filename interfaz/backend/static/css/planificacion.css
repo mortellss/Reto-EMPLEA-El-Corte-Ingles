@@ -356,21 +356,6 @@
 }
 
 
-/* =========================
-   HOVER
-========================= */
-
-.planning-table tbody tr:hover .tarea-cell {
-    background: #dff6e8;
-}
-
-.planning-table tbody td:hover {
-    background: #f7fbf8;
-}
-
-.planning-table tbody td:hover .asignacion {
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-}
 
 
 /* =========================
@@ -743,3 +728,13 @@
     line-height: 1.5;
 }
 
+.asignacion-nombre {
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.asignacion-nombre:hover {
+    text-decoration: underline;
+}

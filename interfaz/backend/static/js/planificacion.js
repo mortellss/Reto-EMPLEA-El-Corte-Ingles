@@ -196,7 +196,6 @@ function agruparPorTarea(datos) {
 
     return Object.values(tareasAgrupadas);
 }
-
 // =====================================================
 // CREAR TRABAJADOR
 // =====================================================
@@ -222,15 +221,17 @@ function crearAsignacion(dato) {
 
 
     asignacion.innerHTML = `
-        <div class="asignacion-nombre">
+        <a
+            href="/calendario-trabajador/${dato.id_trabajador}"
+            class="asignacion-nombre"
+        >
             ${dato.trabajador}
-        </div>
+        </a>
     `;
 
 
     return asignacion;
 }
-
 
 // =====================================================
 // CREAR FILA DE UNA TAREA
