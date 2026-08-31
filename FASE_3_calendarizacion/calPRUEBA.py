@@ -592,7 +592,6 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
     )
     PESO_COBERTURA = cota_penalizacion_maxima + 1
 
-
     # RESTRICCIÓN
     # Intentamos que los trabajadores tengan la misma tarea toda la semana
     
@@ -717,12 +716,10 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
                         
                         print(f'Trabajador {t} asignado al turno {s} - Tarea {tarea_realizada}')
 
-        '''
         guardar_calendarizacion(
                     solver, calendario, ids_trabajadores, ids_tareas,
                     dias_abiertos, turnos_asignados, tarea_asignada,
                 )
-        '''
         
         
     else:
