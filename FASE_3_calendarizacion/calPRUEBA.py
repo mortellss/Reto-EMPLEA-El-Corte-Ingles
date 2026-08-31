@@ -42,12 +42,17 @@ HORAS_POR_TURNO_CONTRATO = {
 
 # Capacidad del máximo de trabajadores realizando la tarea a la vez
 CAPACIDAD_MAXIMA_TAREA = {
-    "MOSTRADOR": 3,
+    "MOSTRADOR": 4,
     "INFORMAR": 2,
     "INFORMAR DE LOS ENCARGOS DEL MURO": 2,
     "HOME DELIVERY": 2,
     "SITE TO STORE": 2,
     "ECI EXPRESS + CLICK&CAR": 2,
+    "RUNNER + DEV A TIENDA": 2,
+    "DERIVADAS": 1,
+    "GESTIÓN MOSTRADOR": 1,
+    "INFORMAR PALETS/EXPEDICIÓN": 2,
+    "CONSOLA + DEV. EDIG": 2,
 }
 
 CAPACIDAD_MAXIMA_DEFECTO = 1
@@ -586,7 +591,7 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
         max(PESO_DEFICIT_HORAS, PESO_EXCESO_HORAS) * cota for _, _, cota in terminos_horas
     )
     PESO_COBERTURA = cota_penalizacion_maxima + 1
-    
+
 
     # RESTRICCIÓN
     # Intentamos que los trabajadores tengan la misma tarea toda la semana
