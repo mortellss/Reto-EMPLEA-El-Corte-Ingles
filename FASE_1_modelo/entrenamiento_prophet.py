@@ -76,7 +76,7 @@ else:
 
     print(
         "No se ha seleccionado un periodo. "
-        "Se utilizará el periodo actual por defecto."
+        "Se utilizará el horizonte completo de 1 año desde el último dato histórico."
     )
 
 
@@ -229,44 +229,45 @@ model.add_country_holidays(country_name="ES")
 model.fit(df_final)
 
 # Predicción
+# Siempre generamos un horizonte completo de 1 año a partir del último valor histórico.
+# La interfaz solo mostrará el rango que haya indicado el usuario dentro de ese horizonte.
 
-# Predicción
+fecha_max_historica = df_final["ds"].max()
+fecha_horizonte_max = fecha_max_historica + pd.DateOffset(days=365)
 
-if fecha_inicio_prediccion is None or fecha_fin_prediccion is None:
+if fecha_inicio_prediccion is None:
+    fecha_inicio_prediccion = fecha_max_historica
+if fecha_fin_prediccion is None:
+    fecha_fin_prediccion = fecha_horizonte_max
 
-    # Comportamiento anterior: 180 días
-    future = model.make_future_dataframe(
-        periods=180
+if fecha_inicio_prediccion < fecha_max_historica:
+    raise ValueError(
+        "La fecha de inicio no puede ser anterior a la última fecha histórica disponible."
     )
 
-else:
-
-    # Generar desde la última fecha histórica
-    # hasta la fecha final seleccionada
-
-    fecha_max_historica = df_final["ds"].max()
-
-    dias_hasta_fin = (
-        fecha_fin_prediccion - fecha_max_historica
-    ).days
-
-    if dias_hasta_fin <= 0:
-        raise ValueError(
-            "La fecha de fin debe ser posterior "
-            "a la última fecha histórica."
-        )
-
-    future = model.make_future_dataframe(
-        periods=dias_hasta_fin
+if fecha_fin_prediccion > fecha_horizonte_max:
+    raise ValueError(
+        "La fecha de fin seleccionada supera el horizonte máximo permitido: "
+        f"{fecha_horizonte_max.date()}"
     )
 
-    # Nos quedamos únicamente con el periodo elegido
+if fecha_inicio_prediccion > fecha_fin_prediccion:
+    raise ValueError(
+        "La fecha de inicio no puede ser posterior a la fecha de fin."
+    )
 
-    future = future[
-        (future["ds"] >= fecha_inicio_prediccion) &
-        (future["ds"] <= fecha_fin_prediccion)
-    ].copy()
+if (fecha_fin_prediccion - fecha_inicio_prediccion).days > 365:
+    raise ValueError(
+        "El periodo seleccionado no puede superar 1 año. "
+        "La predicción máxima es de un año desde el último dato histórico."
+    )
 
+future = model.make_future_dataframe(periods=365)
+
+future = future[
+    (future["ds"] >= fecha_max_historica) &
+    (future["ds"] <= fecha_horizonte_max)
+].copy()
 
 future = pd.merge(
     future,
@@ -286,6 +287,18 @@ for reg in regresores:
 
 forecast = model.predict(future)
 
+# El usuario solo ve el rango elegido dentro del horizonte anual completo generado.
+periodo_mostrado = forecast[
+    (forecast["ds"] >= fecha_inicio_prediccion) &
+    (forecast["ds"] <= fecha_fin_prediccion)
+].copy()
+
+print(
+    f"Horizonte generado: {fecha_max_historica.date()} -> {fecha_horizonte_max.date()}"
+)
+print(
+    f"Periodo visible en interfaz: {fecha_inicio_prediccion.date()} -> {fecha_fin_prediccion.date()}"
+)
 
 tasa_crecimiento_anual = 0
 
@@ -308,9 +321,7 @@ forecast['yhat_upper'] = forecast.apply(lambda r: aplicar_crecimiento(r, 'yhat_u
 
 
 
-trimestre = forecast[
-    forecast["ds"] > df_final["ds"].max()
-][
+trimestre = periodo_mostrado[
     ["ds", "yhat", "yhat_lower", "yhat_upper"]
 ].reset_index(drop=True)
 
