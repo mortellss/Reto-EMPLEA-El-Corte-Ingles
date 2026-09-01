@@ -750,3 +750,196 @@
 .asignacion-nombre:hover {
     text-decoration: underline;
 }
+
+/* ============================================================
+   MODAL — CAMBIO FORZADO DE TRABAJADOR
+   ============================================================ */
+
+.modal-cambio {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 9999;
+}
+
+
+.modal-cambio-contenido {
+    position: relative;
+    width: 460px;
+    max-width: calc(100vw - 40px);
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow:
+        0 15px 40px rgba(0, 0, 0, 0.20);
+    box-sizing: border-box;
+}
+
+
+.modal-cambio-contenido h2 {
+    margin: 0 0 25px 0;
+    font-size: 25px;
+    color: #17243a;
+}
+
+
+.modal-cambio-contenido p {
+    margin: 10px 0;
+    color: #4f5d70;
+    font-size: 15px;
+}
+
+
+.modal-cambio-contenido p strong {
+    color: #17243a;
+}
+
+
+.modal-cambio-contenido label {
+    display: block;
+    margin-top: 20px;
+    margin-bottom: 7px;
+    font-weight: 600;
+    color: #17243a;
+}
+
+
+.modal-cambio-contenido select,
+.modal-cambio-contenido textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #d5dce5;
+    border-radius: 8px;
+    padding: 11px 12px;
+    font-family: inherit;
+    font-size: 14px;
+    background: #ffffff;
+}
+
+
+.modal-cambio-contenido select {
+    cursor: pointer;
+}
+
+
+.modal-cambio-contenido textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+
+.modal-cambio-contenido select:focus,
+.modal-cambio-contenido textarea:focus {
+    outline: none;
+    border-color: #087f3f;
+    box-shadow: 0 0 0 2px rgba(8, 127, 63, 0.10);
+}
+
+
+/* ------------------------------------------------------------
+   BOTÓN CERRAR
+   ------------------------------------------------------------ */
+
+.modal-cambio-cerrar {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    border: none;
+    background: transparent;
+    font-size: 28px;
+    line-height: 1;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
+
+.modal-cambio-cerrar:hover {
+    color: #17243a;
+}
+
+
+/* ------------------------------------------------------------
+   WARNING DE COMPETENCIA
+   ------------------------------------------------------------ */
+
+.warning-competencia {
+    margin-top: 15px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: #fff7df;
+    border: 1px solid #f0d477;
+    color: #765d00;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+
+/* ------------------------------------------------------------
+   BOTONES
+   ------------------------------------------------------------ */
+
+.modal-cambio-botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+
+.modal-cambio-botones button {
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+
+#cancelarCambio {
+    background: #ffffff;
+    border: 1px solid #cfd6df;
+    color: #4f5d70;
+}
+
+
+#cancelarCambio:hover {
+    background: #f5f6f8;
+}
+
+
+#confirmarCambio {
+    background: #087f3f;
+    border: 1px solid #087f3f;
+    color: #ffffff;
+}
+
+
+#confirmarCambio:hover {
+    background: #066b35;
+}
+
+
+/* ------------------------------------------------------------
+   BOTÓN EDITAR ASIGNACIÓN
+   ------------------------------------------------------------ */
+
+.boton-editar-asignacion {
+    border: none;
+    background: transparent;
+    color: #17243a;
+    cursor: pointer;
+    margin-left: 6px;
+    padding: 3px 5px;
+    font-size: 14px;
+}
+
+
+.boton-editar-asignacion:hover {
+    color: #087f3f;
+    transform: scale(1.1);
+}

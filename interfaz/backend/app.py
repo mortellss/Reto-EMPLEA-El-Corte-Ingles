@@ -3293,6 +3293,192 @@ def api_calendarios_trabajadores():
 
 
 # ============================================================
+# PLANIFICACIÓN — CAMBIOS FORZADOS
+# ============================================================
+
+@app.route("/api/cambios-forzados", methods=["POST"])
+def crear_cambio_forzado():
+
+    try:
+
+        datos = request.get_json()
+
+        fecha = datos.get("fecha")
+        id_tarea = datos.get("id_tarea")
+        trabajador_anterior = datos.get("trabajador_anterior")
+        trabajador_nuevo = datos.get("trabajador_nuevo")
+        turno = datos.get("turno")
+        motivo = datos.get("motivo")
+
+        # ----------------------------------------------------
+        # Comprobar que están todos los datos
+        # ----------------------------------------------------
+
+        if not all([
+            fecha,
+            id_tarea,
+            trabajador_anterior,
+            trabajador_nuevo,
+            turno is not None
+        ]):
+
+            return jsonify({
+                "ok": False,
+                "error": "Faltan datos para realizar el cambio."
+            }), 400
+
+
+        # ----------------------------------------------------
+        # Obtener la versión activa
+        # ----------------------------------------------------
+
+        version = pd.read_sql("""
+            SELECT id_version
+            FROM planificacion_version
+            WHERE activa = 1
+            ORDER BY id_version DESC
+            LIMIT 1
+        """, engine)
+
+
+        if version.empty:
+
+            return jsonify({
+                "ok": False,
+                "error": "No existe una versión activa de la planificación."
+            }), 400
+
+
+        id_version = int(
+            version.iloc[0]["id_version"]
+        )
+
+
+        # ----------------------------------------------------
+        # Realizar el cambio
+        # ----------------------------------------------------
+
+        with engine.begin() as conn:
+
+            # -----------------------------------------------
+            # 1. Actualizar calendarización
+            # -----------------------------------------------
+
+            resultado_update = conn.execute(
+                text("""
+                    UPDATE calendarizacion
+                    SET id_trabajador = :trabajador_nuevo
+                    WHERE fecha = :fecha
+                      AND id_tarea = :id_tarea
+                      AND id_trabajador = :trabajador_anterior
+                      AND turno = :turno
+                      AND id_version = :id_version
+                """),
+                {
+                    "fecha": fecha,
+                    "id_tarea": id_tarea,
+                    "trabajador_anterior": trabajador_anterior,
+                    "trabajador_nuevo": trabajador_nuevo,
+                    "turno": turno,
+                    "id_version": id_version
+                }
+            )
+
+
+            # -----------------------------------------------
+            # Comprobar que realmente se ha actualizado
+            # -----------------------------------------------
+
+            if resultado_update.rowcount == 0:
+
+                raise Exception(
+                    "No se ha encontrado la asignación "
+                    "que se quiere modificar."
+                )
+
+
+            # -----------------------------------------------
+            # 2. Registrar el cambio forzado
+            # -----------------------------------------------
+
+            conn.execute(
+                text("""
+                    INSERT INTO cambios_planificacion (
+                        id_version,
+                        fecha,
+                        fecha_asignacion,
+                        id_tarea,
+                        trabajador_anterior,
+                        trabajador_nuevo,
+                        turno,
+                        motivo,
+                        forzado
+                    )
+                    VALUES (
+                        :id_version,
+                        :fecha,
+                        CURDATE(),
+                        :id_tarea,
+                        :trabajador_anterior,
+                        :trabajador_nuevo,
+                        :turno,
+                        :motivo,
+                        1
+                    )
+                """),
+                {
+                    "id_version": id_version,
+                    "fecha": fecha,
+                    "id_tarea": id_tarea,
+                    "trabajador_anterior": trabajador_anterior,
+                    "trabajador_nuevo": trabajador_nuevo,
+                    "turno": turno,
+                    "motivo": motivo
+                }
+            )
+
+
+        return jsonify({
+            "ok": True,
+            "mensaje": "Cambio forzado realizado correctamente.",
+            "id_version": id_version
+        })
+
+
+    except Exception as e:
+
+        print("ERROR CAMBIO FORZADO:", e)
+
+        return jsonify({
+            "ok": False,
+            "error": "No se ha podido realizar el cambio forzado.",
+            "detalle": str(e)
+        }), 500
+
+
+    
+# ============================================================
+# PLANIFICACIÓN — TRABAJADORES
+# ============================================================
+
+@app.route("/api/trabajadores")
+def api_trabajadores():
+
+    trabajadores = pd.read_sql("""
+        SELECT
+            id_trabajador,
+            CONCAT(nombre, ' ', apellidos) AS trabajador
+        FROM trabajador
+        WHERE activo = 1
+        ORDER BY apellidos, nombre
+    """, engine)
+
+    return jsonify(
+        trabajadores.to_dict(orient="records")
+    )
+
+    
+# ============================================================
 # CONFIGURACIÓN
 # ============================================================
 
