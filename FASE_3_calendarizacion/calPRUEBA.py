@@ -228,6 +228,24 @@ def cargar_trabajadores():
         trabajadores[row.id_trabajador] = trabajador
     return trabajadores
 
+def obtener_horizonte_prediccion():
+    query = """
+        SELECT MIN(fecha) AS fecha_inicio, MAX(fecha) AS fecha_fin
+        FROM prediccion
+        WHERE fecha IS NOT NULL
+    """
+
+    df = pd.read_sql(query, con=engine)
+
+    if df.empty or pd.isna(df.iloc[0]["fecha_inicio"]) or pd.isna(df.iloc[0]["fecha_fin"]):
+        return None
+
+    fecha_inicio = pd.to_datetime(df.iloc[0]["fecha_inicio"]).date()
+    fecha_fin = pd.to_datetime(df.iloc[0]["fecha_fin"]).date()
+
+    return fecha_inicio, fecha_fin
+
+
 def cargar_calendario():
     query_calendario = """
         SELECT fecha, centro_abierto
@@ -255,6 +273,14 @@ def cargar_calendario():
     df_prediccion["pedidos_acumulados"] = pd.to_numeric(df_prediccion["pedidos_acumulados"])
     df_prediccion["horas_necesarias"] = pd.to_numeric(df_prediccion["horas_necesarias"])
     df_prediccion["num_semana"] = pd.to_numeric(df_prediccion["num_semana"])
+
+    horizonte = obtener_horizonte_prediccion()
+    if horizonte is not None:
+        fecha_inicio, fecha_fin = horizonte
+        df_prediccion = df_prediccion[
+            (df_prediccion["fecha"] >= fecha_inicio) &
+            (df_prediccion["fecha"] <= fecha_fin)
+        ].copy()
 
     df_calendario_trabajadores = pd.read_sql(query_calendario_trabajadores, con=engine)
     df_calendario_trabajadores["fecha"] = pd.to_datetime(df_calendario_trabajadores["fecha"]).dt.date
@@ -1008,28 +1034,24 @@ if __name__ == '__main__':
 
     indice_desviacion = 1.1
 
-    X_HO_1 = optimizacion_final.X_HO[1]
-    X_HO_2 = optimizacion_final.X_HO[2]
-    X_HO_3 = optimizacion_final.X_HO[3]
-    X_HC_1 = optimizacion_final.X_HC[1]
-    X_HC_2 = optimizacion_final.X_HC[2]
-    X_HC_3 = optimizacion_final.X_HC[3]
-    X_HFD_1 = optimizacion_final.X_HFD[1]
-    X_HFD_2 = optimizacion_final.X_HFD[2]
-    X_HFD_3 = optimizacion_final.X_HFD[3]
+    X_HO = optimizacion_final.X_HO
+    X_HC = optimizacion_final.X_HC
+    X_HFD = optimizacion_final.X_HFD
+
+    meses_optimizacion = sorted(X_HO.keys())
 
     var_values = {
-        "X_HO_1": X_HO_1.varValue,
-        "X_HO_2": X_HO_2.varValue,
-        "X_HO_3": X_HO_3.varValue,
-        "X_HC_1": X_HC_1.varValue,
-        "X_HC_2": X_HC_2.varValue,
-        "X_HC_3": X_HC_3.varValue,
-        "X_HFD_1": X_HFD_1.varValue,
-        "X_HFD_2": X_HFD_2.varValue,
-        "X_HFD_3": X_HFD_3.varValue ,
+        f"X_HO_{mes}": X_HO[mes].varValue
+        for mes in meses_optimizacion
     }
-
+    var_values.update({
+        f"X_HC_{mes}": X_HC[mes].varValue
+        for mes in meses_optimizacion
+    })
+    var_values.update({
+        f"X_HFD_{mes}": X_HFD[mes].varValue
+        for mes in meses_optimizacion
+    })
 
     trabajadores = cargar_trabajadores()
     calendario = cargar_calendario()
@@ -1038,15 +1060,18 @@ if __name__ == '__main__':
     habilidades = cargar_habilidades()
 
     objetivo_horas_por_mes = {
-            1: round(X_HO_1.varValue / indice_desviacion),
-            2: round(X_HO_2.varValue / indice_desviacion),
-            3: round(X_HO_3.varValue / indice_desviacion),
+        mes: round(X_HO[mes].varValue / indice_desviacion)
+        for mes in meses_optimizacion
     }
 
     objetivo_horas_fd_por_mes = {
-            1: round(X_HFD_1.varValue / indice_desviacion),
-            2: round(X_HFD_2.varValue / indice_desviacion),
-            3: round(X_HFD_3.varValue / indice_desviacion),
+        mes: round(X_HFD[mes].varValue / indice_desviacion)
+        for mes in meses_optimizacion
+    }
+
+    objetivo_horas_hc_por_mes = {
+        mes: round(X_HC[mes].varValue / indice_desviacion)
+        for mes in meses_optimizacion
     }
 
     crear_calendario_base(

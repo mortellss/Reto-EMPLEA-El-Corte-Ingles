@@ -92,10 +92,22 @@ max_horas_sin_100 = max_horas_912_C + max_horas_70_C + max_horas_407_C + max_hor
 
 prob = pulp.LpProblem("Optimizacion_Coste", pulp.LpMinimize)
 
-# Variables de decisión para x meses del horizonte
+query_prediccion = """
+SELECT fecha, pedidos_acumulados
+FROM prediccion
+ORDER BY fecha
+"""
 
-NUM_MESES = 3
+df_prediccion = pd.read_sql(query_prediccion, con=engine)
+df_prediccion['fecha'] = pd.to_datetime(df_prediccion['fecha'])
+df_prediccion['pedidos_acumulados'] = pd.to_numeric(df_prediccion['pedidos_acumulados'], errors='coerce').fillna(0).astype(int)
+df_prediccion = df_prediccion.sort_values('fecha').reset_index(drop=True)
+df_prediccion['mes'] = df_prediccion['fecha'].dt.to_period('M')
+meses_horizonte = df_prediccion['mes'].drop_duplicates().tolist()
+NUM_MESES = len(meses_horizonte) or 1
 meses = range(1, NUM_MESES + 1)
+
+# Variables de decisión para x meses del horizonte
 X_HO = {
     mes: pulp.LpVariable(f"X_HO_{mes}", lowBound=0, upBound=max_horas, cat="Continuous")
     for mes in meses
@@ -118,20 +130,7 @@ B_HFD = {mes: pulp.LpVariable(f"B_HFD_{mes}", cat=pulp.LpBinary) for mes in mese
 
 # Otras variables
 
-query_prediccion = """
-SELECT fecha, pedidos_acumulados
-FROM prediccion
-ORDER BY fecha
-"""
-
-df_prediccion = pd.read_sql(query_prediccion, con=engine)
-
-df_prediccion['fecha'] = pd.to_datetime(df_prediccion['fecha'])
-df_prediccion['pedidos_acumulados'] = pd.to_numeric(df_prediccion['pedidos_acumulados'], errors='coerce').fillna(0).astype(int)
-df_prediccion = df_prediccion.sort_values('fecha').reset_index(drop=True)
-df_prediccion['mes'] = df_prediccion['fecha'].dt.to_period('M')
-
-meses_horizonte = (df_prediccion['mes'].drop_duplicates()).tolist()[:NUM_MESES]
+meses_horizonte = df_prediccion['mes'].drop_duplicates().tolist()
 
 if len(meses_horizonte) < NUM_MESES:
     raise ValueError(f"No hay {NUM_MESES} meses de predicción para calcular el horizonte completo")
