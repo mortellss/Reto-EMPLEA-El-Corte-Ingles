@@ -86,8 +86,16 @@
 
 .planning-actions {
     display: flex;
-    align-items: center;
-    gap: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.estimacion-planificacion {
+    margin-left: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a6b42;
 }
 
 
@@ -259,15 +267,6 @@
     padding: 5px;
     background: #ffffff;
     overflow: visible;
-}
-
-
-.estimacion-planificacion {
-    margin-top: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #1a6b42;
-    text-align: center;
 }
 
 
