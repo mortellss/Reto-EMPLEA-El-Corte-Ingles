@@ -2659,7 +2659,6 @@ def exportar_pedidos_historicos():
             error="No se han podido exportar los pedidos históricos."
         ), 500
 
-
 # ============================================================
 # PREDICCIÓN
 # ============================================================
@@ -2719,6 +2718,10 @@ def generar_prediccion():
         import sys
         import os
 
+        # ====================================================
+        # RECIBIR FECHAS DESDE LA INTERFAZ
+        # ====================================================
+
         datos = request.get_json()
 
         if not datos:
@@ -2733,6 +2736,8 @@ def generar_prediccion():
             return jsonify({
                 "error": "Debes seleccionar una fecha de inicio y una fecha de fin."
             }), 400
+
+        # Comprobar que el periodo es válido
 
         from datetime import datetime
 
@@ -2757,6 +2762,11 @@ def generar_prediccion():
                 "error": "La fecha de inicio no puede ser posterior a la fecha de fin."
             }), 400
 
+
+        # ====================================================
+        # EJECUTAR MODELO
+        # ====================================================
+
         script = os.path.join(
             os.path.dirname(__file__),
             "..",
@@ -2778,6 +2788,11 @@ def generar_prediccion():
             text=True
         )
 
+
+        # ====================================================
+        # COMPROBAR RESULTADO
+        # ====================================================
+
         if resultado.returncode != 0:
 
             print("ERROR ENTRENAMIENTO:")
@@ -2788,8 +2803,10 @@ def generar_prediccion():
                 "detalle": resultado.stderr
             }), 500
 
+
         print("PREDICCIÓN GENERADA:")
         print(resultado.stdout)
+
 
         return jsonify({
             "ok": True,
@@ -2798,6 +2815,7 @@ def generar_prediccion():
             "fecha_fin": fecha_fin
         })
 
+
     except Exception as e:
 
         print("ERROR:", e)
@@ -2805,6 +2823,7 @@ def generar_prediccion():
         return jsonify({
             "error": str(e)
         }), 500
+
 
     
 # ============================================================
