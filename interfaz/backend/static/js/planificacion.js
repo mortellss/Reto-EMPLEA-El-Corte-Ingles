@@ -690,10 +690,21 @@ document
 
         try {
 
+            const fechaInicio = document.getElementById("fechaInicio")?.value || null;
+            const fechaFin = document.getElementById("fechaFin")?.value || null;
+
+            const payload = {};
+            if (fechaInicio) payload.fecha_inicio = fechaInicio;
+            if (fechaFin) payload.fecha_fin = fechaFin;
+
             const respuesta = await fetch(
                 "/api/planificacion/generar",
                 {
-                    method: "POST"
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
                 }
             );
 

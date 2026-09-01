@@ -2854,17 +2854,24 @@ def generar_planificacion():
 
     try:
 
+        datos = request.get_json(silent=True) or {}
+        fecha_inicio = datos.get("fecha_inicio")
+        fecha_fin = datos.get("fecha_fin")
+
         ruta_script = (
             Path(__file__).resolve().parents[2]
             / "FASE_3_calendarizacion"
             / "calPRUEBA.py"
         )
 
+        comando = [sys.executable, str(ruta_script)]
+        if fecha_inicio:
+            comando.extend(["--fecha-inicio", str(fecha_inicio)])
+        if fecha_fin:
+            comando.extend(["--fecha-fin", str(fecha_fin)])
+
         resultado = subprocess.run(
-            [
-                sys.executable,
-                str(ruta_script)
-            ],
+            comando,
             capture_output=True,
             text=True,
             cwd=str(ruta_script.parent)

@@ -1,3 +1,4 @@
+import argparse
 from sqlalchemy import create_engine
 import pandas as pd
 import pulp
@@ -41,8 +42,16 @@ engine = create_engine(
     pool_pre_ping=True
 )
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--fecha-inicio", required=False)
+parser.add_argument("--fecha-fin", required=False)
+args = parser.parse_args()
 
+fecha_inicio_filtro = pd.to_datetime(args.fecha_inicio) if args.fecha_inicio else None
+fecha_fin_filtro = pd.to_datetime(args.fecha_fin) if args.fecha_fin else None
 
+if fecha_inicio_filtro is not None and fecha_fin_filtro is not None and fecha_inicio_filtro > fecha_fin_filtro:
+    raise ValueError("La fecha de inicio no puede ser posterior a la fecha de fin.")
 
 # Tipos de jornada 
 
@@ -100,6 +109,11 @@ ORDER BY fecha
 
 df_prediccion = pd.read_sql(query_prediccion, con=engine)
 df_prediccion['fecha'] = pd.to_datetime(df_prediccion['fecha'])
+if fecha_inicio_filtro is not None:
+    df_prediccion = df_prediccion[df_prediccion['fecha'] >= fecha_inicio_filtro].copy()
+if fecha_fin_filtro is not None:
+    df_prediccion = df_prediccion[df_prediccion['fecha'] <= fecha_fin_filtro].copy()
+
 df_prediccion['pedidos_acumulados'] = pd.to_numeric(df_prediccion['pedidos_acumulados'], errors='coerce').fillna(0).astype(int)
 df_prediccion = df_prediccion.sort_values('fecha').reset_index(drop=True)
 df_prediccion['mes'] = df_prediccion['fecha'].dt.to_period('M')

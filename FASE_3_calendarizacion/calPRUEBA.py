@@ -3,6 +3,7 @@
 # Meter a fijos discontinuos
 # se tiene en cuenta el contrato semanal? (las )
 
+import argparse
 from pathlib import Path
 import sys
 from sqlalchemy import create_engine, text, bindparam
@@ -50,7 +51,16 @@ engine = create_engine(
     pool_pre_ping=True
 )
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--fecha-inicio", required=False)
+parser.add_argument("--fecha-fin", required=False)
+args = parser.parse_args()
 
+fecha_inicio_plan = pd.to_datetime(args.fecha_inicio) if args.fecha_inicio else None
+fecha_fin_plan = pd.to_datetime(args.fecha_fin) if args.fecha_fin else None
+
+if fecha_inicio_plan is not None and fecha_fin_plan is not None and fecha_inicio_plan > fecha_fin_plan:
+    raise ValueError("La fecha de inicio no puede ser posterior a la fecha de fin.")
 
 TURNO_MANANA = 0
 TURNO_TARDE = 1
@@ -229,6 +239,13 @@ def cargar_trabajadores():
     return trabajadores
 
 def obtener_horizonte_prediccion():
+    if fecha_inicio_plan is not None or fecha_fin_plan is not None:
+        fecha_inicio = fecha_inicio_plan.date() if fecha_inicio_plan is not None else None
+        fecha_fin = fecha_fin_plan.date() if fecha_fin_plan is not None else None
+        if fecha_inicio is not None and fecha_fin is not None and fecha_inicio > fecha_fin:
+            raise ValueError("La fecha de inicio no puede ser posterior a la fecha de fin.")
+        return fecha_inicio, fecha_fin
+
     query = """
         SELECT MIN(fecha) AS fecha_inicio, MAX(fecha) AS fecha_fin
         FROM prediccion
