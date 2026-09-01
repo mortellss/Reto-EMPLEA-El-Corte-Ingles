@@ -366,8 +366,33 @@ def cargar_habilidades():
     return habilidades
 
 
+def crear_version_planificacion(dias_abiertos):
+    fecha_inicio = min(dias_abiertos)
+    fecha_fin = max(dias_abiertos)
+
+    with engine.begin() as conexion:
+        conexion.execute(
+            text("UPDATE planificacion_version SET activa = 0 WHERE activa = 1")
+        )
+
+        conexion.execute(
+            text("""
+                INSERT INTO planificacion_version (fecha_generacion, fecha_inicio, fecha_fin, activa)
+                VALUES (NOW(), :fecha_inicio, :fecha_fin, 1)
+            """),
+            {"fecha_inicio": fecha_inicio, "fecha_fin": fecha_fin},
+        )
+
+        id_version = conexion.execute(
+            text("SELECT LAST_INSERT_ID()")
+        ).scalar_one()
+
+    return int(id_version)
+
+
 def guardar_calendarizacion(solver, calendario, ids_trabajadores, ids_tareas,
-                             dias_abiertos, turnos_asignados, tarea_asignada):
+                             dias_abiertos, turnos_asignados, tarea_asignada,
+                             id_version):
     
     filas = []
     for d in dias_abiertos:
@@ -390,10 +415,11 @@ def guardar_calendarizacion(solver, calendario, ids_trabajadores, ids_tareas,
                         "id_tarea": tarea_realizada,
                         "id_trabajador": t,
                         "turno": s,
+                        "id_version": id_version,
                     })
 
     df_resultado = pd.DataFrame(
-        filas, columns=["fecha", "num_semana", "id_tarea", "id_trabajador", "turno"]
+        filas, columns=["fecha", "num_semana", "id_tarea", "id_trabajador", "turno", "id_version"]
     )
 
     if df_resultado.empty:
@@ -401,16 +427,10 @@ def guardar_calendarizacion(solver, calendario, ids_trabajadores, ids_tareas,
         return
 
     with engine.begin() as conexion:
-        conexion.execute(
-            text("DELETE FROM calendarizacion WHERE fecha IN :fechas").bindparams(
-                bindparam("fechas", expanding=True)
-            ),
-            {"fechas": dias_abiertos},
-        )
         df_resultado.to_sql("calendarizacion", con=conexion, if_exists="append", index=False)
 
     print(f"Guardadas {len(df_resultado)} filas en calendarizacion "
-          f"({dias_abiertos[0]} a {dias_abiertos[-1]}).")
+          f"({dias_abiertos[0]} a {dias_abiertos[-1]}), version={id_version}.")
 
 
 def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tareas, habilidades, objetivo_horas_por_mes, objetivo_horas_fd_por_mes=None, turnos_fijados=None):
@@ -836,6 +856,9 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
 
     if estado == cp_model.OPTIMAL or estado == cp_model.FEASIBLE:
 
+        id_version = crear_version_planificacion(dias_abiertos)
+        print(f"Generando nueva versión de planificación: id_version={id_version}")
+
         horas_semanales_asignadas = {}
 
         for t in ids_trabajadores:
@@ -891,6 +914,7 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
         guardar_calendarizacion(
                     solver, calendario, ids_trabajadores, ids_tareas,
                     dias_abiertos, turnos_asignados, tarea_asignada,
+                    id_version,
                 )
         
         

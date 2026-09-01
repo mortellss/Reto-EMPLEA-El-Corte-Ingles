@@ -2475,6 +2475,13 @@ def api_planificacion():
                 ON c.id_trabajador = tr.id_trabajador
 
             WHERE tr.activo = 1
+              AND c.id_version = (
+                  SELECT id_version
+                  FROM planificacion_version
+                  WHERE activa = 1
+                  ORDER BY id_version DESC
+                  LIMIT 1
+              )
 
             ORDER BY
                 c.fecha,
@@ -2559,6 +2566,13 @@ def exportar_planificacion():
             JOIN trabajador tr
                 ON c.id_trabajador = tr.id_trabajador
             WHERE t.activa = 1
+              AND c.id_version = (
+                  SELECT id_version
+                  FROM planificacion_version
+                  WHERE activa = 1
+                  ORDER BY id_version DESC
+                  LIMIT 1
+              )
             ORDER BY c.fecha, c.id_tarea, c.turno, c.id_trabajador
         """
 
@@ -2930,6 +2944,13 @@ def api_calendario_trabajador(id_trabajador):
             LEFT JOIN tarea t
                 ON c.id_tarea = t.id_tarea
             WHERE c.id_trabajador = %s
+              AND c.id_version = (
+                  SELECT id_version
+                  FROM planificacion_version
+                  WHERE activa = 1
+                  ORDER BY id_version DESC
+                  LIMIT 1
+              )
             ORDER BY c.fecha
         """, engine, params=(id_trabajador,))
 

@@ -381,6 +381,7 @@ trimestre['dia_semana'] = trimestre["fecha"].dt.day_name().map({
     "Sunday": "Domingo",
 })
 
+
 inicio_trimestre = trimestre['fecha'].min().replace(day=1)
 dias_hasta_primer_domingo = 6 - inicio_trimestre.weekday()
 '''
