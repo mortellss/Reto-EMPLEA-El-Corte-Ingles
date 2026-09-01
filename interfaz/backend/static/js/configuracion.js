@@ -2,6 +2,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("configForm");
     const resetButton = document.getElementById("resetConfig");
 
+    if (form) {
+        form.noValidate = true;
+    }
+
     const defaults = {
         yearly_seasonality: 20,
         weekly_seasonality: 3,
@@ -101,6 +105,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const formData = new FormData(form);
         const payload = Object.fromEntries(formData.entries());
+
+        const numericFields = [
+            "interval_width",
+            "tasa_crecimiento",
+            "horas_presencia_mostrador",
+            "horas_otras_gestiones",
+            "porcentaje_devoluciones",
+            "horas_gestion_devoluciones",
+            "recoleccion_1_lineas",
+            "recoleccion_1_tiempo_min",
+            "recoleccion_2_lineas",
+            "recoleccion_2_tiempo_min",
+            "empaquetado_lineas",
+            "empaquetado_tiempo_min",
+            "almacenado_lineas",
+            "almacenado_tiempo_min",
+            "entrega_lineas",
+            "entrega_tiempo_min",
+            "yearly_seasonality",
+            "weekly_seasonality",
+            "n_changepoints"
+        ];
+
+        const invalid = numericFields.some((name) => {
+            const value = payload[name];
+            return value === "" || value === null || value === undefined || !Number.isFinite(Number(value));
+        });
+
+        if (invalid) {
+            alert("Por favor, introduce valores numéricos válidos en todos los campos.");
+            return;
+        }
 
         payload.daily_seasonality = payload.daily_seasonality === "true";
         payload.interval_width = Number(payload.interval_width);
