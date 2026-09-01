@@ -62,15 +62,51 @@
         </header>
         <section class="content">
             <div class="prediccion-header">
-                <div>
-                    <h2>Predicción de demanda</h2>
-                    <p>Utiliza los datos históricos, el calendario y las promociones para generar una previsión de pedidos.</p>
-                </div>
-                <button type="button" id="generarPrediccion" class="primary-button">
-                    <i class="fa-solid fa-chart-line"></i>
-                    Generar predicción
-                </button>
-            </div>
+    <div>
+        <h2>Predicción de demanda</h2>
+        <p>
+            Utiliza los datos históricos, el calendario y las promociones
+            para generar una previsión de pedidos.
+        </p>
+    </div>
+</div>
+
+<div class="prediccion-configuracion">
+
+    <div class="fecha-prediccion">
+        <label for="fechaInicio">
+            Fecha de inicio
+        </label>
+
+        <input
+            type="date"
+            id="fechaInicio"
+            required
+        >
+    </div>
+
+    <div class="fecha-prediccion">
+        <label for="fechaFin">
+            Fecha de fin
+        </label>
+
+        <input
+            type="date"
+            id="fechaFin"
+            required
+        >
+    </div>
+
+    <button
+        type="button"
+        id="generarPrediccion"
+        class="primary-button"
+    >
+        <i class="fa-solid fa-chart-line"></i>
+        Generar predicción
+    </button>
+
+</div>
             <div class="prediccion-resumen">
                 <div class="prediccion-card">
                     <div class="prediccion-card-icon">

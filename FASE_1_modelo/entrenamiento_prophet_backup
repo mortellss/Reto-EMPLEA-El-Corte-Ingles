@@ -12,9 +12,6 @@ from prophet.diagnostics import cross_validation, performance_metrics
 from sqlalchemy import create_engine, text
 import numpy as np
 from datetime import datetime
-import os
-from sqlalchemy import create_engine
-from dotenv import load_dotenv
 
 # función que maneja los NaN
 
@@ -29,56 +26,9 @@ def limpiar_regresor(df, columna):
 
 load_dotenv()
 
-# ============================================================
-# PERIODO DE PREDICCIÓN
-# ============================================================
-
-parser = argparse.ArgumentParser()
-
-parser.add_argument(
-    "--fecha-inicio",
-    required=False
-)
-
-parser.add_argument(
-    "--fecha-fin",
-    required=False
-)
-
-args = parser.parse_args()
-
-fecha_inicio_prediccion = (
-    pd.to_datetime(args.fecha_inicio)
-    if args.fecha_inicio
-    else None
-)
-
-fecha_fin_prediccion = (
-    pd.to_datetime(args.fecha_fin)
-    if args.fecha_fin
-    else None
-)
-
-if fecha_inicio_prediccion is not None and fecha_fin_prediccion is not None:
-
-    if fecha_inicio_prediccion > fecha_fin_prediccion:
-        raise ValueError(
-            "La fecha de inicio no puede ser posterior a la fecha de fin."
-        )
-
-    print(
-        f"Periodo seleccionado: "
-        f"{fecha_inicio_prediccion.date()} "
-        f"-> "
-        f"{fecha_fin_prediccion.date()}"
-    )
-else:
-
-    print(
-        "No se ha seleccionado un periodo. "
-        "Se utilizará el periodo actual por defecto."
-    )
-
+import os
+from sqlalchemy import create_engine
+from dotenv import load_dotenv
 
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
@@ -230,50 +180,8 @@ model.fit(df_final)
 
 # Predicción
 
-# Predicción
-
-if fecha_inicio_prediccion is None or fecha_fin_prediccion is None:
-
-    # Comportamiento anterior: 180 días
-    future = model.make_future_dataframe(
-        periods=180
-    )
-
-else:
-
-    # Generar desde la última fecha histórica
-    # hasta la fecha final seleccionada
-
-    fecha_max_historica = df_final["ds"].max()
-
-    dias_hasta_fin = (
-        fecha_fin_prediccion - fecha_max_historica
-    ).days
-
-    if dias_hasta_fin <= 0:
-        raise ValueError(
-            "La fecha de fin debe ser posterior "
-            "a la última fecha histórica."
-        )
-
-    future = model.make_future_dataframe(
-        periods=dias_hasta_fin
-    )
-
-    # Nos quedamos únicamente con el periodo elegido
-
-    future = future[
-        (future["ds"] >= fecha_inicio_prediccion) &
-        (future["ds"] <= fecha_fin_prediccion)
-    ].copy()
-
-
-future = pd.merge(
-    future,
-    df_calendario,
-    on="ds",
-    how="left"
-)
+future = model.make_future_dataframe(periods=180)
+future = pd.merge(future, df_calendario, on='ds', how='left')
 
 future['promo_tier_1'] = future['ds'].isin(fechas_t1).astype(int)
 future['promo_tier_2'] = future['ds'].isin(fechas_t2).astype(int)
@@ -308,9 +216,7 @@ forecast['yhat_upper'] = forecast.apply(lambda r: aplicar_crecimiento(r, 'yhat_u
 
 
 
-trimestre = forecast[
-    forecast["ds"] > df_final["ds"].max()
-][
+trimestre = forecast[forecast["ds"] > df_final["ds"].max()][
     ["ds", "yhat", "yhat_lower", "yhat_upper"]
 ].reset_index(drop=True)
 
