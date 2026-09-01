@@ -14,9 +14,9 @@ import pandas as pd
 from ortools.sat.python import cp_model
 from dotenv import load_dotenv
 import os
-
-load_dotenv()
 '''
+load_dotenv()
+
 usuario = os.getenv("DB_USER")
 password = os.getenv("DB_PASSWORD")
 
@@ -49,6 +49,7 @@ engine = create_engine(
     },
     pool_pre_ping=True
 )
+
 
 
 TURNO_MANANA = 0
@@ -90,16 +91,7 @@ CAPACIDAD_MAXIMA_DEFECTO = 4
 
 CAPACIDAD_MINIMA_TAREA = {
     "MOSTRADOR": 1,
-    "INFORMAR": 1,
-    "INFORMAR DE LOS ENCARGOS DEL MURO": 0,
-    "HOME DELIVERY": 0,
-    "SITE TO STORE": 0,
-    "ECI EXPRESS + CLICK&CAR": 0,
     "RUNNER + DEV A TIENDA": 1,
-    "DERIVADAS": 0,
-    "GESTIÓN MOSTRADOR": 0,
-    "INFORMAR PALETS/EXPEDICIÓN": 1,
-    "CONSOLA + DEV. EDIG": 1,
 }
 
 CAPACIDAD_MINIMA_DEFECTO = 0
@@ -610,10 +602,10 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
                 trabajadores_por_tarea_turno[(d, s, id_tarea)] = trabajadores_en_tarea_y_turno
                 
                 cap_max = CAPACIDAD_MAXIMA_TAREA.get(id_tarea, CAPACIDAD_MAXIMA_DEFECTO)
-                #cap_min = CAPACIDAD_MINIMA_TAREA.get(id_tarea, CAPACIDAD_MINIMA_DEFECTO)
+                cap_min = CAPACIDAD_MINIMA_TAREA.get(id_tarea, CAPACIDAD_MINIMA_DEFECTO)
 
                 modelo.Add(sum(trabajadores_en_tarea_y_turno) <= cap_max)
-                #modelo.Add(sum(trabajadores_en_tarea_y_turno) >= cap_min)
+                modelo.Add(sum(trabajadores_en_tarea_y_turno) >= cap_min)
 
                     
                 tarea_cubierta = modelo.NewBoolVar(f'Cubierta_D{d}_S{s}_Tar{id_tarea}')
@@ -805,8 +797,6 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
     # Los trabajadores con más de cinco días de trabajo semanales deberán disfrutar de 9 fines de semana completos (sábado y domingo) de descanso al año.
     # - Cada 4 semanas un sábado y un domingo libres.
     # - Cada 4 semanas un domingo y lunes libres.
-   
-
     
     '''
     PESO_FALTA_HABILIDAD = 10 
@@ -864,7 +854,7 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
 
             trabajadores[t].dias_seguidos_trabajados = racha_maxima
 
-        primeros_dias = dias_abiertos[:8]
+        primeros_dias = dias_abiertos[:40]
         for d in primeros_dias: 
             print(f'\n--- Día {d} ---')
             for t in ids_trabajadores:
@@ -962,7 +952,7 @@ if __name__ == '__main__':
     }
 
     crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tareas, habilidades,
-                          objetivo_horas_por_mes=objetivo_horas_por_mes, objetivo_horas_fd_por_mes=objetivo_horas_fd_por_mes)
+                          objetivo_horas_por_mes=objetivo_horas_por_mes, objetivo_horas_fd_por_mes=objetivo_horas_fd_por_mes, turnos_fijados = None)
 
 
 # Cosas que faltan
