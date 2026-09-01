@@ -4,8 +4,8 @@ import pulp
 import math
 import os
 from dotenv import load_dotenv
-
 '''
+
 load_dotenv()
 
 usuario = os.getenv("DB_USER")

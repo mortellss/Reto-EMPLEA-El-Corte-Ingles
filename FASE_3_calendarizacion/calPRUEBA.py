@@ -381,6 +381,9 @@ def guardar_calendarizacion(solver, calendario, ids_trabajadores, ids_tareas,
                             tarea_realizada = id_tarea
                             break
 
+                    if tarea_realizada is None:
+                        continue
+
                     filas.append({
                         "fecha": d,
                         "num_semana": num_semana,
@@ -854,7 +857,7 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
 
             trabajadores[t].dias_seguidos_trabajados = racha_maxima
 
-        primeros_dias = dias_abiertos[:40]
+        primeros_dias = dias_abiertos[60: 75]
         for d in primeros_dias: 
             print(f'\n--- Día {d} ---')
             for t in ids_trabajadores:

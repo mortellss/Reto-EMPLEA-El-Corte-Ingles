@@ -316,35 +316,48 @@ function pintarCalendario() {
             DÍA TRABAJADO
             ==================================================== */
             else {
-                const registro = registros[0];
-                const turno = Number(registro.turno);
-                if (turno === 0) {
+                const turnos = [...new Set(
+                    registros
+                        .map(r => Number(r.turno))
+                        .filter(turno => Number.isInteger(turno))
+                )];
+
+                const nombresTurnos = turnos.map(turno =>
+                    turno === 0 ? "Mañana" : "Tarde"
+                );
+
+                if (turnos.includes(0)) {
                     elemento.classList.add("manana");
-                    elemento.innerHTML += `
-                        <div class="estado-dia">
-                            Mañana
-                        </div>
-                    `;
-                } else {
-                    elemento.classList.add("tarde");
-                    elemento.innerHTML += `
-                        <div class="estado-dia">
-                            Tarde
-                        </div>
-                    `;
                 }
-                const tareas = registros.filter(r => r.tarea).map(r => r.tarea);
+
+                if (turnos.includes(1)) {
+                    elemento.classList.add("tarde");
+                }
+
+                elemento.innerHTML += `
+                    <div class="estado-dia">
+                        ${nombresTurnos.join(" / ")}
+                    </div>
+                `;
+
+                const tareas = [...new Set(
+                    registros
+                        .filter(r => r.tarea)
+                        .map(r => r.tarea)
+                )];
+
                 if (tareas.length > 0) {
                     elemento.innerHTML += `
                         <div class="tarea-dia">
-                            ${tareas[0]}
+                            ${tareas.join(", ")}
                         </div>
                     `;
                 }
-                if (tareas.length > 1) {
+
+                if (tareas.length > 2) {
                     elemento.innerHTML += `
                         <div class="mas-tareas">
-                            +${tareas.length - 1} más
+                            +${tareas.length - 2} más
                         </div>
                     `;
                 }
@@ -500,12 +513,15 @@ function abrirModal(
 
     let html = "";
 
+    const turnos = [...new Set(
+        registros
+            .map(r => Number(r.turno))
+            .filter(turno => Number.isInteger(turno))
+    )];
 
-    const turno =
-        Number(registros[0].turno) === 0
-            ? "Mañana"
-            : "Tarde";
-
+    const turnosTexto = turnos
+        .map(turno => turno === 0 ? "Mañana" : "Tarde")
+        .join(" / ");
 
     html += `
         <div class="detalle-turno-principal">
@@ -516,7 +532,7 @@ function abrirModal(
 
             <div>
                 <span>Turno</span>
-                <strong>${turno}</strong>
+                <strong>${turnosTexto}</strong>
             </div>
 
         </div>
@@ -535,14 +551,20 @@ function abrirModal(
     `;
 
 
-    registros.forEach(
-        registro => {
+    const tareasUnicas = [...new Set(
+        registros
+            .filter(r => r.tarea)
+            .map(r => r.tarea)
+    )];
+
+    tareasUnicas.forEach(
+        tarea => {
 
             html += `
                 <div class="detalle-tarea">
 
                     <div class="detalle-tarea-nombre">
-                        ${registro.tarea || "Sin tarea"}
+                        ${tarea || "Sin tarea"}
                     </div>
 
                 </div>

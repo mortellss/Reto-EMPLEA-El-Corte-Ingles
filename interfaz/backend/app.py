@@ -3009,6 +3009,18 @@ def api_calendario_trabajador(id_trabajador):
                     else None
                 ),
 
+                "id_trabajador": (
+                    int(fila["id_trabajador"])
+                    if pd.notna(fila["id_trabajador"])
+                    else None
+                ),
+
+                "id_tarea": (
+                    int(fila["id_tarea"])
+                    if pd.notna(fila["id_tarea"])
+                    else None
+                ),
+
                 "turno": convertir_valor(
                     fila["turno"]
                 ),
