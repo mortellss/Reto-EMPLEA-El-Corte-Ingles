@@ -12,6 +12,41 @@ document.addEventListener("DOMContentLoaded", () => {
         tasa_crecimiento: 0
     };
 
+    const currentConfigList = document.getElementById("currentConfigList");
+
+    const updateCurrentConfigSummary = (config) => {
+        if (!currentConfigList) return;
+
+        const values = {
+            yearly_seasonality: config.yearly_seasonality,
+            weekly_seasonality: config.weekly_seasonality,
+            daily_seasonality: config.daily_seasonality ? "Verdadero" : "Falso",
+            seasonality_mode: config.seasonality_mode === "additive" ? "Aditivo" : "Multiplicativo",
+            interval_width: config.interval_width,
+            n_changepoints: config.n_changepoints,
+            tasa_crecimiento: config.tasa_crecimiento
+        };
+
+        const labels = {
+            yearly_seasonality: "Estacionalidad anual",
+            weekly_seasonality: "Estacionalidad semanal",
+            daily_seasonality: "Estacionalidad diaria",
+            seasonality_mode: "Modo",
+            interval_width: "Intervalo",
+            n_changepoints: "Puntos de inflexión",
+            tasa_crecimiento: "Tasa de crecimiento"
+        };
+
+        currentConfigList.innerHTML = Object.entries(values)
+            .map(([key, value]) => `
+                <div class="current-config-item">
+                    <span>${labels[key]}</span>
+                    <strong>${value}</strong>
+                </div>
+            `)
+            .join("");
+    };
+
     const fillForm = (config) => {
         Object.entries(config).forEach(([name, value]) => {
             const field = form?.querySelector(`[name="${name}"]`);
@@ -24,6 +59,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             field.value = value;
         });
+
+        updateCurrentConfigSummary(config);
     };
 
     const loadConfig = async () => {

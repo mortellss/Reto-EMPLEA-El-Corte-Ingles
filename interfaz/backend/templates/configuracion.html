@@ -97,7 +97,7 @@
                                     <span>Estacionalidad anual</span>
                                     <span class="tooltip" tabindex="0">
                                         <i class="fa-solid fa-circle-info"></i>
-                                        <span class="tooltip-text">La cantidad de posibles picos en la demanda que puede haber a lo largo del año (valores enteros). Por defecto: 20.</span>
+                                        <span class="tooltip-text">La cantidad de posibles picos en la demanda que puede haber a lo largo del año.</span>
                                     </span>
                                 </span>
                                 <div class="input-group">
@@ -111,7 +111,7 @@
                                     <span>Estacionalidad semanal</span>
                                     <span class="tooltip" tabindex="0">
                                         <i class="fa-solid fa-circle-info"></i>
-                                        <span class="tooltip-text">Similar a la anual, pero a lo largo de la semana (valores enteros). Por defecto: 3.</span>
+                                        <span class="tooltip-text">La cantidad de posibles picos en la demanda que puede haber a lo largo de la semana.</span>
                                     </span>
                                 </span>
                                 <div class="input-group">
@@ -125,7 +125,7 @@
                                     <span>Estacionalidad diaria</span>
                                     <span class="tooltip" tabindex="0">
                                         <i class="fa-solid fa-circle-info"></i>
-                                        <span class="tooltip-text">Determina si puede haber variación en la demanda a lo largo del día (verdadero o falso). Por defecto: falso.</span>
+                                        <span class="tooltip-text">Determina si puede haber variación en la demanda a lo largo del día.</span>
                                     </span>
                                 </span>
                                 <div class="input-group">
@@ -142,7 +142,7 @@
                                     <span>Modo de estacionalidad</span>
                                     <span class="tooltip" tabindex="0">
                                         <i class="fa-solid fa-circle-info"></i>
-                                        <span class="tooltip-text">Define cómo se comportan los picos de actividad a medida que avanza el tiempo: aditivo o multiplicativo. Por defecto: multiplicativo.</span>
+                                        <span class="tooltip-text">Define cómo se comportan los picos de actividad a medida que avanza el tiempo.</span>
                                     </span>
                                 </span>
                                 <div class="input-group">
@@ -159,7 +159,7 @@
                                     <span>Ancho del intervalo</span>
                                     <span class="tooltip" tabindex="0">
                                         <i class="fa-solid fa-circle-info"></i>
-                                        <span class="tooltip-text">El margen de precisión de la predicción (valor de 0 a 1). Por defecto: 0.8.</span>
+                                        <span class="tooltip-text">El margen de precisión de la predicción.</span>
                                     </span>
                                 </span>
                                 <div class="input-group">
@@ -173,7 +173,7 @@
                                     <span>Puntos de inflexión</span>
                                     <span class="tooltip" tabindex="0">
                                         <i class="fa-solid fa-circle-info"></i>
-                                        <span class="tooltip-text">La cantidad de puntos de inflexión donde puede cambiar la tendencia (valor entero). Por defecto: 50.</span>
+                                        <span class="tooltip-text">La cantidad de puntos de inflexión donde puede cambiar la tendencia.</span>
                                     </span>
                                 </span>
                                 <div class="input-group">
@@ -187,7 +187,7 @@
                                     <span>Tasa de crecimiento</span>
                                     <span class="tooltip" tabindex="0">
                                         <i class="fa-solid fa-circle-info"></i>
-                                        <span class="tooltip-text">Si de un año para otro se espera un crecimiento o decrecimiento en la demanda del negocio (valor entre -1 y 1). Por defecto: 0.</span>
+                                        <span class="tooltip-text">La evolución que se espera en el negocio a lo largo del año. </span>
                                     </span>
                                 </span>
                                 <div class="input-group">
@@ -209,8 +209,17 @@
                 <aside class="summary-stack">
                     <div class="summary-card">
                         <span class="label"><i class="fa-solid fa-chart-line"></i> Configuración actual</span>
-                        <strong>Prophet</strong>
+                        <strong id="configCurrentTitle">Prophet</strong>
                         <p>Los valores mostrados se usan para ajustar la estacionalidad y la tendencia del modelo antes de generar la predicción.</p>
+                        <div class="current-config-list" id="currentConfigList">
+                            <div class="current-config-item"><span>Estacionalidad anual</span><strong>20</strong></div>
+                            <div class="current-config-item"><span>Estacionalidad semanal</span><strong>3</strong></div>
+                            <div class="current-config-item"><span>Estacionalidad diaria</span><strong>Falso</strong></div>
+                            <div class="current-config-item"><span>Modo</span><strong>Multiplicativo</strong></div>
+                            <div class="current-config-item"><span>Intervalo</span><strong>0.8</strong></div>
+                            <div class="current-config-item"><span>Puntos de inflexión</span><strong>50</strong></div>
+                            <div class="current-config-item"><span>Tasa de crecimiento</span><strong>0</strong></div>
+                        </div>
                     </div>
                 </aside>
 

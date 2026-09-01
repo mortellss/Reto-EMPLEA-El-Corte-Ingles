@@ -386,6 +386,37 @@ LOCK TABLES `planificacion_version` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `configuracion_prophet`
+--
+
+DROP TABLE IF EXISTS `configuracion_prophet`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `configuracion_prophet` (
+  `id_centro` int NOT NULL DEFAULT '1',
+  `yearly_seasonality` int NOT NULL DEFAULT '20',
+  `weekly_seasonality` int NOT NULL DEFAULT '3',
+  `daily_seasonality` tinyint NOT NULL DEFAULT '0',
+  `seasonality_mode` varchar(30) NOT NULL DEFAULT 'multiplicative',
+  `interval_width` decimal(4,2) NOT NULL DEFAULT '0.80',
+  `n_changepoints` int NOT NULL DEFAULT '50',
+  `tasa_crecimiento` decimal(6,4) NOT NULL DEFAULT '0.0000',
+  `fecha_actualizacion` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_centro`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `configuracion_prophet`
+--
+
+LOCK TABLES `configuracion_prophet` WRITE;
+/*!40000 ALTER TABLE `configuracion_prophet` DISABLE KEYS */;
+INSERT INTO `configuracion_prophet` VALUES (1,20,3,0,'multiplicative',0.80,50,0.0000,'2026-09-01 00:00:00');
+/*!40000 ALTER TABLE `configuracion_prophet` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `prediccion`
 --
 
