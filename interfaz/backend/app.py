@@ -11,6 +11,141 @@ from pathlib import Path
 app = Flask(__name__)
 
 
+def ensure_prophet_config_table():
+    with engine.begin() as conn:
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS configuracion_prophet (
+                id_centro INT NOT NULL DEFAULT 1,
+                yearly_seasonality INT NOT NULL DEFAULT 20,
+                weekly_seasonality INT NOT NULL DEFAULT 3,
+                daily_seasonality TINYINT NOT NULL DEFAULT 0,
+                seasonality_mode VARCHAR(30) NOT NULL DEFAULT 'multiplicative',
+                interval_width DECIMAL(4,2) NOT NULL DEFAULT 0.80,
+                n_changepoints INT NOT NULL DEFAULT 50,
+                tasa_crecimiento DECIMAL(6,4) NOT NULL DEFAULT 0.0000,
+                fecha_actualizacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (id_centro)
+            )
+        """))
+
+        conn.execute(text("""
+            INSERT INTO configuracion_prophet (
+                id_centro,
+                yearly_seasonality,
+                weekly_seasonality,
+                daily_seasonality,
+                seasonality_mode,
+                interval_width,
+                n_changepoints,
+                tasa_crecimiento
+            )
+            SELECT 1, 20, 3, 0, 'multiplicative', 0.80, 50, 0.0000
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM configuracion_prophet
+                WHERE id_centro = 1
+            )
+        """))
+
+
+def get_prophet_config():
+    ensure_prophet_config_table()
+
+    with engine.begin() as conn:
+        row = conn.execute(text("""
+            SELECT
+                yearly_seasonality,
+                weekly_seasonality,
+                daily_seasonality,
+                seasonality_mode,
+                interval_width,
+                n_changepoints,
+                tasa_crecimiento
+            FROM configuracion_prophet
+            WHERE id_centro = 1
+        """)).mappings().first()
+
+    if row is None:
+        return {
+            "yearly_seasonality": 20,
+            "weekly_seasonality": 3,
+            "daily_seasonality": False,
+            "seasonality_mode": "multiplicative",
+            "interval_width": 0.8,
+            "n_changepoints": 50,
+            "tasa_crecimiento": 0.0,
+        }
+
+    return {
+        "yearly_seasonality": int(row["yearly_seasonality"]),
+        "weekly_seasonality": int(row["weekly_seasonality"]),
+        "daily_seasonality": bool(int(row["daily_seasonality"])),
+        "seasonality_mode": row["seasonality_mode"] or "multiplicative",
+        "interval_width": float(row["interval_width"]),
+        "n_changepoints": int(row["n_changepoints"]),
+        "tasa_crecimiento": float(row["tasa_crecimiento"]),
+    }
+
+
+def save_prophet_config(data):
+    payload = data or {}
+
+    defaults = get_prophet_config()
+
+    yearly_seasonality = int(payload.get("yearly_seasonality", defaults["yearly_seasonality"]))
+    weekly_seasonality = int(payload.get("weekly_seasonality", defaults["weekly_seasonality"]))
+    daily_raw = payload.get("daily_seasonality", defaults["daily_seasonality"])
+    daily_seasonality = 1 if str(daily_raw).lower() in {"1", "true", "yes", "verdadero"} else 0
+    seasonality_mode = str(payload.get("seasonality_mode", defaults["seasonality_mode"]))
+    if seasonality_mode not in {"additive", "multiplicative"}:
+        seasonality_mode = "multiplicative"
+    interval_width = float(payload.get("interval_width", defaults["interval_width"]))
+    n_changepoints = int(payload.get("n_changepoints", defaults["n_changepoints"]))
+    tasa_crecimiento = float(payload.get("tasa_crecimiento", defaults["tasa_crecimiento"]))
+
+    with engine.begin() as conn:
+        conn.execute(text("""
+            INSERT INTO configuracion_prophet (
+                id_centro,
+                yearly_seasonality,
+                weekly_seasonality,
+                daily_seasonality,
+                seasonality_mode,
+                interval_width,
+                n_changepoints,
+                tasa_crecimiento
+            ) VALUES (
+                1,
+                :yearly_seasonality,
+                :weekly_seasonality,
+                :daily_seasonality,
+                :seasonality_mode,
+                :interval_width,
+                :n_changepoints,
+                :tasa_crecimiento
+            )
+            ON DUPLICATE KEY UPDATE
+                yearly_seasonality = VALUES(yearly_seasonality),
+                weekly_seasonality = VALUES(weekly_seasonality),
+                daily_seasonality = VALUES(daily_seasonality),
+                seasonality_mode = VALUES(seasonality_mode),
+                interval_width = VALUES(interval_width),
+                n_changepoints = VALUES(n_changepoints),
+                tasa_crecimiento = VALUES(tasa_crecimiento),
+                fecha_actualizacion = CURRENT_TIMESTAMP
+        """), {
+            "yearly_seasonality": yearly_seasonality,
+            "weekly_seasonality": weekly_seasonality,
+            "daily_seasonality": daily_seasonality,
+            "seasonality_mode": seasonality_mode,
+            "interval_width": interval_width,
+            "n_changepoints": n_changepoints,
+            "tasa_crecimiento": tasa_crecimiento,
+        })
+
+    return get_prophet_config()
+
+
 # ============================================================
 # DASHBOARD
 # ============================================================
@@ -2378,6 +2513,8 @@ def generar_prediccion():
         # EJECUTAR MODELO
         # ====================================================
 
+        config = get_prophet_config()
+
         script = os.path.join(
             os.path.dirname(__file__),
             "..",
@@ -2386,15 +2523,31 @@ def generar_prediccion():
             "entrenamiento_prophet.py"
         )
 
+        comando = [
+            sys.executable,
+            script,
+            "--fecha-inicio",
+            fecha_inicio,
+            "--fecha-fin",
+            fecha_fin,
+            "--yearly-seasonality",
+            str(config["yearly_seasonality"]),
+            "--weekly-seasonality",
+            str(config["weekly_seasonality"]),
+            "--daily-seasonality",
+            str(bool(config["daily_seasonality"])).lower(),
+            "--seasonality-mode",
+            config["seasonality_mode"],
+            "--interval-width",
+            str(config["interval_width"]),
+            "--n-changepoints",
+            str(config["n_changepoints"]),
+            "--tasa-crecimiento",
+            str(config["tasa_crecimiento"]),
+        ]
+
         resultado = subprocess.run(
-            [
-                sys.executable,
-                script,
-                "--fecha-inicio",
-                fecha_inicio,
-                "--fecha-fin",
-                fecha_fin
-            ],
+            comando,
             capture_output=True,
             text=True
         )
@@ -3485,6 +3638,33 @@ def api_trabajadores():
 @app.route("/configuracion")
 def configuracion():
     return render_template("configuracion.html")
+
+
+@app.route("/api/configuracion", methods=["GET"])
+def api_configuracion():
+    try:
+        return jsonify(get_prophet_config())
+    except Exception as e:
+        print("ERROR CONFIGURACIÓN:", e)
+        return jsonify({
+            "error": "No se han podido cargar los parámetros del modelo."
+        }), 500
+
+
+@app.route("/api/configuracion", methods=["POST"])
+def guardar_configuracion():
+    try:
+        datos = request.get_json(silent=True) or {}
+        config = save_prophet_config(datos)
+        return jsonify({
+            "ok": True,
+            "configuracion": config
+        })
+    except Exception as e:
+        print("ERROR GUARDAR CONFIGURACIÓN:", e)
+        return jsonify({
+            "error": "No se han podido guardar los parámetros del modelo."
+        }), 500
 
 
 if __name__ == "__main__":

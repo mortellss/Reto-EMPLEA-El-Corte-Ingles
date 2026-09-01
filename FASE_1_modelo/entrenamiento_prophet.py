@@ -35,15 +35,15 @@ load_dotenv()
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument(
-    "--fecha-inicio",
-    required=False
-)
-
-parser.add_argument(
-    "--fecha-fin",
-    required=False
-)
+parser.add_argument("--fecha-inicio", required=False)
+parser.add_argument("--fecha-fin", required=False)
+parser.add_argument("--yearly-seasonality", type=int, default=20)
+parser.add_argument("--weekly-seasonality", type=int, default=3)
+parser.add_argument("--daily-seasonality", type=str, default="false")
+parser.add_argument("--seasonality-mode", type=str, default="multiplicative")
+parser.add_argument("--interval-width", type=float, default=0.8)
+parser.add_argument("--n-changepoints", type=int, default=50)
+parser.add_argument("--tasa-crecimiento", type=float, default=0.0)
 
 args = parser.parse_args()
 
@@ -58,6 +58,14 @@ fecha_fin_prediccion = (
     if args.fecha_fin
     else None
 )
+
+yearly_seasonality = args.yearly_seasonality
+weekly_seasonality = args.weekly_seasonality
+daily_seasonality = str(args.daily_seasonality).lower() in {"1", "true", "yes", "verdadero"}
+seasonality_mode = args.seasonality_mode if args.seasonality_mode in {"additive", "multiplicative"} else "multiplicative"
+interval_width = args.interval_width
+n_changepoints = args.n_changepoints
+tasa_crecimiento_anual = args.tasa_crecimiento
 
 if fecha_inicio_prediccion is not None and fecha_fin_prediccion is not None:
 
@@ -207,12 +215,12 @@ df_final['promo_tier_3'] = df_final['ds'].isin(fechas_t3).astype(int)
 # Creamos el modelo
 
 model = Prophet(
-    yearly_seasonality=20,
-    weekly_seasonality=3,
-    daily_seasonality=False,
-    seasonality_mode="multiplicative",
-    interval_width=0.8,
-    n_changepoints=50)
+    yearly_seasonality=yearly_seasonality,
+    weekly_seasonality=weekly_seasonality,
+    daily_seasonality=daily_seasonality,
+    seasonality_mode=seasonality_mode,
+    interval_width=interval_width,
+    n_changepoints=n_changepoints)
 
 #for reg in regresores:
 #    model.add_regressor(reg, mode='multiplicative')
@@ -290,8 +298,6 @@ forecast = model.predict(future)
 # Se aplica el ajuste de crecimiento antes de filtrar el rango visible,
 # porque el DataFrame que luego se guarda en BD debe reflejar exactamente
 # lo que la interfaz va a mostrar.
-tasa_crecimiento_anual = 0
-
 fecha_max_historica = df_final['ds'].max()
 
 def aplicar_crecimiento(row, col_name):
