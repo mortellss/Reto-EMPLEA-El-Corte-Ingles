@@ -680,8 +680,13 @@ document
         const boton = document.getElementById(
             "generarPlanificacion"
         );
+        const mensajeTiempo = document.getElementById("mensajeTiempoEstimado");
 
         boton.disabled = true;
+        if (mensajeTiempo) {
+            mensajeTiempo.hidden = false;
+            mensajeTiempo.textContent = "Tiempo estimado: 2 minutos";
+        }
 
         const textoOriginal = boton.innerHTML;
 
@@ -737,6 +742,10 @@ document
 
             boton.disabled = false;
             boton.innerHTML = textoOriginal;
+            if (mensajeTiempo) {
+                mensajeTiempo.hidden = false;
+                mensajeTiempo.textContent = "Tiempo estimado: 2 minutos";
+            }
 
         }
 
