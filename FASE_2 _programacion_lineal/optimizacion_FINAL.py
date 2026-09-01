@@ -198,6 +198,49 @@ prob += precio_hora_ordinaria * pulp.lpSum(X_HO.values()) + \
     precio_hora_fijo_discontinuo * pulp.lpSum(X_HFD.values()), "Minimizar_Coste_Total"
 
 
+def guardar_horas_mensuales():
+    datos = []
+    for mes in meses:
+        horas_ordinarias = int(round(float(X_HO[mes].varValue))) if X_HO[mes].varValue is not None else 0
+        horas_complementarias = int(round(float(X_HC[mes].varValue))) if X_HC[mes].varValue is not None else 0
+        horas_fd = int(round(float(X_HFD[mes].varValue))) if X_HFD[mes].varValue is not None else 0
+
+        datos.append({
+            "mes": int(mes),
+            "fecha_generacion": pd.Timestamp.today().normalize().strftime("%Y-%m-%d"),
+            "horas_ordinarias": horas_ordinarias,
+            "horas_complementarias": horas_complementarias,
+            "horas_fd": horas_fd,
+        })
+
+    if not datos:
+        return {}
+
+    with engine.begin() as conexion:
+        for fila in datos:
+            conexion.execute(
+                """
+                INSERT INTO horas_mensuales (mes, fecha_generacion, horas_ordinarias, horas_complementarias, horas_fd)
+                VALUES (:mes, :fecha_generacion, :horas_ordinarias, :horas_complementarias, :horas_fd)
+                ON DUPLICATE KEY UPDATE
+                    fecha_generacion = VALUES(fecha_generacion),
+                    horas_ordinarias = VALUES(horas_ordinarias),
+                    horas_complementarias = VALUES(horas_complementarias),
+                    horas_fd = VALUES(horas_fd)
+                """,
+                fila,
+            )
+
+    return {
+        fila["mes"]: {
+            "horas_ordinarias": fila["horas_ordinarias"],
+            "horas_complementarias": fila["horas_complementarias"],
+            "horas_fd": fila["horas_fd"],
+        }
+        for fila in datos
+    }
+
+
 # Restricciones
 
     # La suma de todas los tipos de horas tiene que ser capaz de completar todos los pedidos mensuales
@@ -290,6 +333,8 @@ for mes in meses:
 
 prob.solve()
 
+resultado_horas = guardar_horas_mensuales()
+print("Horas guardadas en horas_mensuales:", resultado_horas)
 
 print("Estado del modelo:", pulp.LpStatus[prob.status], "\n")
 

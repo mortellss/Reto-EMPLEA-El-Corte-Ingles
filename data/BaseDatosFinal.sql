@@ -240,6 +240,24 @@ INSERT INTO `disponibilidad` VALUES (1,14,'2026-06-01','2026-06-21','Vacaciones'
 /*!40000 ALTER TABLE `disponibilidad` ENABLE KEYS */;
 UNLOCK TABLES;
 
+
+CREATE TABLE `horas_mensuales` (
+  `id_optimizacion` int NOT NULL AUTO_INCREMENT,
+  `mes` int NOT NULL,
+  `fecha_generacion` date NOT NULL,
+  `horas_ordinarias` int NOT NULL,
+  `horas_complementarias` int NOT NULL,
+  `horas_fd` int NOT NULL,
+  PRIMARY KEY (`mes`)
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+LOCK TABLES `horas_mensuales` WRITE;
+
+/*!40000 ALTER TABLE `horas_mensuales` DISABLE KEYS */;
+
+/*!40000 ALTER TABLE `disponibilidad` ENABLE KEYS */;
+UNLOCK TABLES;
+
 --
 -- Table structure for table `pedidohistorico`
 --

@@ -457,6 +457,34 @@ def cargar_cambios_forzados():
     return cambios
 
 
+def cargar_horas_mensuales():
+    query = """
+        SELECT mes, horas_ordinarias, horas_complementarias, horas_fd
+        FROM horas_mensuales
+        ORDER BY mes
+    """
+
+    df = pd.read_sql(query, con=engine)
+
+    if df.empty:
+        return {}, {}, {}
+
+    horas_ordinarias = {
+        int(row.mes): int(row.horas_ordinarias)
+        for row in df.itertuples(index=False)
+    }
+    horas_complementarias = {
+        int(row.mes): int(row.horas_complementarias)
+        for row in df.itertuples(index=False)
+    }
+    horas_fd = {
+        int(row.mes): int(row.horas_fd)
+        for row in df.itertuples(index=False)
+    }
+
+    return horas_ordinarias, horas_complementarias, horas_fd
+
+
 def crear_version_planificacion(dias_abiertos):
     fecha_inicio = min(dias_abiertos)
     fecha_fin = max(dias_abiertos)
@@ -1076,20 +1104,27 @@ if __name__ == '__main__':
     tareas = cargar_tareas()
     habilidades = cargar_habilidades()
 
-    objetivo_horas_por_mes = {
-        mes: round(X_HO[mes].varValue / indice_desviacion)
-        for mes in meses_optimizacion
-    }
+    objetivo_horas_por_mes, objetivo_horas_hc_por_mes, objetivo_horas_fd_por_mes = cargar_horas_mensuales()
 
-    objetivo_horas_fd_por_mes = {
-        mes: round(X_HFD[mes].varValue / indice_desviacion)
-        for mes in meses_optimizacion
-    }
+    if not objetivo_horas_por_mes:
+        objetivo_horas_por_mes = {
+            mes: round(X_HO[mes].varValue / indice_desviacion)
+            for mes in meses_optimizacion
+        }
 
-    objetivo_horas_hc_por_mes = {
-        mes: round(X_HC[mes].varValue / indice_desviacion)
-        for mes in meses_optimizacion
-    }
+    if not objetivo_horas_hc_por_mes:
+        objetivo_horas_hc_por_mes = {
+            mes: round(X_HC[mes].varValue / indice_desviacion)
+            for mes in meses_optimizacion
+        }
+
+    if not objetivo_horas_fd_por_mes:
+        objetivo_horas_fd_por_mes = {
+            mes: round(X_HFD[mes].varValue / indice_desviacion)
+            for mes in meses_optimizacion
+        }
+
+    print("Horas cargadas desde horas_mensuales:", objetivo_horas_por_mes, objetivo_horas_hc_por_mes, objetivo_horas_fd_por_mes)
 
     crear_calendario_base(
         trabajadores,
