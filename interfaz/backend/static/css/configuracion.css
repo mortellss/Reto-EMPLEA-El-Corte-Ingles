@@ -44,6 +44,33 @@
     gap: 22px;
 }
 
+.config-section-block {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 6px;
+    margin-top: 6px;
+    color: var(--config-accent);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.76rem;
+}
+
+.section-divider::before,
+.section-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(11, 122, 59, 0.1), rgba(11, 122, 59, 0.4), rgba(11, 122, 59, 0.1));
+}
+
 .form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -128,6 +155,18 @@
     background: white;
     font: inherit;
     color: var(--color-text);
+}
+
+.input-group label {
+    font-size: 0.74rem;
+    color: var(--config-muted);
+    font-weight: 600;
+}
+
+.split-input-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
 }
 
 .input-group input:focus,

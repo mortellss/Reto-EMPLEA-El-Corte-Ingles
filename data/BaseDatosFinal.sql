@@ -417,6 +417,44 @@ INSERT INTO `configuracion_prophet` VALUES (1,20,3,0,'multiplicative',0.80,50,0.
 UNLOCK TABLES;
 
 --
+-- Table structure for table `configuracion_optimizacion`
+--
+
+DROP TABLE IF EXISTS `configuracion_optimizacion`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `configuracion_optimizacion` (
+  `id_centro` int NOT NULL DEFAULT '1',
+  `horas_presencia_mostrador` decimal(10,4) NOT NULL DEFAULT '11.0000',
+  `horas_otras_gestiones` decimal(10,4) NOT NULL DEFAULT '1.0000',
+  `porcentaje_devoluciones` decimal(10,4) NOT NULL DEFAULT '0.0500',
+  `horas_gestion_devoluciones` decimal(10,4) NOT NULL DEFAULT '3.0000',
+  `recoleccion_1_lineas` int NOT NULL DEFAULT '1000',
+  `recoleccion_1_tiempo_min` decimal(10,4) NOT NULL DEFAULT '1.8000',
+  `recoleccion_2_lineas` int NOT NULL DEFAULT '1000',
+  `recoleccion_2_tiempo_min` decimal(10,4) NOT NULL DEFAULT '0.3150',
+  `empaquetado_lineas` int NOT NULL DEFAULT '1000',
+  `empaquetado_tiempo_min` decimal(10,4) NOT NULL DEFAULT '5.0400',
+  `almacenado_lineas` int NOT NULL DEFAULT '1000',
+  `almacenado_tiempo_min` decimal(10,4) NOT NULL DEFAULT '4.3500',
+  `entrega_lineas` int NOT NULL DEFAULT '1000',
+  `entrega_tiempo_min` decimal(10,4) NOT NULL DEFAULT '2.9800',
+  `fecha_actualizacion` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_centro`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `configuracion_optimizacion`
+--
+
+LOCK TABLES `configuracion_optimizacion` WRITE;
+/*!40000 ALTER TABLE `configuracion_optimizacion` DISABLE KEYS */;
+INSERT INTO `configuracion_optimizacion` VALUES (1,11.0000,1.0000,0.0500,3.0000,1000,1.8000,1000,0.3150,1000,5.0400,1000,4.3500,1000,2.9800,'2026-09-02 00:00:00');
+/*!40000 ALTER TABLE `configuracion_optimizacion` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `prediccion`
 --
 

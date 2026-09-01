@@ -107,6 +107,64 @@ FROM prediccion
 ORDER BY fecha
 """
 
+def get_optimizacion_config():
+    with engine.begin() as conn:
+        row = conn.execute(text("""
+            SELECT
+                horas_presencia_mostrador,
+                horas_otras_gestiones,
+                porcentaje_devoluciones,
+                horas_gestion_devoluciones,
+                recoleccion_1_lineas,
+                recoleccion_1_tiempo_min,
+                recoleccion_2_lineas,
+                recoleccion_2_tiempo_min,
+                empaquetado_lineas,
+                empaquetado_tiempo_min,
+                almacenado_lineas,
+                almacenado_tiempo_min,
+                entrega_lineas,
+                entrega_tiempo_min
+            FROM configuracion_optimizacion
+            WHERE id_centro = 1
+        """)).mappings().first()
+
+    if row is None:
+        return {
+            "horas_presencia_mostrador": 11.0,
+            "horas_otras_gestiones": 1.0,
+            "porcentaje_devoluciones": 0.05,
+            "horas_gestion_devoluciones": 3.0,
+            "recoleccion_1_lineas": 1000,
+            "recoleccion_1_tiempo_min": 1.8,
+            "recoleccion_2_lineas": 1000,
+            "recoleccion_2_tiempo_min": 0.315,
+            "empaquetado_lineas": 1000,
+            "empaquetado_tiempo_min": 5.04,
+            "almacenado_lineas": 1000,
+            "almacenado_tiempo_min": 4.35,
+            "entrega_lineas": 1000,
+            "entrega_tiempo_min": 2.98,
+        }
+
+    return {
+        "horas_presencia_mostrador": float(row["horas_presencia_mostrador"]),
+        "horas_otras_gestiones": float(row["horas_otras_gestiones"]),
+        "porcentaje_devoluciones": float(row["porcentaje_devoluciones"]),
+        "horas_gestion_devoluciones": float(row["horas_gestion_devoluciones"]),
+        "recoleccion_1_lineas": int(row["recoleccion_1_lineas"]),
+        "recoleccion_1_tiempo_min": float(row["recoleccion_1_tiempo_min"]),
+        "recoleccion_2_lineas": int(row["recoleccion_2_lineas"]),
+        "recoleccion_2_tiempo_min": float(row["recoleccion_2_tiempo_min"]),
+        "empaquetado_lineas": int(row["empaquetado_lineas"]),
+        "empaquetado_tiempo_min": float(row["empaquetado_tiempo_min"]),
+        "almacenado_lineas": int(row["almacenado_lineas"]),
+        "almacenado_tiempo_min": float(row["almacenado_tiempo_min"]),
+        "entrega_lineas": int(row["entrega_lineas"]),
+        "entrega_tiempo_min": float(row["entrega_tiempo_min"]),
+    }
+
+
 df_prediccion = pd.read_sql(query_prediccion, con=engine)
 df_prediccion['fecha'] = pd.to_datetime(df_prediccion['fecha'])
 if fecha_inicio_filtro is not None:
@@ -120,6 +178,8 @@ df_prediccion['mes'] = df_prediccion['fecha'].dt.to_period('M')
 meses_horizonte = df_prediccion['mes'].drop_duplicates().tolist()
 NUM_MESES = len(meses_horizonte) or 1
 meses = range(1, NUM_MESES + 1)
+
+config_optimizacion = get_optimizacion_config()
 
 # Variables de decisión para x meses del horizonte
 X_HO = {
@@ -245,18 +305,40 @@ def guardar_horas_mensuales():
 
     # La suma de todas los tipos de horas tiene que ser capaz de completar todos los pedidos mensuales
 
-horas_recoleccion_1 = 0.00029611101
-horas_recoleccion_2 = 0.00005238316019
-horas_empaquetado = (0.007350211777 + 0.009435869071)/2
-horas_almacenado = (0.001311401251 + 0.006738298913 + 0.01256998856 + 0.009548456075)/4
-horas_entrega = (0.0002393378489 + 0.009691886578)/2
+def tiempo_por_linea_horas(lineas, tiempo_total_segundos):
+    if lineas is None or lineas <= 0:
+        return 0.0
+    # En este caso los tiempos ya vienen en segundos; solo hay que convertir
+    # el tiempo por línea a horas dividendo entre 3600.
+    return (float(tiempo_total_segundos) / float(lineas)) / 3600.0
+
+horas_recoleccion_1 = tiempo_por_linea_horas(
+    config_optimizacion["recoleccion_1_lineas"],
+    config_optimizacion["recoleccion_1_tiempo_min"],
+)
+horas_recoleccion_2 = tiempo_por_linea_horas(
+    config_optimizacion["recoleccion_2_lineas"],
+    config_optimizacion["recoleccion_2_tiempo_min"],
+)
+horas_empaquetado = tiempo_por_linea_horas(
+    config_optimizacion["empaquetado_lineas"],
+    config_optimizacion["empaquetado_tiempo_min"],
+)
+horas_almacenado = tiempo_por_linea_horas(
+    config_optimizacion["almacenado_lineas"],
+    config_optimizacion["almacenado_tiempo_min"],
+)
+horas_entrega = tiempo_por_linea_horas(
+    config_optimizacion["entrega_lineas"],
+    config_optimizacion["entrega_tiempo_min"],
+)
 horas_pedidos = horas_recoleccion_1 + horas_recoleccion_2 + horas_empaquetado + horas_almacenado + horas_entrega
 # Falta incluir que considere las horas según las horas que está abierto el centro
-horas_presencia_mostrador = 11
-horas_otras_gestiones = 1
-horas_gestion_mostrador = 3
-porcentaje_devoluciones = 0.05
-horas_gestion_devoluciones = 3
+horas_presencia_mostrador = config_optimizacion["horas_presencia_mostrador"]
+horas_otras_gestiones = config_optimizacion["horas_otras_gestiones"]
+horas_gestion_mostrador = config_optimizacion["horas_gestion_devoluciones"]
+porcentaje_devoluciones = config_optimizacion["porcentaje_devoluciones"]
+horas_gestion_devoluciones = config_optimizacion["horas_gestion_devoluciones"]
  
 for mes in meses:
     horas_necesarias = (

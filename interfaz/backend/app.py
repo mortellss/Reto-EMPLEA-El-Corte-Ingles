@@ -159,7 +159,239 @@ def ensure_promocion_tier_column():
             """))
 
 
+def ensure_optimizacion_config_table():
+    with engine.begin() as conn:
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS configuracion_optimizacion (
+                id_centro INT NOT NULL DEFAULT 1,
+                horas_presencia_mostrador DECIMAL(10,4) NOT NULL DEFAULT 11.0000,
+                horas_otras_gestiones DECIMAL(10,4) NOT NULL DEFAULT 1.0000,
+                porcentaje_devoluciones DECIMAL(10,4) NOT NULL DEFAULT 0.0500,
+                horas_gestion_devoluciones DECIMAL(10,4) NOT NULL DEFAULT 3.0000,
+                recoleccion_1_lineas INT NOT NULL DEFAULT 1000,
+                recoleccion_1_tiempo_min DECIMAL(10,4) NOT NULL DEFAULT 1.8000,
+                recoleccion_2_lineas INT NOT NULL DEFAULT 1000,
+                recoleccion_2_tiempo_min DECIMAL(10,4) NOT NULL DEFAULT 0.3150,
+                empaquetado_lineas INT NOT NULL DEFAULT 1000,
+                empaquetado_tiempo_min DECIMAL(10,4) NOT NULL DEFAULT 5.0400,
+                almacenado_lineas INT NOT NULL DEFAULT 1000,
+                almacenado_tiempo_min DECIMAL(10,4) NOT NULL DEFAULT 4.3500,
+                entrega_lineas INT NOT NULL DEFAULT 1000,
+                entrega_tiempo_min DECIMAL(10,4) NOT NULL DEFAULT 2.9800,
+                fecha_actualizacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (id_centro)
+            )
+        """))
+
+        conn.execute(text("""
+            INSERT INTO configuracion_optimizacion (
+                id_centro,
+                horas_presencia_mostrador,
+                horas_otras_gestiones,
+                porcentaje_devoluciones,
+                horas_gestion_devoluciones,
+                recoleccion_1_lineas,
+                recoleccion_1_tiempo_min,
+                recoleccion_2_lineas,
+                recoleccion_2_tiempo_min,
+                empaquetado_lineas,
+                empaquetado_tiempo_min,
+                almacenado_lineas,
+                almacenado_tiempo_min,
+                entrega_lineas,
+                entrega_tiempo_min
+            )
+            SELECT 1,
+                   11.0000,
+                   1.0000,
+                   0.0500,
+                   3.0000,
+                   1000,
+                   1.8000,
+                   1000,
+                   0.3150,
+                   1000,
+                   5.0400,
+                   1000,
+                   4.3500,
+                   1000,
+                   2.9800
+            WHERE NOT EXISTS (
+                SELECT 1 FROM configuracion_optimizacion WHERE id_centro = 1
+            )
+        """))
+
+
+def get_optimizacion_config():
+    ensure_optimizacion_config_table()
+
+    with engine.begin() as conn:
+        row = conn.execute(text("""
+            SELECT
+                horas_presencia_mostrador,
+                horas_otras_gestiones,
+                porcentaje_devoluciones,
+                horas_gestion_devoluciones,
+                recoleccion_1_lineas,
+                recoleccion_1_tiempo_min,
+                recoleccion_2_lineas,
+                recoleccion_2_tiempo_min,
+                empaquetado_lineas,
+                empaquetado_tiempo_min,
+                almacenado_lineas,
+                almacenado_tiempo_min,
+                entrega_lineas,
+                entrega_tiempo_min
+            FROM configuracion_optimizacion
+            WHERE id_centro = 1
+        """)).mappings().first()
+
+    if row is None:
+        return {
+            "horas_presencia_mostrador": 11.0,
+            "horas_otras_gestiones": 1.0,
+            "porcentaje_devoluciones": 0.05,
+            "horas_gestion_devoluciones": 3.0,
+            "recoleccion_1_lineas": 1000,
+            "recoleccion_1_tiempo_min": 1.8,
+            "recoleccion_2_lineas": 1000,
+            "recoleccion_2_tiempo_min": 0.315,
+            "empaquetado_lineas": 1000,
+            "empaquetado_tiempo_min": 5.04,
+            "almacenado_lineas": 1000,
+            "almacenado_tiempo_min": 4.35,
+            "entrega_lineas": 1000,
+            "entrega_tiempo_min": 2.98,
+        }
+
+    return {
+        "horas_presencia_mostrador": float(row["horas_presencia_mostrador"]),
+        "horas_otras_gestiones": float(row["horas_otras_gestiones"]),
+        "porcentaje_devoluciones": float(row["porcentaje_devoluciones"]),
+        "horas_gestion_devoluciones": float(row["horas_gestion_devoluciones"]),
+        "recoleccion_1_lineas": int(row["recoleccion_1_lineas"]),
+        "recoleccion_1_tiempo_min": float(row["recoleccion_1_tiempo_min"]),
+        "recoleccion_2_lineas": int(row["recoleccion_2_lineas"]),
+        "recoleccion_2_tiempo_min": float(row["recoleccion_2_tiempo_min"]),
+        "empaquetado_lineas": int(row["empaquetado_lineas"]),
+        "empaquetado_tiempo_min": float(row["empaquetado_tiempo_min"]),
+        "almacenado_lineas": int(row["almacenado_lineas"]),
+        "almacenado_tiempo_min": float(row["almacenado_tiempo_min"]),
+        "entrega_lineas": int(row["entrega_lineas"]),
+        "entrega_tiempo_min": float(row["entrega_tiempo_min"]),
+    }
+
+
+def save_optimizacion_config(data):
+    payload = data or {}
+    defaults = get_optimizacion_config()
+
+    params = {
+        "horas_presencia_mostrador": float(payload.get("horas_presencia_mostrador", defaults["horas_presencia_mostrador"])),
+        "horas_otras_gestiones": float(payload.get("horas_otras_gestiones", defaults["horas_otras_gestiones"])),
+        "porcentaje_devoluciones": float(payload.get("porcentaje_devoluciones", defaults["porcentaje_devoluciones"])),
+        "horas_gestion_devoluciones": float(payload.get("horas_gestion_devoluciones", defaults["horas_gestion_devoluciones"])),
+        "recoleccion_1_lineas": int(payload.get("recoleccion_1_lineas", defaults["recoleccion_1_lineas"])),
+        "recoleccion_1_tiempo_min": float(payload.get("recoleccion_1_tiempo_min", defaults["recoleccion_1_tiempo_min"])),
+        "recoleccion_2_lineas": int(payload.get("recoleccion_2_lineas", defaults["recoleccion_2_lineas"])),
+        "recoleccion_2_tiempo_min": float(payload.get("recoleccion_2_tiempo_min", defaults["recoleccion_2_tiempo_min"])),
+        "empaquetado_lineas": int(payload.get("empaquetado_lineas", defaults["empaquetado_lineas"])),
+        "empaquetado_tiempo_min": float(payload.get("empaquetado_tiempo_min", defaults["empaquetado_tiempo_min"])),
+        "almacenado_lineas": int(payload.get("almacenado_lineas", defaults["almacenado_lineas"])),
+        "almacenado_tiempo_min": float(payload.get("almacenado_tiempo_min", defaults["almacenado_tiempo_min"])),
+        "entrega_lineas": int(payload.get("entrega_lineas", defaults["entrega_lineas"])),
+        "entrega_tiempo_min": float(payload.get("entrega_tiempo_min", defaults["entrega_tiempo_min"])),
+    }
+
+    with engine.begin() as conn:
+        conn.execute(text("""
+            INSERT INTO configuracion_optimizacion (
+                id_centro,
+                horas_presencia_mostrador,
+                horas_otras_gestiones,
+                porcentaje_devoluciones,
+                horas_gestion_devoluciones,
+                recoleccion_1_lineas,
+                recoleccion_1_tiempo_min,
+                recoleccion_2_lineas,
+                recoleccion_2_tiempo_min,
+                empaquetado_lineas,
+                empaquetado_tiempo_min,
+                almacenado_lineas,
+                almacenado_tiempo_min,
+                entrega_lineas,
+                entrega_tiempo_min
+            ) VALUES (
+                1,
+                :horas_presencia_mostrador,
+                :horas_otras_gestiones,
+                :porcentaje_devoluciones,
+                :horas_gestion_devoluciones,
+                :recoleccion_1_lineas,
+                :recoleccion_1_tiempo_min,
+                :recoleccion_2_lineas,
+                :recoleccion_2_tiempo_min,
+                :empaquetado_lineas,
+                :empaquetado_tiempo_min,
+                :almacenado_lineas,
+                :almacenado_tiempo_min,
+                :entrega_lineas,
+                :entrega_tiempo_min
+            )
+            ON DUPLICATE KEY UPDATE
+                horas_presencia_mostrador = VALUES(horas_presencia_mostrador),
+                horas_otras_gestiones = VALUES(horas_otras_gestiones),
+                porcentaje_devoluciones = VALUES(porcentaje_devoluciones),
+                horas_gestion_devoluciones = VALUES(horas_gestion_devoluciones),
+                recoleccion_1_lineas = VALUES(recoleccion_1_lineas),
+                recoleccion_1_tiempo_min = VALUES(recoleccion_1_tiempo_min),
+                recoleccion_2_lineas = VALUES(recoleccion_2_lineas),
+                recoleccion_2_tiempo_min = VALUES(recoleccion_2_tiempo_min),
+                empaquetado_lineas = VALUES(empaquetado_lineas),
+                empaquetado_tiempo_min = VALUES(empaquetado_tiempo_min),
+                almacenado_lineas = VALUES(almacenado_lineas),
+                almacenado_tiempo_min = VALUES(almacenado_tiempo_min),
+                entrega_lineas = VALUES(entrega_lineas),
+                entrega_tiempo_min = VALUES(entrega_tiempo_min),
+                fecha_actualizacion = CURRENT_TIMESTAMP
+        """), params)
+
+    return get_optimizacion_config()
+
+
 ensure_promocion_tier_column()
+
+
+def get_all_config():
+    return {
+        **get_prophet_config(),
+        **get_optimizacion_config(),
+    }
+
+
+def save_all_config(data):
+    payload = data or {}
+
+    prophet_keys = {
+        "yearly_seasonality",
+        "weekly_seasonality",
+        "daily_seasonality",
+        "seasonality_mode",
+        "interval_width",
+        "n_changepoints",
+        "tasa_crecimiento",
+    }
+
+    prophet_payload = {key: payload[key] for key in sorted(payload.keys()) if key in prophet_keys}
+    optimizacion_payload = {key: payload[key] for key in sorted(payload.keys()) if key not in prophet_keys}
+
+    prophet_result = save_prophet_config(prophet_payload) if prophet_payload else get_prophet_config()
+    optimizacion_result = save_optimizacion_config(optimizacion_payload) if optimizacion_payload else get_optimizacion_config()
+
+    return {
+        **prophet_result,
+        **optimizacion_result,
+    }
 
 
 # ============================================================
@@ -3666,7 +3898,7 @@ def configuracion():
 @app.route("/api/configuracion", methods=["GET"])
 def api_configuracion():
     try:
-        return jsonify(get_prophet_config())
+        return jsonify(get_all_config())
     except Exception as e:
         print("ERROR CONFIGURACIÓN:", e)
         return jsonify({
@@ -3678,7 +3910,7 @@ def api_configuracion():
 def guardar_configuracion():
     try:
         datos = request.get_json(silent=True) or {}
-        config = save_prophet_config(datos)
+        config = save_all_config(datos)
         return jsonify({
             "ok": True,
             "configuracion": config

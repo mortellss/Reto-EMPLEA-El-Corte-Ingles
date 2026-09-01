@@ -9,7 +9,21 @@ document.addEventListener("DOMContentLoaded", () => {
         seasonality_mode: "multiplicative",
         interval_width: 0.8,
         n_changepoints: 50,
-        tasa_crecimiento: 0
+        tasa_crecimiento: 0,
+        horas_presencia_mostrador: 11,
+        horas_otras_gestiones: 1,
+        porcentaje_devoluciones: 0.05,
+        horas_gestion_devoluciones: 3,
+        recoleccion_1_lineas: 1000,
+        recoleccion_1_tiempo_min: 1.8,
+        recoleccion_2_lineas: 1000,
+        recoleccion_2_tiempo_min: 0.315,
+        empaquetado_lineas: 1000,
+        empaquetado_tiempo_min: 5.04,
+        almacenado_lineas: 1000,
+        almacenado_tiempo_min: 4.35,
+        entrega_lineas: 1000,
+        entrega_tiempo_min: 2.98
     };
 
     const currentConfigList = document.getElementById("currentConfigList");
@@ -94,6 +108,20 @@ document.addEventListener("DOMContentLoaded", () => {
         payload.weekly_seasonality = Number(payload.weekly_seasonality);
         payload.n_changepoints = Number(payload.n_changepoints);
         payload.tasa_crecimiento = Number(payload.tasa_crecimiento);
+        payload.horas_presencia_mostrador = Number(payload.horas_presencia_mostrador);
+        payload.horas_otras_gestiones = Number(payload.horas_otras_gestiones);
+        payload.porcentaje_devoluciones = Number(payload.porcentaje_devoluciones);
+        payload.horas_gestion_devoluciones = Number(payload.horas_gestion_devoluciones);
+        payload.recoleccion_1_lineas = Number(payload.recoleccion_1_lineas);
+        payload.recoleccion_1_tiempo_min = Number(payload.recoleccion_1_tiempo_min);
+        payload.recoleccion_2_lineas = Number(payload.recoleccion_2_lineas);
+        payload.recoleccion_2_tiempo_min = Number(payload.recoleccion_2_tiempo_min);
+        payload.empaquetado_lineas = Number(payload.empaquetado_lineas);
+        payload.empaquetado_tiempo_min = Number(payload.empaquetado_tiempo_min);
+        payload.almacenado_lineas = Number(payload.almacenado_lineas);
+        payload.almacenado_tiempo_min = Number(payload.almacenado_tiempo_min);
+        payload.entrega_lineas = Number(payload.entrega_lineas);
+        payload.entrega_tiempo_min = Number(payload.entrega_tiempo_min);
 
         const response = await fetch("/api/configuracion", {
             method: "POST",

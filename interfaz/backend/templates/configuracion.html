@@ -90,112 +90,278 @@
 
                     <form id="configForm" class="config-form">
 
-                        <div class="form-grid">
+                        <div class="config-section-block">
+                            <div class="section-divider">
+                                <span>Parámetros de predicción</span>
+                            </div>
 
-                            <label class="form-field">
-                                <span class="field-header">
-                                    <span>Estacionalidad anual</span>
-                                    <span class="tooltip" tabindex="0">
-                                        <i class="fa-solid fa-circle-info"></i>
-                                        <span class="tooltip-text">La cantidad de posibles picos en la demanda que puede haber a lo largo del año.</span>
+                            <div class="form-grid">
+
+                                <label class="form-field">
+                                    <span class="field-header">
+                                        <span>Estacionalidad anual</span>
+                                        <span class="tooltip" tabindex="0">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            <span class="tooltip-text">La cantidad de posibles picos en la demanda que puede haber a lo largo del año.</span>
+                                        </span>
                                     </span>
-                                </span>
-                                <div class="input-group">
-                                    <input type="number" name="yearly_seasonality" value="20" min="0" step="1">
-                                    <small>Valor por defecto: 20</small>
-                                </div>
-                            </label>
+                                    <div class="input-group">
+                                        <input type="number" name="yearly_seasonality" value="20" min="0" step="1">
+                                        <small>Valor por defecto: 20</small>
+                                    </div>
+                                </label>
 
-                            <label class="form-field">
-                                <span class="field-header">
-                                    <span>Estacionalidad semanal</span>
-                                    <span class="tooltip" tabindex="0">
-                                        <i class="fa-solid fa-circle-info"></i>
-                                        <span class="tooltip-text">La cantidad de posibles picos en la demanda que puede haber a lo largo de la semana.</span>
+                                <label class="form-field">
+                                    <span class="field-header">
+                                        <span>Estacionalidad semanal</span>
+                                        <span class="tooltip" tabindex="0">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            <span class="tooltip-text">La cantidad de posibles picos en la demanda que puede haber a lo largo de la semana.</span>
+                                        </span>
                                     </span>
-                                </span>
-                                <div class="input-group">
-                                    <input type="number" name="weekly_seasonality" value="3" min="0" step="1">
-                                    <small>Valor por defecto: 3</small>
-                                </div>
-                            </label>
+                                    <div class="input-group">
+                                        <input type="number" name="weekly_seasonality" value="3" min="0" step="1">
+                                        <small>Valor por defecto: 3</small>
+                                    </div>
+                                </label>
 
-                            <label class="form-field">
-                                <span class="field-header">
-                                    <span>Estacionalidad diaria</span>
-                                    <span class="tooltip" tabindex="0">
-                                        <i class="fa-solid fa-circle-info"></i>
-                                        <span class="tooltip-text">Determina si puede haber variación en la demanda a lo largo del día.</span>
+                                <label class="form-field">
+                                    <span class="field-header">
+                                        <span>Estacionalidad diaria</span>
+                                        <span class="tooltip" tabindex="0">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            <span class="tooltip-text">Determina si puede haber variación en la demanda a lo largo del día.</span>
+                                        </span>
                                     </span>
-                                </span>
-                                <div class="input-group">
-                                    <select name="daily_seasonality">
-                                        <option value="false" selected>Falso</option>
-                                        <option value="true">Verdadero</option>
-                                    </select>
-                                    <small>Valor por defecto: falso</small>
-                                </div>
-                            </label>
+                                    <div class="input-group">
+                                        <select name="daily_seasonality">
+                                            <option value="false" selected>Falso</option>
+                                            <option value="true">Verdadero</option>
+                                        </select>
+                                        <small>Valor por defecto: falso</small>
+                                    </div>
+                                </label>
 
-                            <label class="form-field">
-                                <span class="field-header">
-                                    <span>Modo de estacionalidad</span>
-                                    <span class="tooltip" tabindex="0">
-                                        <i class="fa-solid fa-circle-info"></i>
-                                        <span class="tooltip-text">Define cómo se comportan los picos de actividad a medida que avanza el tiempo.</span>
+                                <label class="form-field">
+                                    <span class="field-header">
+                                        <span>Modo de estacionalidad</span>
+                                        <span class="tooltip" tabindex="0">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            <span class="tooltip-text">Define cómo se comportan los picos de actividad a medida que avanza el tiempo.</span>
+                                        </span>
                                     </span>
-                                </span>
-                                <div class="input-group">
-                                    <select name="seasonality_mode">
-                                        <option value="multiplicative" selected>Multiplicativo</option>
-                                        <option value="additive">Aditivo</option>
-                                    </select>
-                                    <small>Valor por defecto: multiplicativo</small>
-                                </div>
-                            </label>
+                                    <div class="input-group">
+                                        <select name="seasonality_mode">
+                                            <option value="multiplicative" selected>Multiplicativo</option>
+                                            <option value="additive">Aditivo</option>
+                                        </select>
+                                        <small>Valor por defecto: multiplicativo</small>
+                                    </div>
+                                </label>
 
-                            <label class="form-field">
-                                <span class="field-header">
-                                    <span>Ancho del intervalo</span>
-                                    <span class="tooltip" tabindex="0">
-                                        <i class="fa-solid fa-circle-info"></i>
-                                        <span class="tooltip-text">El margen de precisión de la predicción.</span>
+                                <label class="form-field">
+                                    <span class="field-header">
+                                        <span>Ancho del intervalo</span>
+                                        <span class="tooltip" tabindex="0">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            <span class="tooltip-text">El margen de precisión de la predicción.</span>
+                                        </span>
                                     </span>
-                                </span>
-                                <div class="input-group">
-                                    <input type="number" name="interval_width" value="0.8" min="0" max="1" step="0.1">
-                                    <small>Valor por defecto: 0.8</small>
-                                </div>
-                            </label>
+                                    <div class="input-group">
+                                        <input type="number" name="interval_width" value="0.8" min="0" max="1" step="0.1">
+                                        <small>Valor por defecto: 0.8</small>
+                                    </div>
+                                </label>
 
-                            <label class="form-field">
-                                <span class="field-header">
-                                    <span>Puntos de inflexión</span>
-                                    <span class="tooltip" tabindex="0">
-                                        <i class="fa-solid fa-circle-info"></i>
-                                        <span class="tooltip-text">La cantidad de puntos de inflexión donde puede cambiar la tendencia.</span>
+                                <label class="form-field">
+                                    <span class="field-header">
+                                        <span>Puntos de inflexión</span>
+                                        <span class="tooltip" tabindex="0">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            <span class="tooltip-text">La cantidad de puntos de inflexión donde puede cambiar la tendencia.</span>
+                                        </span>
                                     </span>
-                                </span>
-                                <div class="input-group">
-                                    <input type="number" name="n_changepoints" value="50" min="0" step="1">
-                                    <small>Valor por defecto: 50</small>
-                                </div>
-                            </label>
+                                    <div class="input-group">
+                                        <input type="number" name="n_changepoints" value="50" min="0" step="1">
+                                        <small>Valor por defecto: 50</small>
+                                    </div>
+                                </label>
 
-                            <label class="form-field full-width">
-                                <span class="field-header">
-                                    <span>Tasa de crecimiento</span>
-                                    <span class="tooltip" tabindex="0">
-                                        <i class="fa-solid fa-circle-info"></i>
-                                        <span class="tooltip-text">La evolución que se espera en el negocio a lo largo del año. </span>
+                                <label class="form-field full-width">
+                                    <span class="field-header">
+                                        <span>Tasa de crecimiento</span>
+                                        <span class="tooltip" tabindex="0">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            <span class="tooltip-text">La evolución que se espera en el negocio a lo largo del año.</span>
+                                        </span>
                                     </span>
-                                </span>
-                                <div class="input-group">
-                                    <input type="number" name="tasa_crecimiento" value="0" min="-1" max="1" step="0.01">
-                                    <small>Valor por defecto: 0</small>
-                                </div>
-                            </label>
+                                    <div class="input-group">
+                                        <input type="number" name="tasa_crecimiento" value="0" min="-1" max="1" step="0.01">
+                                        <small>Valor por defecto: 0</small>
+                                    </div>
+                                </label>
 
+                            </div>
+                        </div>
+
+                        <div class="config-section-block">
+                            <div class="section-divider">
+                                <span>Parámetros de optimización de horas</span>
+                            </div>
+
+                            <div class="form-grid">
+                                <label class="form-field">
+                                    <span class="field-header">
+                                        <span>Horas presencia mostrador</span>
+                                        <span class="tooltip" tabindex="0">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            <span class="tooltip-text">Horas diarias mínimas de presencia en mostrador.</span>
+                                        </span>
+                                    </span>
+                                    <div class="input-group">
+                                        <input type="number" name="horas_presencia_mostrador" value="11" min="0" step="0.1">
+                                    </div>
+                                </label>
+
+                                <label class="form-field">
+                                    <span class="field-header">
+                                        <span>Horas otras gestiones</span>
+                                        <span class="tooltip" tabindex="0">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            <span class="tooltip-text">Horas diarias dedicadas a gestiones generales.</span>
+                                        </span>
+                                    </span>
+                                    <div class="input-group">
+                                        <input type="number" name="horas_otras_gestiones" value="1" min="0" step="0.1">
+                                    </div>
+                                </label>
+
+                                <label class="form-field">
+                                    <span class="field-header">
+                                        <span>Porcentaje devoluciones</span>
+                                        <span class="tooltip" tabindex="0">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            <span class="tooltip-text">Porcentaje estimado de devoluciones sobre los pedidos.</span>
+                                        </span>
+                                    </span>
+                                    <div class="input-group">
+                                        <input type="number" name="porcentaje_devoluciones" value="0.05" min="0" max="1" step="0.01">
+                                    </div>
+                                </label>
+
+                                <label class="form-field">
+                                    <span class="field-header">
+                                        <span>Horas gestión devoluciones</span>
+                                        <span class="tooltip" tabindex="0">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            <span class="tooltip-text">Horas diarias estimadas para gestionar devoluciones.</span>
+                                        </span>
+                                    </span>
+                                    <div class="input-group">
+                                        <input type="number" name="horas_gestion_devoluciones" value="3" min="0" step="0.1">
+                                    </div>
+                                </label>
+
+                                <label class="form-field full-width">
+                                    <span class="field-header">
+                                        <span>Recolección 1</span>
+                                        <span class="tooltip" tabindex="0">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            <span class="tooltip-text">Recolección en planta. Introduce el número de líneas y el tiempo total en segundos para realizarlas; el sistema calculará el tiempo por línea internamente.</span>
+                                        </span>
+                                    </span>
+                                    <div class="split-input-grid">
+                                        <div class="input-group">
+                                            <label>Líneas</label>
+                                            <input type="number" name="recoleccion_1_lineas" value="1000" min="1" step="1">
+                                        </div>
+                                        <div class="input-group">
+                                            <label>Tiempo total (seg)</label>
+                                            <input type="number" name="recoleccion_1_tiempo_min" value="1.8" min="0" step="0.1">
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="form-field full-width">
+                                    <span class="field-header">
+                                        <span>Recolección 2</span>
+                                        <span class="tooltip" tabindex="0">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            <span class="tooltip-text">Cuando se dejan las bolsas en el muro. Introduce líneas y tiempo total en segundos; el sistema calculará el tiempo por línea internamente.</span>
+                                        </span>
+                                    </span>
+                                    <div class="split-input-grid">
+                                        <div class="input-group">
+                                            <label>Líneas</label>
+                                            <input type="number" name="recoleccion_2_lineas" value="1000" min="1" step="1">
+                                        </div>
+                                        <div class="input-group">
+                                            <label>Tiempo total (seg)</label>
+                                            <input type="number" name="recoleccion_2_tiempo_min" value="0.315" min="0" step="0.1">
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="form-field full-width">
+                                    <span class="field-header">
+                                        <span>Empaquetado</span>
+                                        <span class="tooltip" tabindex="0">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            <span class="tooltip-text">Tiempo total de empaquetado para un número de líneas. Se interpreta en segundos para calcular el tiempo por línea y se usa en la optimización.</span>
+                                        </span>
+                                    </span>
+                                    <div class="split-input-grid">
+                                        <div class="input-group">
+                                            <label>Líneas</label>
+                                            <input type="number" name="empaquetado_lineas" value="1000" min="1" step="1">
+                                        </div>
+                                        <div class="input-group">
+                                            <label>Tiempo total (seg)</label>
+                                            <input type="number" name="empaquetado_tiempo_min" value="5.04" min="0" step="0.1">
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="form-field full-width">
+                                    <span class="field-header">
+                                        <span>Almacenado</span>
+                                        <span class="tooltip" tabindex="0">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            <span class="tooltip-text">Tiempo total de almacenamiento para un número de líneas. El sistema interpreta el valor en segundos por línea para la conversión a horas.</span>
+                                        </span>
+                                    </span>
+                                    <div class="split-input-grid">
+                                        <div class="input-group">
+                                            <label>Líneas</label>
+                                            <input type="number" name="almacenado_lineas" value="1000" min="1" step="1">
+                                        </div>
+                                        <div class="input-group">
+                                            <label>Tiempo total (seg)</label>
+                                            <input type="number" name="almacenado_tiempo_min" value="4.35" min="0" step="0.1">
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="form-field full-width">
+                                    <span class="field-header">
+                                        <span>Entrega</span>
+                                        <span class="tooltip" tabindex="0">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            <span class="tooltip-text">Tiempo total de entrega para un número de líneas; el sistema calcula el tiempo por línea en segundos y luego lo convierte a horas.</span>
+                                        </span>
+                                    </span>
+                                    <div class="split-input-grid">
+                                        <div class="input-group">
+                                            <label>Líneas</label>
+                                            <input type="number" name="entrega_lineas" value="1000" min="1" step="1">
+                                        </div>
+                                        <div class="input-group">
+                                            <label>Tiempo total (seg)</label>
+                                            <input type="number" name="entrega_tiempo_min" value="2.98" min="0" step="0.1">
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
 
                         <div class="form-actions">
