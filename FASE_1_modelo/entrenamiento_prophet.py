@@ -287,7 +287,26 @@ for reg in regresores:
 
 forecast = model.predict(future)
 
-# El usuario solo ve el rango elegido dentro del horizonte anual completo generado.
+# Se aplica el ajuste de crecimiento antes de filtrar el rango visible,
+# porque el DataFrame que luego se guarda en BD debe reflejar exactamente
+# lo que la interfaz va a mostrar.
+tasa_crecimiento_anual = 0
+
+fecha_max_historica = df_final['ds'].max()
+
+def aplicar_crecimiento(row, col_name):
+    if row['ds'] > fecha_max_historica:
+        diferencia = (row['ds'] - fecha_max_historica).days
+        prediccion = math.ceil(diferencia / 365.25)
+        factor_crecimiento = (1 + tasa_crecimiento_anual) ** prediccion
+        return row[col_name] * factor_crecimiento
+
+    return row[col_name]
+
+forecast['yhat'] = forecast.apply(lambda r: aplicar_crecimiento(r, 'yhat'), axis=1)
+forecast['yhat_lower'] = forecast.apply(lambda r: aplicar_crecimiento(r, 'yhat_lower'), axis=1)
+forecast['yhat_upper'] = forecast.apply(lambda r: aplicar_crecimiento(r, 'yhat_upper'), axis=1)
+
 periodo_mostrado = forecast[
     (forecast["ds"] >= fecha_inicio_prediccion) &
     (forecast["ds"] <= fecha_fin_prediccion)
@@ -299,27 +318,6 @@ print(
 print(
     f"Periodo visible en interfaz: {fecha_inicio_prediccion.date()} -> {fecha_fin_prediccion.date()}"
 )
-
-tasa_crecimiento_anual = 0
-
-fecha_max_historica = df_final['ds'].max()
-
-def aplicar_crecimiento(row, col_name):
-    if row['ds'] > fecha_max_historica:
-        diferencia = (row['ds'] - fecha_max_historica).days
-        prediccion = math.ceil(diferencia/365.25)
-
-        
-        factor_crecimiento = (1 + tasa_crecimiento_anual) ** prediccion
-        return row[col_name] * factor_crecimiento
-    
-    return row[col_name]
-
-forecast['yhat'] = forecast.apply(lambda r: aplicar_crecimiento(r, 'yhat'), axis=1)
-forecast['yhat_lower'] = forecast.apply(lambda r: aplicar_crecimiento(r, 'yhat_lower'), axis=1)
-forecast['yhat_upper'] = forecast.apply(lambda r: aplicar_crecimiento(r, 'yhat_upper'), axis=1)
-
-
 
 trimestre = periodo_mostrado[
     ["ds", "yhat", "yhat_lower", "yhat_upper"]
