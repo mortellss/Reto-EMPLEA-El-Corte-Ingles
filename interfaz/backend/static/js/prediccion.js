@@ -8,6 +8,20 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 let fechaInicioPrediccion = null;
 let fechaFinPrediccion = null;
+const STORAGE_KEY_PREDICCION = "emplea_periodo_prediccion";
+
+function guardarPeriodoPrediccionEnStorage() {
+    if (!fechaInicioPrediccion || !fechaFinPrediccion) return;
+
+    const datos = {
+        fecha_inicio: fechaInicioPrediccion,
+        fecha_fin: fechaFinPrediccion,
+        trimestre: document.querySelector(".btn-trimestre.activo")?.dataset.trimestre || null,
+        anio: selectorAño ? Number(selectorAño.value) : null
+    };
+
+    localStorage.setItem(STORAGE_KEY_PREDICCION, JSON.stringify(datos));
+}
 
 const botonesTrimestre =
     document.querySelectorAll(".btn-trimestre");
@@ -77,6 +91,7 @@ botonesTrimestre.forEach(boton => {
         );
 
         boton.classList.add("activo");
+        guardarPeriodoPrediccionEnStorage();
 
         // Mostrar fechas
         if(periodoSeleccionado){
@@ -214,6 +229,7 @@ selectorAño.addEventListener("change", () => {
         }
 
 
+        guardarPeriodoPrediccionEnStorage();
         alert(
             "Predicción generada correctamente."
         );

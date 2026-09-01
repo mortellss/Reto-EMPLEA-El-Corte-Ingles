@@ -709,6 +709,24 @@ document
 
     });
 
+function obtenerPeriodoPrediccionSeleccionado() {
+    try {
+        const texto = localStorage.getItem("emplea_periodo_prediccion");
+        if (!texto) return null;
+
+        const datos = JSON.parse(texto);
+        if (!datos || !datos.fecha_inicio || !datos.fecha_fin) return null;
+
+        return {
+            fecha_inicio: datos.fecha_inicio,
+            fecha_fin: datos.fecha_fin
+        };
+    } catch (error) {
+        console.warn("No se pudo recuperar el periodo de predicción:", error);
+        return null;
+    }
+}
+
 // GENERAR PLANIFICACIÓN
 document
     .getElementById("generarPlanificacion")
@@ -732,12 +750,17 @@ document
 
         try {
 
-            const fechaInicio = document.getElementById("fechaInicio")?.value || null;
-            const fechaFin = document.getElementById("fechaFin")?.value || null;
+            const periodoSeleccionado = obtenerPeriodoPrediccionSeleccionado();
+            const fechaInicio = periodoSeleccionado?.fecha_inicio || document.getElementById("fechaInicio")?.value || null;
+            const fechaFin = periodoSeleccionado?.fecha_fin || document.getElementById("fechaFin")?.value || null;
 
             const payload = {};
             if (fechaInicio) payload.fecha_inicio = fechaInicio;
             if (fechaFin) payload.fecha_fin = fechaFin;
+
+            if (!fechaInicio || !fechaFin) {
+                throw new Error("No hay un trimestre seleccionado en Predicción.");
+            }
 
             const respuesta = await fetch(
                 "/api/planificacion/generar",
