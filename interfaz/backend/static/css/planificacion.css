@@ -86,19 +86,8 @@
 
 .planning-actions {
     display: flex;
-    flex-direction: row;
     align-items: center;
-    flex-wrap: wrap;
     gap: 14px;
-}
-
-.estimacion-planificacion {
-    width: 100%;
-    margin-top: 2px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #1a6b42;
-    text-align: left;
 }
 
 
