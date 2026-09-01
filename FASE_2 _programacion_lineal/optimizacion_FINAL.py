@@ -1,5 +1,5 @@
 import argparse
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 import pandas as pd
 import pulp
 import math
@@ -219,15 +219,15 @@ def guardar_horas_mensuales():
     with engine.begin() as conexion:
         for fila in datos:
             conexion.execute(
-                """
-                INSERT INTO horas_mensuales (mes, fecha_generacion, horas_ordinarias, horas_complementarias, horas_fd)
-                VALUES (:mes, :fecha_generacion, :horas_ordinarias, :horas_complementarias, :horas_fd)
-                ON DUPLICATE KEY UPDATE
-                    fecha_generacion = VALUES(fecha_generacion),
-                    horas_ordinarias = VALUES(horas_ordinarias),
-                    horas_complementarias = VALUES(horas_complementarias),
-                    horas_fd = VALUES(horas_fd)
-                """,
+                text("""
+                    INSERT INTO horas_mensuales (mes, fecha_generacion, horas_ordinarias, horas_complementarias, horas_fd)
+                    VALUES (:mes, :fecha_generacion, :horas_ordinarias, :horas_complementarias, :horas_fd)
+                    ON DUPLICATE KEY UPDATE
+                        fecha_generacion = VALUES(fecha_generacion),
+                        horas_ordinarias = VALUES(horas_ordinarias),
+                        horas_complementarias = VALUES(horas_complementarias),
+                        horas_fd = VALUES(horas_fd)
+                """),
                 fila,
             )
 
