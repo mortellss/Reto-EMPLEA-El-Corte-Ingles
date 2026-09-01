@@ -608,4 +608,6 @@ selectorAño.addEventListener("change", () => {
         return`${fechaFormateada} ${partes[1]}`;
     }
 
+    cargarPrediccion();
+
 });
