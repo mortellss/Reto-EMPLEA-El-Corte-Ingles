@@ -20,7 +20,10 @@ function guardarPeriodoPrediccionEnStorage() {
         anio: selectorAño ? Number(selectorAño.value) : null
     };
 
-    localStorage.setItem(STORAGE_KEY_PREDICCION, JSON.stringify(datos));
+    const payload = JSON.stringify(datos);
+    localStorage.setItem(STORAGE_KEY_PREDICCION, payload);
+    sessionStorage.setItem(STORAGE_KEY_PREDICCION, payload);
+    window.__empleaPeriodoPrediccion = datos;
 }
 
 const botonesTrimestre =

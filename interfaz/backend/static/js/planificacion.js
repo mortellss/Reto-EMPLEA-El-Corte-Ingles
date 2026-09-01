@@ -710,21 +710,52 @@ document
     });
 
 function obtenerPeriodoPrediccionSeleccionado() {
-    try {
-        const texto = localStorage.getItem("emplea_periodo_prediccion");
-        if (!texto) return null;
+    const fuentes = [
+        () => window.__empleaPeriodoPrediccion,
+        () => {
+            try { return JSON.parse(localStorage.getItem("emplea_periodo_prediccion") || "null"); }
+            catch { return null; }
+        },
+        () => {
+            try { return JSON.parse(sessionStorage.getItem("emplea_periodo_prediccion") || "null"); }
+            catch { return null; }
+        }
+    ];
 
-        const datos = JSON.parse(texto);
-        if (!datos || !datos.fecha_inicio || !datos.fecha_fin) return null;
-
-        return {
-            fecha_inicio: datos.fecha_inicio,
-            fecha_fin: datos.fecha_fin
-        };
-    } catch (error) {
-        console.warn("No se pudo recuperar el periodo de predicción:", error);
-        return null;
+    for (const obtener of fuentes) {
+        try {
+            const datos = obtener();
+            if (datos && datos.fecha_inicio && datos.fecha_fin) {
+                return {
+                    fecha_inicio: datos.fecha_inicio,
+                    fecha_fin: datos.fecha_fin
+                };
+            }
+        } catch (error) {
+            console.warn("No se pudo recuperar el periodo de predicción:", error);
+        }
     }
+
+    const ahora = new Date();
+    const mes = ahora.getMonth() + 1;
+    let inicio = "";
+    let fin = "";
+
+    if (mes <= 3) {
+        inicio = `${ahora.getFullYear()}-01-01`;
+        fin = `${ahora.getFullYear()}-03-31`;
+    } else if (mes <= 6) {
+        inicio = `${ahora.getFullYear()}-04-01`;
+        fin = `${ahora.getFullYear()}-06-30`;
+    } else if (mes <= 9) {
+        inicio = `${ahora.getFullYear()}-07-01`;
+        fin = `${ahora.getFullYear()}-09-30`;
+    } else {
+        inicio = `${ahora.getFullYear()}-10-01`;
+        fin = `${ahora.getFullYear()}-12-31`;
+    }
+
+    return { fecha_inicio: inicio, fecha_fin: fin };
 }
 
 // GENERAR PLANIFICACIÓN
