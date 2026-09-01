@@ -2,8 +2,107 @@ document.addEventListener("DOMContentLoaded",()=>{
     let predicciones=[];
     let graficoPrediccion=null;
     let graficoHoras=null;
+    // ==============================
+// CONFIGURACIÓN DE TRIMESTRES
+// ==============================
 
-    cargarPrediccion();
+let fechaInicioPrediccion = null;
+let fechaFinPrediccion = null;
+
+const botonesTrimestre =
+    document.querySelectorAll(".btn-trimestre");
+
+const periodoSeleccionado =
+    document.getElementById("periodoSeleccionado");
+
+const selectorAño =
+    document.getElementById("añoPrediccion");
+
+
+// Crear años disponibles
+const añoActual = new Date().getFullYear();
+
+for(let año = añoActual - 2; año <= añoActual + 2; año++){
+
+    const opcion = document.createElement("option");
+
+    opcion.value = año;
+    opcion.textContent = año;
+
+    if(año === añoActual){
+        opcion.selected = true;
+    }
+
+    selectorAño.appendChild(opcion);
+}
+
+
+// Seleccionar trimestre
+botonesTrimestre.forEach(boton => {
+
+    boton.addEventListener("click", () => {
+
+        const trimestre =
+            Number(boton.dataset.trimestre);
+
+        const año =
+            Number(selectorAño.value);
+
+        switch(trimestre){
+
+            case 1:
+                fechaInicioPrediccion = `${año}-01-01`;
+                fechaFinPrediccion = `${año}-03-31`;
+                break;
+
+            case 2:
+                fechaInicioPrediccion = `${año}-04-01`;
+                fechaFinPrediccion = `${año}-06-30`;
+                break;
+
+            case 3:
+                fechaInicioPrediccion = `${año}-07-01`;
+                fechaFinPrediccion = `${año}-09-30`;
+                break;
+
+            case 4:
+                fechaInicioPrediccion = `${año}-10-01`;
+                fechaFinPrediccion = `${año}-12-31`;
+                break;
+        }
+
+        // Marcar trimestre seleccionado
+        botonesTrimestre.forEach(boton =>
+            boton.classList.remove("activo")
+        );
+
+        boton.classList.add("activo");
+
+        // Mostrar fechas
+        if(periodoSeleccionado){
+
+            periodoSeleccionado.textContent =
+                `${formatearFecha(fechaInicioPrediccion)} - ${formatearFecha(fechaFinPrediccion)}`;
+
+        }
+
+    });
+
+});
+
+
+// Si cambia el año y ya había un trimestre seleccionado,
+// actualizar automáticamente las fechas
+selectorAño.addEventListener("change", () => {
+
+    const trimestreActivo =
+        document.querySelector(".btn-trimestre.activo");
+
+    if(trimestreActivo){
+        trimestreActivo.click();
+    }
+
+});
 
     document.getElementById("generarPrediccion").addEventListener(
         "click",
@@ -56,83 +155,100 @@ document.addEventListener("DOMContentLoaded",()=>{
 
     async function generarPrediccion() {
 
-        const fechaInicio =
-            document.getElementById("fechaInicio").value;
+    // Comprobar que se ha seleccionado un trimestre
+    if (!fechaInicioPrediccion || !fechaFinPrediccion) {
 
-        const fechaFin =
-            document.getElementById("fechaFin").value;
+        alert("Selecciona un trimestre antes de generar la predicción.");
 
-        // Comprobar que se han introducido las dos fechas
-        if (!fechaInicio || !fechaFin) {
-            alert("Selecciona una fecha de inicio y una fecha de fin.");
-            return;
-        }
+        return;
+    }
 
-        // Comprobar que el periodo es válido
-        if (fechaInicio > fechaFin) {
-            alert("La fecha de inicio no puede ser posterior a la fecha de fin.");
-            return;
-        }
-        const boton =
-            document.getElementById("generarPrediccion");
-        try {
-            boton.disabled = true;
-            boton.innerHTML = `
-                <i class="fa-solid fa-spinner fa-spin"></i>
-                Generando predicción...
-            `;
-            const respuesta = await fetch(
-                "/api/prediccion/generar",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        fecha_inicio: fechaInicio,
-                        fecha_fin: fechaFin
-                    })
-                }
-            );
-            const datos =
-                await respuesta.json();
-            if (!respuesta.ok) {
 
-                throw new Error(
-                    datos.error ||
-                    "No se ha podido generar la predicción."
-                );
+    const boton =
+        document.getElementById("generarPrediccion");
+
+
+    try {
+
+        boton.disabled = true;
+
+        boton.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Generando predicción...
+        `;
+
+
+        const respuesta = await fetch(
+            "/api/prediccion/generar",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    fecha_inicio:
+                        fechaInicioPrediccion,
+
+                    fecha_fin:
+                        fechaFinPrediccion
+
+                })
             }
-            alert(
-                "Predicción generada correctamente."
-            );
+        );
 
-            // Recargar los datos de la predicción
 
-            await cargarPrediccion();
+        const datos =
+            await respuesta.json();
 
-        } catch (error) {
 
-            console.error(
-                "ERROR GENERANDO PREDICCIÓN:",
-                error
-            );
+        if (!respuesta.ok) {
 
-            alert(
-                error.message ||
+            throw new Error(
+                datos.error ||
                 "No se ha podido generar la predicción."
             );
 
-        } finally {
-
-            boton.disabled = false;
-            boton.innerHTML = `
-                <i class="fa-solid fa-chart-line"></i>
-                Generar predicción
-            `;
         }
+
+
+        alert(
+            "Predicción generada correctamente."
+        );
+
+
+        // Recargar los datos de la predicción
+        await cargarPrediccion();
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR GENERANDO PREDICCIÓN:",
+            error
+        );
+
+
+        alert(
+            error.message ||
+            "No se ha podido generar la predicción."
+        );
+
+
+    } finally {
+
+        boton.disabled = false;
+
+        boton.innerHTML = `
+            <i class="fa-solid fa-chart-line"></i>
+            Generar predicción
+        `;
+
     }
 
+}
     function mostrarResumen(){
 
         const dias=document.getElementById("diasPrevistos");

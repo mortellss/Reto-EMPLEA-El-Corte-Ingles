@@ -258,47 +258,234 @@
 
 .prediccion-configuracion {
     display: flex;
-    align-items: flex-end;
-    gap: 16px;
+    align-items: center;
+    gap: 30px;
+
     margin-bottom: 24px;
-    padding: 20px 24px;
+    padding: 28px 30px;
+
     background: #ffffff;
     border-radius: 14px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+
+    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
 }
 
-.fecha-prediccion {
+
+/* ==============================
+   PERIODOS
+   ============================== */
+
+.periodo-prediccion {
+    flex: 1;
+    min-width: 0;
+
     display: flex;
     flex-direction: column;
-    gap: 7px;
+    gap: 10px;
 }
 
-.fecha-prediccion label {
+.periodo-prediccion > label {
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     color: #24344d;
 }
 
-.fecha-prediccion input {
-    height: 44px;
-    min-width: 180px;
-    padding: 0 12px;
+
+/* ==============================
+   TRIMESTRES
+   ============================== */
+
+.trimestres {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.btn-trimestre {
+    height: 68px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 4px;
+
+    padding: 8px 10px;
+
+    background: #ffffff;
     border: 1px solid #d8dee8;
     border-radius: 8px;
-    background: #ffffff;
+
     color: #24344d;
+
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+.btn-trimestre strong {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.btn-trimestre span {
+    font-size: 12px;
+    color: #777;
+}
+
+.btn-trimestre:hover {
+    border-color: #00843d;
+    background: #f7faf8;
+}
+
+.btn-trimestre.activo {
+    background: #00843d;
+    border-color: #00843d;
+    color: white;
+}
+
+.btn-trimestre.activo span {
+    color: white;
+}
+
+
+/* ==============================
+   AÑO + GENERAR
+   ============================== */
+
+.generar-prediccion {
+    width: 220px;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 10px;
+
+    flex-shrink: 0;
+}
+
+.año-prediccion {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+}
+
+.año-prediccion label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #24344d;
+}
+
+#añoPrediccion {
+    height: 40px;
+    width: 110px;
+
+    padding: 0 10px;
+
+    border: 1px solid #d8dee8;
+    border-radius: 8px;
+
+    background: white;
+    color: #24344d;
+
     font-family: 'Poppins', sans-serif;
     font-size: 14px;
-    outline: none;
-    box-sizing: border-box;
+
+    cursor: pointer;
 }
 
-.fecha-prediccion input:focus {
+#añoPrediccion:focus {
+    outline: none;
     border-color: #00843d;
-    box-shadow: 0 0 0 3px rgba(0, 132, 61, 0.08);
 }
+
+
+/* ==============================
+   GENERAR PREDICCIÓN
+   ============================== */
 
 .prediccion-configuracion .primary-button {
-    height: 44px;
-    margin-left: auto;
+    width: 100%;
+    height: 52px;
+
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    background: #00843d;
+    color: white;
+
+    border: none;
+    border-radius: 9px;
+
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    box-shadow: 0 3px 8px rgba(0,132,61,0.20);
+
+    transition: all 0.2s ease;
+}
+
+.prediccion-configuracion .primary-button:hover {
+    background: #006f34;
+    box-shadow: 0 4px 12px rgba(0,132,61,0.28);
+    transform: translateY(-1px);
+}
+
+
+/* Fecha seleccionada */
+
+#periodoSeleccionado {
+    margin: 0;
+    font-size: 12px;
+    color: #00843d;
+}
+
+
+/* ==============================
+   RESPONSIVE
+   ============================== */
+
+@media (max-width: 1100px) {
+
+    .prediccion-configuracion {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .generar-prediccion {
+        width: 100%;
+    }
+
+    .año-prediccion {
+        justify-content: flex-start;
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .trimestres {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 450px) {
+
+    .trimestres {
+        grid-template-columns: 1fr;
+    }
+
 }
