@@ -532,6 +532,8 @@ df_promociones["fecha_fin"] = df_promociones["fecha_fin"].dt.date
 # Agregar la columna id_centro
 df_promociones["id_centro"] = 1
 
+df_promociones["tier"] = 3
+
 # Insertar en la base de datos
 try:
     with engine.begin() as connection:

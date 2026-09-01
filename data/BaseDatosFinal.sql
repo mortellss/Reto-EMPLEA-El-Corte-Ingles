@@ -501,6 +501,7 @@ CREATE TABLE `promocion` (
   `tipo` varchar(50) DEFAULT NULL,
   `descripcion` varchar(255) DEFAULT NULL,
   `id_centro` int NOT NULL,
+  `tier` int NOT NULL DEFAULT '3',
   PRIMARY KEY (`id_promocion`),
   KEY `id_centro` (`id_centro`),
   CONSTRAINT `promocion_ibfk_1` FOREIGN KEY (`id_centro`) REFERENCES `centro` (`id_centro`)
@@ -514,8 +515,85 @@ CREATE TABLE `promocion` (
 LOCK TABLES `promocion` WRITE;
 /*!40000 ALTER TABLE `promocion` DISABLE KEYS */;
 INSERT INTO `promocion` VALUES (271,'Semana de internet','2024-05-08','2024-05-14',NULL,NULL,1),(272,'Día sin IVA','2024-05-24','2024-05-26',NULL,NULL,1),(273,'Ventas privadas','2024-06-06','2024-06-10',NULL,NULL,1),(274,'Descuentos TOP','2024-06-11','2024-06-27',NULL,NULL,1),(275,'Rebajas','2024-06-28','2024-07-31',NULL,NULL,1),(276,'Ofertas límite','2024-08-15','2024-08-18',NULL,NULL,1),(277,'Vuelta al cole','2024-08-19','2024-10-13',NULL,NULL,1),(278,'Electro 3','2024-08-19','2024-08-21',NULL,NULL,1),(279,'Supertecnoprecios','2024-09-12','2024-09-15',NULL,NULL,1),(280,'Feria del bebé','2024-09-16','2024-10-13',NULL,NULL,1),(281,'Descanso colchones','2024-09-19','2024-10-06',NULL,NULL,1),(282,'Días de belleza','2024-09-26','2024-10-11',NULL,NULL,1),(283,'0,00 financiación','2024-09-26','2024-10-03',NULL,NULL,1),(284,'Semana de la lencería','2024-09-26','2024-10-06',NULL,NULL,1),(285,'Día sin IVA','2024-10-04','2024-10-06',NULL,NULL,1),(286,'Tecnoprecios','2024-10-07','2024-10-23',NULL,NULL,1),(287,'8 días de oro','2024-10-17','2024-11-03',NULL,NULL,1),(288,'Juguetes 40% regalo','2024-10-24','2024-12-27',NULL,NULL,1),(289,'Supertecnoprecios','2024-10-24','2024-10-27',NULL,NULL,1),(290,'Juguetes 25%','2024-11-01','2024-11-27',NULL,NULL,1),(291,'Cheques Mágicos','2024-12-04','2024-12-05',NULL,NULL,1),(292,'Ventas privadas','2024-12-12','2024-12-16',NULL,NULL,1),(293,'Supertecnoprecios','2024-12-19','2024-12-22',NULL,NULL,1),(294,'Feliz 2025','2025-01-01','2025-01-05',NULL,NULL,1),(295,'Rebajas','2025-01-07','2025-02-28',NULL,NULL,1),(296,'Blancolor','2025-01-13','2025-02-28',NULL,NULL,1),(297,'Día sin IVA','2025-01-17','2025-01-19',NULL,NULL,1),(298,'Semana del deporte','2025-01-23','2025-01-25',NULL,NULL,1),(299,'Límite 48h','2025-02-06','2025-02-09',NULL,NULL,1),(300,'Semana de la telefonía','2025-02-20','2025-02-26',NULL,NULL,1),(301,'Ofertas límite','2025-02-20','2025-02-23',NULL,NULL,1),(302,'20% en fotografía','2025-02-20','2025-02-23',NULL,NULL,1),(303,'Tecnoprecios','2025-03-13','2025-03-26',NULL,NULL,1),(304,'Supertecnoprecios','2025-03-27','2025-03-30',NULL,NULL,1),(305,'8 días de oro','2025-04-03','2025-04-13',NULL,NULL,1),(306,'Días de belleza','2025-04-24','2025-05-09',NULL,NULL,1),(307,'Supertecnoprecios','2025-04-24','2025-04-27',NULL,NULL,1),(308,'Ofertas flash','2025-05-08','2025-05-11',NULL,NULL,1),(309,'Semana de internet','2025-05-12','2025-05-18',NULL,NULL,1),(310,'Supertecnoprecios','2025-05-22','2025-05-25',NULL,NULL,1),(311,'Tecnoprecios','2025-05-26','2025-06-04',NULL,NULL,1),(312,'Samsung Days','2025-05-29','2025-05-29',NULL,NULL,1),(313,'Samsung Days','2025-06-01','2025-06-01',NULL,NULL,1),(314,'Ventas privadas','2025-06-05','2025-06-09',NULL,NULL,1),(315,'Descuentos TOP','2025-06-10','2025-06-26',NULL,NULL,1),(316,'Día sin IVA','2025-06-13','2025-06-15',NULL,NULL,1),(317,'Vuelta al cole','2025-06-19','2025-07-31',NULL,NULL,1),(318,'Rebajas','2025-06-27','2025-07-31',NULL,NULL,1),(319,'Supertecnoprecios','2025-07-11','2025-07-15',NULL,NULL,1),(320,'2ª Rebajas 20% adicional','2025-07-14','2025-07-31',NULL,NULL,1),(321,'Semana del deporte','2025-07-17','2025-07-23',NULL,NULL,1),(322,'Especial baño 40%','2025-07-17','2025-07-23',NULL,NULL,1),(323,'Límite fase I','2025-07-31','2025-08-03',NULL,NULL,1),(324,'Rebaja final','2025-08-01','2025-08-31',NULL,NULL,1),(325,'Electro 3','2025-08-04','2025-08-04',NULL,NULL,1),(326,'Electro 4','2025-08-05','2025-08-05',NULL,NULL,1),(327,'Electro 5','2025-08-06','2025-08-06',NULL,NULL,1),(328,'20% en parafarmacia','2025-08-07','2025-08-08',NULL,NULL,1),(329,'Límite fase II','2025-08-07','2025-08-10',NULL,NULL,1),(330,'Smart Days','2025-08-14','2025-08-17',NULL,NULL,1),(331,'Vuelta al cole','2025-08-18','2025-09-30',NULL,NULL,1),(332,'Electro 3','2025-08-18','2025-08-20',NULL,NULL,1),(333,'Límite fase III','2025-08-21','2025-08-24',NULL,NULL,1),(334,'University','2025-08-21','2025-09-07',NULL,NULL,1),(335,'Remate final hogar 50%','2025-08-25','2025-08-31',NULL,NULL,1),(336,'Límite fase IV','2025-08-28','2025-08-31',NULL,NULL,1),(337,'Tecnoprecios','2025-09-08','2025-09-17',NULL,NULL,1),(338,'Feria del bebé','2025-09-15','2025-10-12',NULL,NULL,1),(339,'Supertecnoprecios','2025-09-18','2025-09-21',NULL,NULL,1),(340,'Días de belleza','2025-09-25','2025-10-08',NULL,NULL,1),(341,'Semana de la lencería','2025-09-25','2025-10-05',NULL,NULL,1),(342,'Día sin IVA','2025-10-03','2025-10-05',NULL,NULL,1),(343,'Tecnoprecios','2025-10-06','2025-10-22',NULL,NULL,1),(344,'Emidio Tucci','2025-10-08','2025-10-31',NULL,NULL,1),(345,'8 días de oro','2025-10-16','2025-11-02',NULL,NULL,1),(346,'Supertecnoprecios','2025-10-23','2025-10-26',NULL,NULL,1),(347,'Tecnoprecios','2025-10-27','2025-11-02',NULL,NULL,1),(348,'Navidad hogar','2025-10-28','2025-12-19',NULL,NULL,1),(349,'Juguetes 25%','2025-11-03','2025-11-26',NULL,NULL,1),(350,'Black Friday adelanto I','2025-11-03','2025-11-09',NULL,NULL,1),(351,'Black Friday adelanto II','2025-11-10','2025-11-16',NULL,NULL,1),(352,'Black Friday adelanto III','2025-11-17','2025-11-23',NULL,NULL,1),(353,'Black Friday ','2025-11-24','2025-11-30',NULL,NULL,1),(354,'Cybermonday','2025-12-01','2025-12-01',NULL,NULL,1),(355,'Cheques Mágicos','2025-12-04','2025-12-06',NULL,NULL,1),(356,'Cheques Mágicos redención','2025-12-07','2025-12-31',NULL,NULL,1),(357,'Ventas privadas','2025-12-11','2025-12-15',NULL,NULL,1),(358,'Supertecnoprecios','2025-12-18','2025-12-23',NULL,NULL,1),(359,'Feliz 2026','2025-12-26','2025-12-05',NULL,NULL,1),(360,'Rebajas','2026-01-07','2026-02-28',NULL,NULL,1),(361,'Ofertas informática','2026-01-07','2026-01-21',NULL,NULL,1),(362,'Limpieza y perfumería 40% vale','2026-01-07','2026-01-28',NULL,NULL,1),(363,'Blancolor','2026-01-08','2026-02-28',NULL,NULL,1),(364,'2ª Rebajas 20% adicional','2026-01-15','2026-01-28',NULL,NULL,1),(365,'Día sin IVA','2026-01-22','2026-01-25',NULL,NULL,1),(366,'Semana del deporte','2026-01-22','2026-01-28',NULL,NULL,1),(367,'Rebaja final','2026-01-29','2026-02-28',NULL,NULL,1),(368,'Ofertas límite I','2026-01-29','2026-02-01',NULL,NULL,1),(369,'Ofertas límite II','2026-02-05','2026-02-08',NULL,NULL,1),(370,'Ofertas límite III','2026-02-12','2026-02-15',NULL,NULL,1),(371,'Ofertas límite IV','2026-02-19','2026-02-22',NULL,NULL,1),(372,'Remate final hogar','2026-02-23','2026-02-28',NULL,NULL,1),(373,'Aire acondicionado','2026-03-05','2026-03-22',NULL,NULL,1),(374,'Wake Up Your Makeup','2026-03-05','2026-03-15',NULL,NULL,1),(375,'Tecnoprecios Apple','2026-03-10','2026-03-19',NULL,NULL,1),(376,'Baby News','2026-03-12','2026-03-29',NULL,NULL,1),(377,'Tecnoprecios 20%','2026-03-19','2026-03-22',NULL,NULL,1),(378,'8 días de oro','2026-04-09','2026-04-19',NULL,NULL,1),(379,'Happy Days Outlet','2026-04-14','2026-04-15',NULL,NULL,1),(380,'Día del libro -10%','2026-04-23','2026-04-23',NULL,NULL,1),(381,'Supertecnoprecios -20%','2026-04-23','2026-04-26',NULL,NULL,1),(382,'Días de belleza con 20% de regalo','2026-04-23','2026-05-08',NULL,NULL,1),(383,'Juguetes 25%','2026-04-26','2026-04-26',NULL,NULL,1),(384,'20% medias de verano','2026-04-30','2026-05-17',NULL,NULL,1),(385,'% en TV y vídeo','2026-05-01','2026-05-20',NULL,NULL,1),(386,'Juguetes al aire libre','2026-05-01','2026-05-31',NULL,NULL,1),(387,'Aire acondicionado','2026-05-07','2026-05-24',NULL,NULL,1),(388,'Semana de internet','2026-05-11','2026-05-17',NULL,NULL,1),(389,'Día sin IVA','2026-05-21','2026-05-24',NULL,NULL,1),(390,'Financiación 100%','2026-05-21','2026-06-03',NULL,NULL,1),(391,'Colchones 40%','2026-05-21','2026-06-08',NULL,NULL,1),(392,'Lotes de verano person','2026-05-27','2026-06-10',NULL,NULL,1),(393,'Summertime -50% en la 2ª unidad','2026-06-01','2026-06-30',NULL,NULL,1),(394,'Supertecnoprecios -20%','2026-06-04','2026-06-10',NULL,NULL,1),(395,'Google Days -30%','2026-06-04','2026-06-10',NULL,NULL,1),(396,'Aire acondicionado -20%','2026-06-04','2026-06-17',NULL,NULL,1),(397,'Solares Avene -50%','2026-06-05','2026-06-12',NULL,NULL,1),(398,'Wake Up Your Makeup 30%','2026-06-10','2026-06-14',NULL,NULL,1),(399,'Ventas privadas','2026-06-11','2026-06-15',NULL,NULL,1),(400,'Relevancia especial en deportes, tecnología y alimentación','2026-06-11','2026-06-19',NULL,NULL,1),(401,'Descuentos TOP','2026-06-16','2026-06-24',NULL,NULL,1),(402,'Vuelta al cole I','2026-06-18','2026-07-31',NULL,NULL,1),(403,'Discos -20%','2026-06-18','2026-06-21',NULL,NULL,1),(404,'Colchones y bases -50%','2026-06-18','2026-06-30',NULL,NULL,1),(405,'Rebajas','2026-06-25','2026-07-31',NULL,NULL,1);
+
+UPDATE promocion
+SET tier = 3;
+
+/*Tier 1
+
+/* rebajas_enero */
+UPDATE promocion
+SET tier = 1
+WHERE nombre = 'Rebajas'
+  AND fecha_inicio >= '2025-01-01'
+  AND fecha_inicio < '2025-03-01';
+
+/* ventas_privadas */
+UPDATE promocion
+SET tier = 1
+WHERE nombre = 'Ventas privadas';
+
+/* semana_internet */
+UPDATE promocion
+SET tier = 1
+WHERE nombre = 'Semana de internet';
+
+/* rebajas_junio */
+UPDATE promocion
+SET tier = 1
+WHERE nombre = 'Rebajas'
+  AND MONTH(fecha_inicio) = 6;
+
+/* semana_deporte */
+UPDATE promocion
+SET tier = 1
+WHERE nombre = 'Semana del deporte';
+
+
+/* Tier 2
+
+/* tecnoprecios */
+UPDATE promocion
+SET tier = 2
+WHERE nombre = 'Tecnoprecios';
+
+/* supertecnoprecios */
+UPDATE promocion
+SET tier = 2
+WHERE nombre = 'Supertecnoprecios';
+
+/* dias_belleza */
+UPDATE promocion
+SET tier = 2
+WHERE nombre = 'Días de belleza';
+
+/* 8_dias_oro */
+UPDATE promocion
+SET tier = 2
+WHERE nombre = '8 días de oro';
+
+/* segundas_rebajas_enero */
+UPDATE promocion
+SET tier = 2
+WHERE nombre = '2ª Rebajas 20% adicional'
+  AND fecha_inicio >= '2026-01-01'
+  AND fecha_inicio < '2026-02-01';
+
+/* segundas_rebajas_julio */
+UPDATE promocion
+SET tier = 2
+WHERE nombre = '2ª Rebajas 20% adicional'
+  AND fecha_inicio >= '2025-07-01'
+  AND fecha_inicio < '2025-08-01';
+
+/* descuentos_top */
+UPDATE promocion
+SET tier = 2
+WHERE nombre = 'Descuentos TOP';
+
 /*!40000 ALTER TABLE `promocion` ENABLE KEYS */;
 UNLOCK TABLES;
+
 
 --
 -- Table structure for table `tarea`

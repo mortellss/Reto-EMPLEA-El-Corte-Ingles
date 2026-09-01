@@ -146,6 +146,22 @@ def save_prophet_config(data):
     return get_prophet_config()
 
 
+def ensure_promocion_tier_column():
+    with engine.begin() as conn:
+        cols = conn.execute(text("""
+            SHOW COLUMNS FROM promocion LIKE 'tier'
+        """)).fetchall()
+
+        if not cols:
+            conn.execute(text("""
+                ALTER TABLE promocion
+                ADD COLUMN tier INT NOT NULL DEFAULT 3 AFTER id_centro
+            """))
+
+
+ensure_promocion_tier_column()
+
+
 # ============================================================
 # DASHBOARD
 # ============================================================
@@ -1370,7 +1386,8 @@ def api_promociones():
                 fecha_fin,
                 tipo,
                 descripcion,
-                id_centro
+                id_centro,
+                COALESCE(tier, 3) AS tier
             FROM promocion
             WHERE id_centro = 1
             ORDER BY fecha_inicio
@@ -1420,7 +1437,8 @@ def obtener_promocion(id_promocion):
                         fecha_fin,
                         tipo,
                         descripcion,
-                        id_centro
+                        id_centro,
+                        COALESCE(tier, 3) AS tier
                     FROM promocion
                     WHERE id_promocion = :id
                     AND id_centro = 1
@@ -1484,7 +1502,8 @@ def crear_promocion():
                         fecha_fin,
                         tipo,
                         descripcion,
-                        id_centro
+                        id_centro,
+                        tier
                     )
                     VALUES(
                         :nombre,
@@ -1492,7 +1511,8 @@ def crear_promocion():
                         :fecha_fin,
                         :tipo,
                         :descripcion,
-                        1
+                        1,
+                        :tier
                     )
                 """),
                 {
@@ -1500,7 +1520,8 @@ def crear_promocion():
                     "fecha_inicio":datos["fecha_inicio"],
                     "fecha_fin":datos["fecha_fin"],
                     "tipo":datos.get("tipo"),
-                    "descripcion":datos.get("descripcion")
+                    "descripcion":datos.get("descripcion"),
+                    "tier": int(datos.get("tier") or 3)
                 }
             )
 
@@ -1528,7 +1549,8 @@ def actualizar_promocion(id_promocion):
                         fecha_inicio=:fecha_inicio,
                         fecha_fin=:fecha_fin,
                         tipo=:tipo,
-                        descripcion=:descripcion
+                        descripcion=:descripcion,
+                        tier=:tier
                     WHERE id_promocion=:id
                     AND id_centro=1
                 """),
@@ -1538,7 +1560,8 @@ def actualizar_promocion(id_promocion):
                     "fecha_inicio":datos["fecha_inicio"],
                     "fecha_fin":datos["fecha_fin"],
                     "tipo":datos.get("tipo"),
-                    "descripcion":datos.get("descripcion")
+                    "descripcion":datos.get("descripcion"),
+                    "tier": int(datos.get("tier") or 3)
                 }
             )
 

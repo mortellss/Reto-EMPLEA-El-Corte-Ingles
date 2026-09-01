@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded",()=>{
         const tabla=document.getElementById("tablaPromociones");
         if(!tabla) return;
         if(!datos.length){
-            tabla.innerHTML=`<tr><td colspan="6" class="loading-cell">No hay promociones registradas.</td></tr>`;
+            tabla.innerHTML=`<tr><td colspan="7" class="loading-cell">No hay promociones registradas.</td></tr>`;
             return;
         }
         tabla.innerHTML=datos.map(p=>`
@@ -72,6 +72,7 @@ document.addEventListener("DOMContentLoaded",()=>{
                 <td>${formatearFecha(p.fecha_inicio)}</td>
                 <td>${formatearFecha(p.fecha_fin)}</td>
                 <td>${p.tipo||""}</td>
+                <td>Tier ${p.tier ?? 3}</td>
                 <td>${p.descripcion||""}</td>
                 <td class="acciones">
                     <button class="edit-button" onclick="editarPromocion(${p.id_promocion})"><i class="fa-solid fa-pen"></i></button>
@@ -999,6 +1000,7 @@ const nombrePromocion=document.getElementById("nombrePromocion");
 const fechaInicioPromocion=document.getElementById("fechaInicioPromocion");
 const fechaFinPromocion=document.getElementById("fechaFinPromocion");
 const tipoPromocion=document.getElementById("tipoPromocion");
+const tierPromocion=document.getElementById("tierPromocion");
 const descripcionPromocion=document.getElementById("descripcionPromocion");
 const buscarPromocion=document.querySelector(
     'input[placeholder="Buscar promoción..."]'
@@ -1022,6 +1024,7 @@ function limpiarFormularioPromocion(){
     fechaInicioPromocion.value="";
     fechaFinPromocion.value="";
     tipoPromocion.value="";
+    tierPromocion.value="3";
     descripcionPromocion.value="";
 }
 
@@ -1090,6 +1093,7 @@ async function editarPromocion(id){
         fechaInicioPromocion.value=promocion.fecha_inicio||"";
         fechaFinPromocion.value=promocion.fecha_fin||"";
         tipoPromocion.value=promocion.tipo||"";
+        tierPromocion.value=String(promocion.tier ?? 3);
         descripcionPromocion.value=promocion.descripcion||"";
 
         tituloModalPromocion.textContent="Editar promoción";
@@ -1145,6 +1149,7 @@ if(guardarPromocion){
                 fecha_inicio:fechaInicio,
                 fecha_fin:fechaFin,
                 tipo:tipoPromocion.value.trim()||null,
+                tier:Number(tierPromocion.value)||3,
                 descripcion:descripcionPromocion.value.trim()||null
             };
 

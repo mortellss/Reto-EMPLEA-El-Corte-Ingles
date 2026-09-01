@@ -163,46 +163,25 @@ query_promociones = """
 SELECT
     nombre,
     fecha_inicio AS inicio,
-    fecha_fin AS fin
+    fecha_fin AS fin,
+    COALESCE(tier, 3) AS tier
 FROM promocion
 WHERE id_centro = 1
 """
 promociones = pd.read_sql(query_promociones, con=engine).to_dict(orient="records")
 
-#Definir cuales son los de tier 1, 2 y 3
-
-promo_tier_1 = [
-    "rebajas_enero", 
-    "ventas_privadas",
-    "semana_internet",
-    "rebajas_junio",
-    "semana_deporte"
-]
-
-promo_tier_2 = [
-    "tecnoprecios",
-    "supertecnoprecios",
-    "dias_belleza",
-    "8_dias_oro",
-    "segundas_rebajas_enero",
-    "segundas_rebajas_julio",
-    "descuentos_top"
-]
-
 fechas_t1 = set()
 fechas_t2 = set()
 fechas_t3 = set()
 
-# Clasifica cada una de las promociones y guarda las fechas
-
+# Clasifica cada una de las promociones y guarda las fechas según el tier persistido en BD.
 for promo in promociones:
     rango_fechas = pd.date_range(start=promo["inicio"], end=promo["fin"])
-    nombre = promo.get("nombre", "").lower()
-    
-    # Clasificación automática
-    if nombre in promo_tier_1:
+    tier = int(promo.get("tier") or 3)
+
+    if tier == 1:
         fechas_t1.update(rango_fechas)
-    elif nombre in promo_tier_2:
+    elif tier == 2:
         fechas_t2.update(rango_fechas)
     else:
         fechas_t3.update(rango_fechas)
