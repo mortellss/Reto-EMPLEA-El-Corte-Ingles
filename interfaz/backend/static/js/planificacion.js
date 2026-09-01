@@ -131,7 +131,7 @@ function actualizarTextoSemana(dias) {
 
     const ultima =
         new Date(
-            dias[5].fecha + "T00:00:00"
+            dias[6].fecha + "T00:00:00"
         );
 
 
@@ -445,7 +445,7 @@ function cargarPlanificacion() {
 
 
 // =====================================================
-// OBTENER PRIMERA FECHA DISPONIBLE
+// OBTENER SEMANA ACTUAL
 // =====================================================
 
 function obtenerPrimeraFecha() {
@@ -460,23 +460,73 @@ function obtenerPrimeraFecha() {
     }
 
 
+    const hoy = new Date();
+
+    hoy.setHours(0, 0, 0, 0);
+
+
     const fechas =
         datosPlanificacion
             .map(
                 dato =>
                     new Date(
-                        dato.fecha +
-                        "T00:00:00"
+                        dato.fecha + "T00:00:00"
                     )
+            )
+            .filter(
+                fecha => fecha >= hoy
             )
             .sort(
                 (a, b) => a - b
             );
 
 
-    return fechas[0];
-}
+    let fecha;
 
+    if (fechas.length > 0) {
+
+        fecha = fechas[0];
+
+    } else {
+
+        const todasLasFechas =
+            datosPlanificacion
+                .map(
+                    dato =>
+                        new Date(
+                            dato.fecha + "T00:00:00"
+                        )
+                )
+                .sort(
+                    (a, b) => a - b
+                );
+
+        fecha =
+            todasLasFechas[
+                todasLasFechas.length - 1
+            ];
+
+    }
+
+
+    // Llevar la fecha al lunes de esa semana
+
+    const diaSemana =
+        fecha.getDay();
+
+    const diferencia =
+        diaSemana === 0
+            ? 6
+            : diaSemana - 1;
+
+
+    fecha.setDate(
+        fecha.getDate() - diferencia
+    );
+
+
+    return fecha;
+}
 
 // =====================================================
 // CARGAR DATOS DESDE FLASK
