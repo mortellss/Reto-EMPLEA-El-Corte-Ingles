@@ -2719,10 +2719,6 @@ def generar_prediccion():
         import sys
         import os
 
-        # ====================================================
-        # RECIBIR FECHAS DESDE LA INTERFAZ
-        # ====================================================
-
         datos = request.get_json()
 
         if not datos:
@@ -2737,8 +2733,6 @@ def generar_prediccion():
             return jsonify({
                 "error": "Debes seleccionar una fecha de inicio y una fecha de fin."
             }), 400
-
-        # Comprobar que el periodo es válido
 
         from datetime import datetime
 
@@ -2763,13 +2757,6 @@ def generar_prediccion():
                 "error": "La fecha de inicio no puede ser posterior a la fecha de fin."
             }), 400
 
-
-        # ====================================================
-        # EJECUTAR MODELO
-        # ====================================================
-
-        config = get_prophet_config()
-
         script = os.path.join(
             os.path.dirname(__file__),
             "..",
@@ -2778,39 +2765,18 @@ def generar_prediccion():
             "entrenamiento_prophet.py"
         )
 
-        comando = [
-            sys.executable,
-            script,
-            "--fecha-inicio",
-            fecha_inicio,
-            "--fecha-fin",
-            fecha_fin,
-            "--yearly-seasonality",
-            str(config["yearly_seasonality"]),
-            "--weekly-seasonality",
-            str(config["weekly_seasonality"]),
-            "--daily-seasonality",
-            str(bool(config["daily_seasonality"])).lower(),
-            "--seasonality-mode",
-            config["seasonality_mode"],
-            "--interval-width",
-            str(config["interval_width"]),
-            "--n-changepoints",
-            str(config["n_changepoints"]),
-            "--tasa-crecimiento",
-            str(config["tasa_crecimiento"]),
-        ]
-
         resultado = subprocess.run(
-            comando,
+            [
+                sys.executable,
+                script,
+                "--fecha-inicio",
+                fecha_inicio,
+                "--fecha-fin",
+                fecha_fin
+            ],
             capture_output=True,
             text=True
         )
-
-
-        # ====================================================
-        # COMPROBAR RESULTADO
-        # ====================================================
 
         if resultado.returncode != 0:
 
@@ -2822,10 +2788,8 @@ def generar_prediccion():
                 "detalle": resultado.stderr
             }), 500
 
-
         print("PREDICCIÓN GENERADA:")
         print(resultado.stdout)
-
 
         return jsonify({
             "ok": True,
@@ -2834,7 +2798,6 @@ def generar_prediccion():
             "fecha_fin": fecha_fin
         })
 
-
     except Exception as e:
 
         print("ERROR:", e)
@@ -2842,7 +2805,6 @@ def generar_prediccion():
         return jsonify({
             "error": str(e)
         }), 500
-
 
     
 # ============================================================
