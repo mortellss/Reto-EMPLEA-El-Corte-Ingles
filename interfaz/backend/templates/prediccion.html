@@ -73,38 +73,64 @@
 
 <div class="prediccion-configuracion">
 
-    <div class="fecha-prediccion">
-        <label for="fechaInicio">
-            Fecha de inicio
+    <div class="periodo-prediccion">
+
+        <label>
+            Periodo de predicción
         </label>
 
-        <input
-            type="date"
-            id="fechaInicio"
-            required
-        >
+        <div class="trimestres">
+
+            <button type="button" class="btn-trimestre" data-trimestre="1">
+                <strong>1.º Trimestre</strong>
+                <span>Enero - Marzo</span>
+            </button>
+
+            <button type="button" class="btn-trimestre" data-trimestre="2">
+                <strong>2.º Trimestre</strong>
+                <span>Abril - Junio</span>
+            </button>
+
+            <button type="button" class="btn-trimestre" data-trimestre="3">
+                <strong>3.º Trimestre</strong>
+                <span>Julio - Septiembre</span>
+            </button>
+
+            <button type="button" class="btn-trimestre" data-trimestre="4">
+                <strong>4.º Trimestre</strong>
+                <span>Octubre - Diciembre</span>
+            </button>
+
+        </div>
+
+        <p id="periodoSeleccionado"></p>
+
     </div>
 
-    <div class="fecha-prediccion">
-        <label for="fechaFin">
-            Fecha de fin
-        </label>
 
-        <input
-            type="date"
-            id="fechaFin"
-            required
+    <div class="generar-prediccion">
+
+        <div class="año-prediccion">
+
+            <label for="añoPrediccion">
+                Año
+            </label>
+
+            <select id="añoPrediccion">
+            </select>
+
+        </div>
+
+        <button
+            type="button"
+            id="generarPrediccion"
+            class="primary-button"
         >
-    </div>
+            <i class="fa-solid fa-chart-line"></i>
+            Generar predicción
+        </button>
 
-    <button
-        type="button"
-        id="generarPrediccion"
-        class="primary-button"
-    >
-        <i class="fa-solid fa-chart-line"></i>
-        Generar predicción
-    </button>
+    </div>
 
 </div>
             <div class="prediccion-resumen">
