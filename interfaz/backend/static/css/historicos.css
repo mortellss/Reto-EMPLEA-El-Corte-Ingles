@@ -994,6 +994,7 @@
 }
 
 .form-group input,
+.form-group select,
 .form-group textarea{
     width:100%;
     box-sizing:border-box;
@@ -1005,9 +1006,26 @@
     color:#172b4d;
     outline:none;
     transition:.2s;
+    background-color:white;
+}
+
+.form-group select{
+    appearance:none;
+    -webkit-appearance:none;
+    -moz-appearance:none;
+    padding-right:38px;
+    background-image:
+        linear-gradient(45deg, transparent 50%, #00843d 50%),
+        linear-gradient(135deg, #00843d 50%, transparent 50%);
+    background-position:
+        calc(100% - 18px) calc(50% - 3px),
+        calc(100% - 12px) calc(50% - 3px);
+    background-size:6px 6px, 6px 6px;
+    background-repeat:no-repeat;
 }
 
 .form-group input:focus,
+.form-group select:focus,
 .form-group textarea:focus{
     border-color:#00843d;
     box-shadow:0 0 0 3px rgba(0,132,61,.08);
@@ -1443,6 +1461,7 @@
 }
 
 #modalPromocion .form-group input,
+#modalPromocion .form-group select,
 #modalPromocion .form-group textarea{
     width:100%;
 
@@ -1467,11 +1486,27 @@
     transition:.2s;
 }
 
+#modalPromocion .form-group select{
+    appearance:none;
+    -webkit-appearance:none;
+    -moz-appearance:none;
+    padding-right:38px;
+    background-image:
+        linear-gradient(45deg, transparent 50%, #00843d 50%),
+        linear-gradient(135deg, #00843d 50%, transparent 50%);
+    background-position:
+        calc(100% - 18px) calc(50% - 3px),
+        calc(100% - 12px) calc(50% - 3px);
+    background-size:6px 6px, 6px 6px;
+    background-repeat:no-repeat;
+}
+
 #modalPromocion .form-group input{
     height:44px;
 }
 
 #modalPromocion .form-group input:focus,
+#modalPromocion .form-group select:focus,
 #modalPromocion .form-group textarea:focus{
     border-color:#00843d;
 

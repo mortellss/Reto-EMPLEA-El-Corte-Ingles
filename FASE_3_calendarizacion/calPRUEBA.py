@@ -766,10 +766,10 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
                 trabajadores_por_tarea_turno[(d, s, id_tarea)] = trabajadores_en_tarea_y_turno
                 
                 cap_max = CAPACIDAD_MAXIMA_TAREA.get(id_tarea, CAPACIDAD_MAXIMA_DEFECTO)
-                cap_min = CAPACIDAD_MINIMA_TAREA.get(id_tarea, CAPACIDAD_MINIMA_DEFECTO)
+                #cap_min = CAPACIDAD_MINIMA_TAREA.get(id_tarea, CAPACIDAD_MINIMA_DEFECTO)
 
                 modelo.Add(sum(trabajadores_en_tarea_y_turno) <= cap_max)
-                modelo.Add(sum(trabajadores_en_tarea_y_turno) >= cap_min)
+                #modelo.Add(sum(trabajadores_en_tarea_y_turno) >= cap_min)
 
                     
                 tarea_cubierta = modelo.NewBoolVar(f'Cubierta_D{d}_S{s}_Tar{id_tarea}')
