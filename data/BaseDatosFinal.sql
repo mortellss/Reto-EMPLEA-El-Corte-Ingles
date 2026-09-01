@@ -100,6 +100,8 @@ CREATE TABLE `calendarizacion` (
   KEY `fecha` (`fecha`),
   KEY `id_tarea` (`id_tarea`),
   KEY `id_trabajador` (`id_trabajador`),
+  KEY `id_version` (`id_version`),
+  CONSTRAINT `calendarizacion_ibfk_1` FOREIGN KEY (`id_version`) REFERENCES `planificacion_version` (`id_version`),
   CONSTRAINT `calendarizacion_ibfk_2` FOREIGN KEY (`id_tarea`) REFERENCES `tarea` (`id_tarea`),
   CONSTRAINT `calendarizacion_ibfk_3` FOREIGN KEY (`id_trabajador`) REFERENCES `trabajador` (`id_trabajador`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -130,15 +132,20 @@ CREATE TABLE `cambios_planificacion` (
   `fecha` date NOT NULL,
   `fecha_asignacion` date NOT NULL,
   `id_tarea` int NOT NULL,
-  `trabajador_anterior` int NOT NULL, 
+  `trabajador_anterior` int NOT NULL,
   `trabajador_nuevo` int NOT NULL,
   `turno` int NOT NULL,
-  `motivo` VARCHAR(100),
-  `forzado` bool NOT NULL,
+  `motivo` varchar(100) DEFAULT NULL,
+  `forzado` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id_cambio`, `id_version`),
-  KEY (`id_tarea`)
-  CONSTRAINT `cambios_planificacion_ibfk_1` FOREIGN KEY (`id_version`) REFERENCES `calendarizacion` (`id_version`),
-  CONSTRAINT `cambios_planificacion_ibfk_2` FOREIGN KEY (`id_tarea`) REFERENCES `calendarizacion` (`tarea`),
+  KEY `id_version` (`id_version`),
+  KEY `id_tarea` (`id_tarea`),
+  KEY `trabajador_anterior` (`trabajador_anterior`),
+  KEY `trabajador_nuevo` (`trabajador_nuevo`),
+  CONSTRAINT `cambios_planificacion_ibfk_1` FOREIGN KEY (`id_version`) REFERENCES `planificacion_version` (`id_version`),
+  CONSTRAINT `cambios_planificacion_ibfk_2` FOREIGN KEY (`id_tarea`) REFERENCES `tarea` (`id_tarea`),
+  CONSTRAINT `cambios_planificacion_ibfk_3` FOREIGN KEY (`trabajador_anterior`) REFERENCES `trabajador` (`id_trabajador`),
+  CONSTRAINT `cambios_planificacion_ibfk_4` FOREIGN KEY (`trabajador_nuevo`) REFERENCES `trabajador` (`id_trabajador`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

@@ -366,6 +366,54 @@ def cargar_habilidades():
     return habilidades
 
 
+def cargar_cambios_forzados():
+    query = """
+        SELECT
+            cp.id_version,
+            cp.fecha,
+            cp.id_tarea,
+            cp.trabajador_anterior,
+            cp.trabajador_nuevo,
+            cp.turno,
+            cp.motivo,
+            cp.forzado
+        FROM cambios_planificacion cp
+        INNER JOIN (
+            SELECT id_version
+            FROM planificacion_version
+            WHERE activa = 1
+            ORDER BY id_version DESC
+            LIMIT 1
+        ) pv
+            ON cp.id_version = pv.id_version
+        WHERE cp.forzado = 1
+        ORDER BY cp.fecha, cp.turno, cp.id_tarea
+    """
+
+    df = pd.read_sql(query, con=engine)
+
+    if df.empty:
+        return []
+
+    cambios = []
+    for row in df.itertuples(index=False):
+        if pd.isna(row.trabajador_nuevo):
+            continue
+
+        cambios.append({
+            "id_version": int(row.id_version),
+            "fecha": pd.to_datetime(row.fecha).date(),
+            "id_tarea": int(row.id_tarea),
+            "trabajador_anterior": int(row.trabajador_anterior),
+            "trabajador_nuevo": int(row.trabajador_nuevo),
+            "turno": int(row.turno),
+            "motivo": row.motivo,
+            "forzado": bool(row.forzado),
+        })
+
+    return cambios
+
+
 def crear_version_planificacion(dias_abiertos):
     fecha_inicio = min(dias_abiertos)
     fecha_fin = max(dias_abiertos)
@@ -433,11 +481,12 @@ def guardar_calendarizacion(solver, calendario, ids_trabajadores, ids_tareas,
           f"({dias_abiertos[0]} a {dias_abiertos[-1]}), version={id_version}.")
 
 
-def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tareas, habilidades, objetivo_horas_por_mes, objetivo_horas_fd_por_mes=None, turnos_fijados=None):
+def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tareas, habilidades, objetivo_horas_por_mes, objetivo_horas_fd_por_mes=None, cambios_forzados=None):
 
     ids_trabajadores = list(trabajadores.keys())
     
     dias_abiertos = [d for d in calendario.dias if not calendario.cerrado[d]]
+    cambios_forzados = cambios_forzados or []
     
     # Inicializamos el modelo
     modelo = cp_model.CpModel()
@@ -450,12 +499,6 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
             for s in TURNOS:
                 nombre_var = f'T{t}_D{d}_S{s}'
                 turnos_asignados[(t, d, s)] = modelo.NewBoolVar(nombre_var)
-
-    if turnos_fijados is not None:
-        for (t, d, s), valor_forzado in turnos_fijados.items():
-            if (t, d, s) in turnos_asignados:
-                # valor_forzado será 1 (asignado manualmente) o 0 (quitado manualmente)
-                modelo.Add(turnos_asignados[(t, d, s)] == valor_forzado)
 
     tarea_asignada = {}
     trabaja = {}
@@ -487,6 +530,33 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
             modelo.Add(sum(tareas_del_dia) == 1).OnlyEnforceIf(var_trabaja)
             modelo.Add(sum(tareas_del_dia) == 0).OnlyEnforceIf(var_trabaja.Not())
     
+    # Cambios forzados respecto a la planificación anterior
+    if cambios_forzados:
+        print(f"Se aplican {len(cambios_forzados)} cambios forzados desde la planificación anterior.")
+
+        for cambio in cambios_forzados:
+            fecha = cambio["fecha"]
+            turno = cambio["turno"]
+            id_tarea = cambio["id_tarea"]
+            trabajador_nuevo = cambio["trabajador_nuevo"]
+            trabajador_anterior = cambio["trabajador_anterior"]
+
+            if fecha not in calendario.dias or fecha not in dias_abiertos:
+                continue
+
+            if trabajador_nuevo not in ids_trabajadores or turno not in TURNOS:
+                continue
+
+            if id_tarea not in ids_tareas:
+                continue
+
+            modelo.Add(turnos_asignados[(trabajador_nuevo, fecha, turno)] == 1)
+            modelo.Add(tarea_asignada[(trabajador_nuevo, fecha, id_tarea)] == 1)
+
+            if trabajador_anterior in ids_trabajadores and trabajador_anterior != trabajador_nuevo:
+                modelo.Add(turnos_asignados[(trabajador_anterior, fecha, turno)] == 0)
+                modelo.Add(tarea_asignada[(trabajador_anterior, fecha, id_tarea)] == 0)
+
     # RESTRICCIÓN
     # - Un trabajador solo puede hacer un máximo de un turno por día
     for t in ids_trabajadores:
@@ -979,8 +1049,16 @@ if __name__ == '__main__':
             3: round(X_HFD_3.varValue / indice_desviacion),
     }
 
-    crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tareas, habilidades,
-                          objetivo_horas_por_mes=objetivo_horas_por_mes, objetivo_horas_fd_por_mes=objetivo_horas_fd_por_mes, turnos_fijados = None)
+    crear_calendario_base(
+        trabajadores,
+        calendario,
+        calendario_trabajadores,
+        tareas,
+        habilidades,
+        objetivo_horas_por_mes=objetivo_horas_por_mes,
+        objetivo_horas_fd_por_mes=objetivo_horas_fd_por_mes,
+        cambios_forzados=cargar_cambios_forzados(),
+    )
 
 
 # Cosas que faltan
