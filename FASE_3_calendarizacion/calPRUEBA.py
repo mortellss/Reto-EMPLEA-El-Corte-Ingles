@@ -819,11 +819,8 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
     solver = cp_model.CpSolver()
 
     # Limitamos el tiempo
-    #solver.parameters.max_time_in_seconds = 120
-    #solver.parameters.num_search_workers = os.cpu_count() or 8
-
-    solver.parameters.max_time_in_seconds = 60
-    solver.parameters.num_search_workers = 2
+    solver.parameters.max_time_in_seconds = 120
+    solver.parameters.num_search_workers = os.cpu_count() or 8
 
     solver.parameters.log_search_progress = True
 
