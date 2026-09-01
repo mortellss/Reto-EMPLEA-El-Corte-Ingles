@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMPLEA | Configuración</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/configuracion.css') }}">
+</head>
+
+<body>
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            <img src="{{ url_for('static', filename='img/logo.webp') }}" alt="Logo">
+        </div>
+
+        <nav>
+            <a href="{{ url_for('dashboard') }}">
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{{ url_for('gestion_datos') }}">
+                <i class="fa-solid fa-users"></i>
+                <span>Gestión de datos</span>
+            </a>
+
+            <a href="{{ url_for('historicos') }}">
+                <i class="fa-solid fa-database"></i>
+                <span>Datos históricos</span>
+            </a>
+
+            <a href="{{ url_for('prediccion') }}">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Predicción</span>
+            </a>
+
+            <a href="{{ url_for('planificacion') }}">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Planificación</span>
+            </a>
+
+            <a href="{{ url_for('configuracion') }}" class="active">
+                <i class="fa-solid fa-gear"></i>
+                <span>Configuración</span>
+            </a>
+        </nav>
+
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <h2>Configuración</h2>
+                <p>Personaliza la operación del sistema y sus parámetros generales.</p>
+            </div>
+
+            <div class="user">
+                <button>
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+
+                <div class="user-info">
+                    <span>Usuario</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="content">
+
+            <div class="config-layout">
+
+                <section class="config-panel">
+                    <div class="section-header">
+                        <h2>Parámetros del sistema</h2>
+                        <p>Gestiona las opciones principales de la planificación y la previsión.</p>
+                    </div>
+
+                    <div class="settings-list">
+
+                        <div class="setting-item">
+                            <div class="setting-copy">
+                                <strong>Notificaciones automáticas</strong>
+                                <span>Envía avisos cuando se actualiza una planificación.</span>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-copy">
+                                <strong>Predicción automática</strong>
+                                <span>Genera la previsión al abrir la pestaña de predicción.</span>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-copy">
+                                <strong>Validación de cambios</strong>
+                                <span>Solicita confirmación antes de guardar cambios forzados.</span>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-copy">
+                                <strong>Modo mantenimiento</strong>
+                                <span>Bloquea la generación de planificaciones mientras se actualiza.</span>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                    </div>
+                </section>
+
+                <aside class="summary-stack">
+                    <div class="summary-card">
+                        <span class="label"><i class="fa-solid fa-shield-halved"></i> Estado</span>
+                        <strong>Operativo</strong>
+                        <p>El sistema está listo para lanzar nuevas predicciones y planificaciones.</p>
+                        <div class="status-badge">Configuración activa</div>
+                    </div>
+
+                    <div class="summary-card">
+                        <span class="label"><i class="fa-regular fa-clock"></i> Última actualización</span>
+                        <strong>Hoy</strong>
+                        <p>La última sincronización del entorno se realizó correctamente.</p>
+                    </div>
+                </aside>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="{{ url_for('static', filename='js/configuracion.js') }}"></script>
+</body>
+
+</html>

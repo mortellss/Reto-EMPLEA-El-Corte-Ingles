@@ -1138,6 +1138,3 @@ if __name__ == '__main__':
     )
 
 
-# Cosas que faltan
-# Que por lo menos hayan 5 personas por la mañana
-# Completar las restricciones que están marcadas como que faltan
