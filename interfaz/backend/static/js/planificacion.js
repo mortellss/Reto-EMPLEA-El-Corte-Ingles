@@ -5,6 +5,8 @@
 let datosPlanificacion = [];
 let tareas = [];
 let fechaInicioSemana = null;
+let trabajadores = [];
+
 
 // =====================================================
 // OBTENER NOMBRE DEL DÍA
@@ -205,29 +207,57 @@ function crearAsignacion(dato) {
     const asignacion =
         document.createElement("div");
 
-    asignacion.classList.add(
-        "asignacion"
+    asignacion.classList.add("asignacion");
+
+    if (dato.fijo_discontinuo) {
+        asignacion.classList.add("fijo-discontinuo");
+    }
+
+    // Nombre del trabajador
+    const enlace =
+        document.createElement("a");
+
+    enlace.href =
+        `/calendario-trabajador/${dato.id_trabajador}`;
+
+    enlace.classList.add("asignacion-nombre");
+
+    enlace.textContent =
+        dato.trabajador;
+
+
+    // Botón para cambiar trabajador
+    const botonEditar =
+        document.createElement("button");
+
+    botonEditar.type = "button";
+
+    botonEditar.classList.add(
+        "boton-editar-asignacion"
+    );
+
+    botonEditar.innerHTML =
+        '<i class="fa-solid fa-pen"></i>';
+
+    botonEditar.title =
+        "Cambiar trabajador";
+
+
+    botonEditar.addEventListener(
+        "click",
+        (evento) => {
+
+            evento.preventDefault();
+            evento.stopPropagation();
+
+            abrirModalCambio(dato);
+
+        }
     );
 
 
-    // Fijo discontinuo
-    if (dato.fijo_discontinuo) {
-
-        asignacion.classList.add(
-            "fijo-discontinuo"
-        );
-
-    }
-
-
-    asignacion.innerHTML = `
-        <a
-            href="/calendario-trabajador/${dato.id_trabajador}"
-            class="asignacion-nombre"
-        >
-            ${dato.trabajador}
-        </a>
-    `;
+    asignacion.appendChild(enlace);
+    asignacion.appendChild(botonEditar);
 
     return asignacion;
 }
@@ -538,19 +568,23 @@ async function cargarDatos() {
 
         const [
             respuestaPlanificacion,
-            respuestaTareas
+            respuestaTareas,
+            respuestaTrabajadores
         ] = await Promise.all([
 
             fetch("/api/planificacion"),
 
-            fetch("/api/tareas")
+            fetch("/api/tareas"),
+
+            fetch("/api/trabajadores")
 
         ]);
 
 
         if (
             !respuestaPlanificacion.ok ||
-            !respuestaTareas.ok
+            !respuestaTareas.ok ||
+            !respuestaTrabajadores.ok
         ) {
 
             throw new Error(
@@ -565,6 +599,9 @@ async function cargarDatos() {
 
         tareas =
             await respuestaTareas.json();
+
+        trabajadores =
+            await respuestaTrabajadores.json();
 
 
         if (
@@ -750,3 +787,392 @@ document
         }
 
     });
+
+
+// ============================================================
+// CAMBIO FORZADO DE TRABAJADOR
+// ============================================================
+
+function abrirModalCambio(dato) {
+
+    // Si ya existe un modal, eliminarlo
+    const modalAnterior =
+        document.getElementById("modalCambio");
+
+    if (modalAnterior) {
+        modalAnterior.remove();
+    }
+
+
+    const modal =
+        document.createElement("div");
+
+    modal.id = "modalCambio";
+    modal.classList.add("modal-cambio");
+
+
+    modal.innerHTML = `
+        <div class="modal-cambio-contenido">
+
+            <button
+                type="button"
+                class="modal-cambio-cerrar"
+                id="cerrarModalCambio"
+            >
+                ×
+            </button>
+
+            <h2>Cambiar trabajador</h2>
+
+            <p>
+                <strong>Fecha:</strong>
+                ${dato.fecha}
+            </p>
+
+            <p>
+                <strong>Tarea:</strong>
+                ${dato.tarea}
+            </p>
+
+            <p>
+                <strong>Turno:</strong>
+                ${Number(dato.turno) === 0
+                    ? "Mañana"
+                    : "Tarde"}
+            </p>
+
+            <p>
+                <strong>Trabajador actual:</strong>
+                ${dato.trabajador}
+            </p>
+
+            <label for="nuevoTrabajador">
+                Nuevo trabajador
+            </label>
+
+            <select id="nuevoTrabajador">
+
+                <option value="">
+                    Selecciona un trabajador
+                </option>
+
+                ${trabajadores
+                    .filter(
+                        trabajador =>
+                            Number(trabajador.id_trabajador)
+                            !== Number(dato.id_trabajador)
+                    )
+                    .map(
+                        trabajador => `
+                            <option
+                                value="${trabajador.id_trabajador}"
+                            >
+                                ${trabajador.trabajador}
+                            </option>
+                        `
+                    )
+                    .join("")
+                }
+
+            </select>
+
+            <div
+                id="warningCompetencia"
+                class="warning-competencia"
+                style="display:none;"
+            ></div>
+
+            <label for="motivoCambio">
+                Motivo
+            </label>
+
+            <textarea
+                id="motivoCambio"
+                placeholder="Motivo del cambio (opcional)"
+            ></textarea>
+
+            <div class="modal-cambio-botones">
+
+                <button
+                    type="button"
+                    id="cancelarCambio"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="button"
+                    id="confirmarCambio"
+                >
+                    Forzar cambio
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+
+    document.body.appendChild(modal);
+
+
+    // Cerrar
+    document
+        .getElementById("cerrarModalCambio")
+        .addEventListener(
+            "click",
+            cerrarModalCambio
+        );
+
+    document
+        .getElementById("cancelarCambio")
+        .addEventListener(
+            "click",
+            cerrarModalCambio
+        );
+
+
+    // Comprobar competencia al seleccionar
+    document
+        .getElementById("nuevoTrabajador")
+        .addEventListener(
+            "change",
+            () => comprobarCompetencia(dato)
+        );
+
+
+    // Confirmar
+    document
+        .getElementById("confirmarCambio")
+        .addEventListener(
+            "click",
+            () => guardarCambio(dato)
+        );
+}
+
+
+// ============================================================
+// COMPROBAR COMPETENCIA
+// ============================================================
+
+async function comprobarCompetencia(dato) {
+
+    const select =
+        document.getElementById(
+            "nuevoTrabajador"
+        );
+
+    const warning =
+        document.getElementById(
+            "warningCompetencia"
+        );
+
+    const idTrabajador =
+        select.value;
+
+
+    warning.style.display = "none";
+    warning.innerHTML = "";
+
+
+    if (!idTrabajador) {
+        return;
+    }
+
+
+    try {
+
+        const respuesta =
+            await fetch(
+                `/competencias_trabajador/${idTrabajador}`
+            );
+
+
+        if (!respuesta.ok) {
+            throw new Error(
+                "No se han podido consultar las competencias."
+            );
+        }
+
+
+        const competencias =
+            await respuesta.json();
+
+
+        const sabeHacerTarea =
+            competencias.some(
+                competencia =>
+                    Number(competencia.id_tarea)
+                    === Number(dato.id_tarea)
+            );
+
+
+        if (!sabeHacerTarea) {
+
+            const trabajador =
+                trabajadores.find(
+                    trabajador =>
+                        Number(
+                            trabajador.id_trabajador
+                        ) === Number(idTrabajador)
+                );
+
+
+            warning.style.display = "block";
+
+            warning.innerHTML = `
+                <strong>⚠️ Atención:</strong>
+                ${trabajador?.trabajador || "Este trabajador"}
+                no tiene registrada la competencia
+                necesaria para realizar esta tarea.
+                <br>
+                Puedes continuar y forzar el cambio.
+            `;
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Error comprobando competencia:",
+            error
+        );
+
+    }
+}
+
+
+// ============================================================
+// GUARDAR CAMBIO
+// ============================================================
+
+async function guardarCambio(dato) {
+
+    const select =
+        document.getElementById(
+            "nuevoTrabajador"
+        );
+
+    const motivo =
+        document.getElementById(
+            "motivoCambio"
+        ).value;
+
+
+    const nuevoTrabajador =
+        select.value;
+
+
+    if (!nuevoTrabajador) {
+
+        alert(
+            "Selecciona un trabajador."
+        );
+
+        return;
+    }
+
+
+    const confirmar =
+        confirm(
+            "¿Quieres realizar este cambio forzado?"
+        );
+
+
+    if (!confirmar) {
+        return;
+    }
+
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/cambios-forzados",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        fecha: dato.fecha,
+
+                        id_tarea:
+                            dato.id_tarea,
+
+                        trabajador_anterior:
+                            dato.id_trabajador,
+
+                        trabajador_nuevo:
+                            Number(nuevoTrabajador),
+
+                        turno:
+                            Number(dato.turno),
+
+                        motivo:
+                            motivo || null
+
+                    })
+                }
+            );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if (!respuesta.ok || !resultado.ok) {
+
+            throw new Error(
+                resultado.error ||
+                "No se ha podido guardar el cambio."
+            );
+
+        }
+
+
+        alert(
+            "Cambio realizado correctamente."
+        );
+
+
+        cerrarModalCambio();
+
+        // Recargar la planificación
+        await cargarDatos();
+
+
+    } catch (error) {
+
+        console.error(
+            "Error guardando cambio:",
+            error
+        );
+
+        alert(
+            error.message
+        );
+
+    }
+}
+
+
+// ============================================================
+// CERRAR MODAL
+// ============================================================
+
+function cerrarModalCambio() {
+
+    const modal =
+        document.getElementById(
+            "modalCambio"
+        );
+
+    if (modal) {
+        modal.remove();
+    }
+}
