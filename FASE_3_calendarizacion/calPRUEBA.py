@@ -1185,7 +1185,7 @@ if __name__ == '__main__':
     tareas = cargar_tareas()
     habilidades = cargar_habilidades()
 
-    objetivo_horas_por_mes, objetivo_horas_hc_por_mes, objetivo_horas_fd_por_mes = cargar_horas_mensuales()
+    objetivo_horas_por_mes, _, objetivo_horas_fd_por_mes = cargar_horas_mensuales()
 
     if not objetivo_horas_por_mes:
         objetivo_horas_por_mes = {
@@ -1193,11 +1193,10 @@ if __name__ == '__main__':
             for mes in meses_optimizacion
         }
 
-    if not objetivo_horas_hc_por_mes:
-        objetivo_horas_hc_por_mes = {
-            mes: round(X_HC[mes].varValue / indice_desviacion)
-            for mes in meses_optimizacion
-        }
+    objetivo_horas_hc_por_mes = {
+        mes: round(X_HC[mes].varValue)
+        for mes in meses_optimizacion
+    }
 
     if not objetivo_horas_fd_por_mes:
         objetivo_horas_fd_por_mes = {
