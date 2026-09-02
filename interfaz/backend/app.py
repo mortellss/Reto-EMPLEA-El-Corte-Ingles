@@ -3761,6 +3761,28 @@ def api_calendarios_trabajadores():
 # PLANIFICACIÓN — CAMBIOS FORZADOS
 # ============================================================
 
+@app.route("/api/cambios-forzados", methods=["DELETE"])
+def eliminar_cambios_forzados():
+    try:
+        with engine.begin() as conn:
+            resultado = conn.execute(
+                text("DELETE FROM cambios_planificacion")
+            )
+
+        return jsonify({
+            "ok": True,
+            "mensaje": f"Se han eliminado {resultado.rowcount} cambios forzados."
+        })
+
+    except Exception as e:
+        print("ERROR ELIMINANDO CAMBIOS FORZADOS:", e)
+        return jsonify({
+            "ok": False,
+            "error": "No se han podido eliminar los cambios forzados.",
+            "detalle": str(e)
+        }), 500
+
+
 @app.route("/api/cambios-forzados", methods=["POST"])
 def crear_cambio_forzado():
 

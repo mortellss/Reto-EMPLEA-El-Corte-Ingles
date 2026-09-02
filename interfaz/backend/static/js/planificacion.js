@@ -791,6 +791,47 @@ document
 
     });
 
+// ELIMINAR CAMBIOS FORZADOS
+document
+    .getElementById("eliminarCambiosForzados")
+    .addEventListener("click", async () => {
+        const confirmar = confirm(
+            "Se eliminarán todos los cambios forzados guardados. ¿Quieres continuar?"
+        );
+
+        if (!confirmar) {
+            return;
+        }
+
+        const boton = document.getElementById("eliminarCambiosForzados");
+        const textoOriginal = boton.innerHTML;
+
+        boton.disabled = true;
+        boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Eliminando...';
+
+        try {
+            const respuesta = await fetch(
+                "/api/cambios-forzados",
+                { method: "DELETE" }
+            );
+            const datos = await respuesta.json();
+
+            if (!respuesta.ok) {
+                throw new Error(
+                    datos.error || "No se han podido eliminar los cambios forzados."
+                );
+            }
+
+            alert(datos.mensaje);
+        } catch (error) {
+            console.error("Error eliminando cambios forzados:", error);
+            alert(error.message || "No se han podido eliminar los cambios forzados.");
+        } finally {
+            boton.disabled = false;
+            boton.innerHTML = textoOriginal;
+        }
+    });
+
 function obtenerPeriodoPrediccionSeleccionado() {
     const fuentes = [
         () => window.__empleaPeriodoPrediccion,
