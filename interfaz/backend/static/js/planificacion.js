@@ -7,6 +7,59 @@ let tareas = [];
 let fechaInicioSemana = null;
 let trabajadores = [];
 
+function obtenerRangoPlanificacionSeleccionado() {
+    const periodo = obtenerPeriodoPrediccionSeleccionado();
+
+    if (!periodo?.fecha_inicio || !periodo?.fecha_fin) {
+        return null;
+    }
+
+    const inicio = new Date(periodo.fecha_inicio + "T00:00:00");
+    const fin = new Date(periodo.fecha_fin + "T00:00:00");
+
+    if (Number.isNaN(inicio.getTime()) || Number.isNaN(fin.getTime())) {
+        return null;
+    }
+
+    return {
+        inicio,
+        fin
+    };
+}
+
+function obtenerInicioSemana(fecha) {
+    const fechaCopia = new Date(fecha);
+    fechaCopia.setHours(0, 0, 0, 0);
+
+    const diaSemana = fechaCopia.getDay();
+    const diferencia = diaSemana === 0 ? 6 : diaSemana - 1;
+    fechaCopia.setDate(fechaCopia.getDate() - diferencia);
+
+    return fechaCopia;
+}
+
+function actualizarNavegacionSemana() {
+    const anterior = document.getElementById("semanaAnterior");
+    const siguiente = document.getElementById("semanaSiguiente");
+
+    if (!fechaInicioSemana || !anterior || !siguiente) {
+        return;
+    }
+
+    const rango = obtenerRangoPlanificacionSeleccionado();
+    if (!rango) {
+        anterior.disabled = false;
+        siguiente.disabled = false;
+        return;
+    }
+
+    const inicioSemanaRango = obtenerInicioSemana(rango.inicio);
+    const finSemanaRango = obtenerInicioSemana(rango.fin);
+
+    anterior.disabled = fechaInicioSemana.getTime() <= inicioSemanaRango.getTime();
+    siguiente.disabled = fechaInicioSemana.getTime() >= finSemanaRango.getTime();
+}
+
 
 // =====================================================
 // OBTENER NOMBRE DEL DÍA
@@ -453,7 +506,7 @@ function cargarPlanificacion() {
     actualizarTextoSemana(
         dias
     );
-
+    actualizarNavegacionSemana();
 
     // MAÑANA
     cargarTabla(
@@ -479,6 +532,11 @@ function cargarPlanificacion() {
 // =====================================================
 
 function obtenerPrimeraFecha() {
+    const rango = obtenerRangoPlanificacionSeleccionado();
+
+    if (rango) {
+        return obtenerInicioSemana(rango.inicio);
+    }
 
     if (
         !datosPlanificacion ||
@@ -639,7 +697,7 @@ async function cargarDatos() {
         fechaInicioSemana =
             obtenerPrimeraFecha();
 
-
+        actualizarNavegacionSemana();
         cargarPlanificacion();
 
 
@@ -661,12 +719,26 @@ function cambiarSemana(
     numeroSemanas
 ) {
 
-    fechaInicioSemana.setDate(
-        fechaInicioSemana.getDate() +
+    const rango = obtenerRangoPlanificacionSeleccionado();
+    if (!rango || !fechaInicioSemana) {
+        return;
+    }
+
+    const nuevaFecha = new Date(fechaInicioSemana);
+    nuevaFecha.setDate(
+        nuevaFecha.getDate() +
         numeroSemanas * 7
     );
 
+    const inicioSemanaRango = obtenerInicioSemana(rango.inicio);
+    const finSemanaRango = obtenerInicioSemana(rango.fin);
 
+    if (nuevaFecha < inicioSemanaRango || nuevaFecha > finSemanaRango) {
+        return;
+    }
+
+    fechaInicioSemana = nuevaFecha;
+    actualizarNavegacionSemana();
     cargarPlanificacion();
 }
 
