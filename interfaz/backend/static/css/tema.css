@@ -227,6 +227,10 @@ html.dark-mode .config-panel .field-header {
     color: #f1f5f9 !important;
 }
 
+html.dark-mode .config-panel .form-field .field-header > span:first-child {
+    color: #1f2937 !important;
+}
+
 html.dark-mode .config-panel .secondary-button,
 html.dark-mode #resetConfig {
     background: #334155 !important;
