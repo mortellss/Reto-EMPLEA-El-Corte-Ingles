@@ -3589,7 +3589,7 @@ def generar_planificacion():
         ruta_script = (
             Path(__file__).resolve().parents[2]
             / "FASE_3_calendarizacion"
-            / "calPRUEBA.py"
+            / "calendarizacion.py"
         )
 
         comando = [sys.executable, str(ruta_script)]
@@ -3628,7 +3628,7 @@ def generar_planificacion():
 
     except Exception as e:
 
-        print("ERROR EJECUTANDO CALPRUEBA:", e)
+        print("ERROR EJECUTANDO CALENDARIZACION:", e)
 
         return jsonify({
             "ok": False,

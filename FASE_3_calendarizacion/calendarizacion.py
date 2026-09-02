@@ -1179,20 +1179,20 @@ if __name__ == '__main__':
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
-    RUTA_OPTIMIZACION = ROOT / "FASE_2 _programacion_lineal" / "optimizacion_FINAL.py"
-    spec = importlib.util.spec_from_file_location("optimizacion_FINAL", RUTA_OPTIMIZACION)
+    RUTA_OPTIMIZACION = ROOT / "FASE_2 _programacion_lineal" / "optimizacion_horas.py"
+    spec = importlib.util.spec_from_file_location("optimizacion_horas", RUTA_OPTIMIZACION)
     if spec is None or spec.loader is None:
         raise ImportError(f"No se pudo cargar {RUTA_OPTIMIZACION}")
 
-    optimizacion_final = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = optimizacion_final
-    spec.loader.exec_module(optimizacion_final)
+    optimizacion_horas = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = optimizacion_horas
+    spec.loader.exec_module(optimizacion_horas)
 
     indice_desviacion = 1.1
 
-    X_HO = optimizacion_final.X_HO
-    X_HC = optimizacion_final.X_HC
-    X_HFD = optimizacion_final.X_HFD
+    X_HO = optimizacion_horas.X_HO
+    X_HC = optimizacion_horas.X_HC
+    X_HFD = optimizacion_horas.X_HFD
 
     meses_optimizacion = sorted(X_HO.keys())
 
