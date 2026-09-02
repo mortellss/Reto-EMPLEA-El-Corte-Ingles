@@ -586,11 +586,10 @@ async function cargarDatos() {
             respuestaTareas,
             respuestaTrabajadores
         ] = await Promise.all([
-
             fetch(urlPlanificacion),
-
+            fetch("/api/tareas"),
+            fetch("/api/trabajadores")
         ]);
-
 
         if (
             !respuestaPlanificacion.ok ||
