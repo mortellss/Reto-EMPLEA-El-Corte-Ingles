@@ -4,6 +4,7 @@ import pandas as pd
 import pulp
 import math
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 '''
 
@@ -19,9 +20,10 @@ engine = create_engine(
 '''
 import os
 from sqlalchemy import create_engine
-from dotenv import load_dotenv
 
-load_dotenv()
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(PROJECT_ROOT / "interfaz" / "backend" / ".env")
 
 
 

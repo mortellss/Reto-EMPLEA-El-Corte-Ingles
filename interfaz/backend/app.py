@@ -6,6 +6,11 @@ from io import BytesIO
 import subprocess
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
 
 app = Flask(__name__)

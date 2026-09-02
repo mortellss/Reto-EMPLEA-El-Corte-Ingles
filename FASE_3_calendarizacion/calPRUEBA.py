@@ -15,6 +15,10 @@ import pandas as pd
 from ortools.sat.python import cp_model
 from dotenv import load_dotenv
 import os
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(PROJECT_ROOT / "interfaz" / "backend" / ".env")
 '''
 load_dotenv()
 
@@ -28,9 +32,6 @@ engine = create_engine(
 
 import os
 from sqlalchemy import create_engine
-from dotenv import load_dotenv
-
-load_dotenv()
 
 
 DB_USER = os.getenv("DB_USER")

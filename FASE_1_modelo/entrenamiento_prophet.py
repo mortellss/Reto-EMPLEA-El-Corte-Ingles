@@ -3,6 +3,7 @@
 import math
 import os
 import argparse
+from pathlib import Path
 from prophet import Prophet
 from dotenv import load_dotenv
 import pandas as pd
@@ -12,9 +13,11 @@ from prophet.diagnostics import cross_validation, performance_metrics
 from sqlalchemy import create_engine, text
 import numpy as np
 from datetime import datetime
-import os
 from sqlalchemy import create_engine
-from dotenv import load_dotenv
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(PROJECT_ROOT / "interfaz" / "backend" / ".env")
 
 # función que maneja los NaN
 
