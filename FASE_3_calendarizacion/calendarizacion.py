@@ -208,6 +208,16 @@ def horas_a_qh(h: float) -> int:
 def qh_a_horas(qh: int) -> float:
     return qh / QH
 
+def calcular_semana_de(dias):
+    if not dias:
+        return {}
+
+    inicio_semana = dias[0] - timedelta(days=dias[0].weekday())
+    return {
+        dia: (dia - inicio_semana).days // 7 + 1
+        for dia in dias
+    }
+
 def cargar_trabajadores():
     query_trabajadores = """
     SELECT id_trabajador, nombre, disponibilidad, id_contrato, fijo_discontinuo
@@ -324,12 +334,7 @@ def cargar_calendario():
         )
         for fila in datos.itertuples()
     }
-    semana_de = {
-        fila.fecha: int(fila.num_semana)
-        if not pd.isna(fila.num_semana)
-        else (fila.fecha - dias[0]).days // 7 + 1
-        for fila in datos.itertuples()
-    }
+    semana_de = calcular_semana_de(dias)
     horas_necesarias = {
             fila.fecha: float(fila.horas_necesarias) if not pd.isna(fila.horas_necesarias) else 0.0
             for fila in datos.itertuples()
