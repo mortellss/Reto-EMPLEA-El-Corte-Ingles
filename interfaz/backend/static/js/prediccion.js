@@ -20,7 +20,25 @@ document.addEventListener("DOMContentLoaded",()=>{
 
         try{
 
-            const respuesta=await fetch("/api/prediccion");
+            const fechaInicio=document.getElementById("fechaInicio")?.value || "";
+            const fechaFin=document.getElementById("fechaFin")?.value || "";
+
+            let url="/api/prediccion";
+            const params=new URLSearchParams();
+
+            if(fechaInicio){
+                params.append("fecha_inicio", fechaInicio);
+            }
+
+            if(fechaFin){
+                params.append("fecha_fin", fechaFin);
+            }
+
+            if(params.toString()){
+                url += `?${params.toString()}`;
+            }
+
+            const respuesta=await fetch(url);
             const datos=await respuesta.json();
 
             if(!respuesta.ok){

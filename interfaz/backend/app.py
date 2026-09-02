@@ -2678,7 +2678,10 @@ def prediccion():
 @app.route("/api/prediccion")
 def api_prediccion():
     try:
-        df = pd.read_sql("""
+        fecha_inicio = request.args.get("fecha_inicio")
+        fecha_fin = request.args.get("fecha_fin")
+
+        query = """
             SELECT
                 id_prediccion,
                 fecha,
@@ -2692,8 +2695,20 @@ def api_prediccion():
                 id_centro
             FROM prediccion
             WHERE id_centro = 1
-            ORDER BY fecha
-        """, engine)
+        """
+        params = {}
+
+        if fecha_inicio:
+            query += " AND fecha >= :fecha_inicio"
+            params["fecha_inicio"] = fecha_inicio
+
+        if fecha_fin:
+            query += " AND fecha <= :fecha_fin"
+            params["fecha_fin"] = fecha_fin
+
+        query += " ORDER BY fecha"
+
+        df = pd.read_sql(text(query), engine, params=params)
 
         df = df.astype(object).where(pd.notna(df), None)
 
