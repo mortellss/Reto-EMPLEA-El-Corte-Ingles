@@ -174,9 +174,18 @@ if fecha_fin_filtro is not None:
 
 df_prediccion['pedidos_acumulados'] = pd.to_numeric(df_prediccion['pedidos_acumulados'], errors='coerce').fillna(0).astype(int)
 df_prediccion = df_prediccion.sort_values('fecha').reset_index(drop=True)
+
+if df_prediccion.empty:
+    raise ValueError("No hay datos de predicción disponibles. Genera la predicción antes de ejecutar la planificación.")
+
+# Si el filtro elegido por la interfaz no coincide con ninguna fecha, evitamos
+# que el código intente construir un horizonte vacío y falle más adelante.
 df_prediccion['mes'] = df_prediccion['fecha'].dt.to_period('M')
 meses_horizonte = df_prediccion['mes'].drop_duplicates().tolist()
-NUM_MESES = len(meses_horizonte) or 1
+if not meses_horizonte:
+    raise ValueError("No hay meses de predicción para el rango solicitado. Genera la predicción antes de planificar.")
+
+NUM_MESES = len(meses_horizonte)
 meses = range(1, NUM_MESES + 1)
 
 config_optimizacion = get_optimizacion_config()

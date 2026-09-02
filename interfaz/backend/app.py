@@ -3247,6 +3247,21 @@ def generar_planificacion():
         fecha_inicio = datos.get("fecha_inicio")
         fecha_fin = datos.get("fecha_fin")
 
+        with engine.begin() as conn:
+            sql = "SELECT COUNT(*) FROM prediccion WHERE id_centro = 1"
+            if fecha_inicio and fecha_fin:
+                sql += " AND fecha BETWEEN :fecha_inicio AND :fecha_fin"
+            total_prediccion = conn.execute(text(sql), {
+                "fecha_inicio": fecha_inicio,
+                "fecha_fin": fecha_fin,
+            }).scalar()
+
+        if total_prediccion is None or int(total_prediccion) == 0:
+            return jsonify({
+                "ok": False,
+                "error": "No hay datos de predicción para el rango solicitado. Genera primero la predicción desde la pantalla de Predicción."
+            }), 400
+
         ruta_script = (
             Path(__file__).resolve().parents[2]
             / "FASE_3_calendarizacion"
