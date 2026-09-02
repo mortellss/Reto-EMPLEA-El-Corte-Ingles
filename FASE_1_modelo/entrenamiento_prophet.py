@@ -307,13 +307,18 @@ print(
     f"Periodo visible en interfaz: {fecha_inicio_prediccion.date()} -> {fecha_fin_prediccion.date()}"
 )
 
-trimestre = periodo_mostrado[
+trimestre = forecast[
     ["ds", "yhat", "yhat_lower", "yhat_upper"]
 ].reset_index(drop=True)
 
+'''
+trimestre = periodo_mostrado[
+    ["ds", "yhat", "yhat_lower", "yhat_upper"]
+].reset_index(drop=True)
+'''
+
 trimestre = trimestre.drop_duplicates(subset=['ds'], keep='last').sort_values('ds').reset_index(drop=True)
 
-print(trimestre[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].head(30))
 
 trimestre = trimestre.rename(columns={
     "ds": "fecha",
