@@ -72,6 +72,14 @@ CONTRATOS_COMPLEMENTARIAS = {2, 4, 5, 6, 7}
 CONTRATOS_FIJO_DISCONTINUO = {3}
 CONTRATOS_JORNADA_EXTRA = {1, 2}
 
+TURNOS_NORMALES_MES_CONTRATO = {
+    2: 6 * 4,
+    4: 5 * 4,
+    5: 3 * 4,
+    6: 3 * 4,
+    7: 2 * 4,
+}
+
 # Estas son horas aproximadas -> CAMBIAR PARA QUE SEA MÁS EXACTO
 
 HORAS_POR_TURNO_CONTRATO = {
@@ -553,7 +561,7 @@ def guardar_calendarizacion(solver, calendario, ids_trabajadores, ids_tareas,
           f"({dias_abiertos[0]} a {dias_abiertos[-1]}), version={id_version}.")
 
 
-def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tareas, habilidades, objetivo_horas_por_mes, objetivo_horas_fd_por_mes=None, cambios_forzados=None):
+def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tareas, habilidades, objetivo_horas_por_mes, objetivo_horas_hc_por_mes=None, objetivo_horas_fd_por_mes=None, cambios_forzados=None):
 
     ids_trabajadores = list(trabajadores.keys())
     
@@ -880,7 +888,78 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
                 )
                 terminos_horas_fd.append((deficit, exceso, cota))
 
+    # Las horas complementarias son el exceso sobre la jornada normal mensual
+    # de cada trabajador con contrato habilitado, hasta un 60% adicional.
+    terminos_horas_complementarias = []
+    trabajadores_complementarias = [
+        t for t in ids_trabajadores
+        if trabajadores[t].id_contrato in CONTRATOS_COMPLEMENTARIAS
+    ]
+
+    def anadir_termino_horas_qh(horas_calculadas_qh, horas_objetivo, etiqueta, cota_qh):
+        objetivo_qh = horas_a_qh(horas_objetivo)
+        cota_var = max(objetivo_qh, cota_qh, 1)
+        deficit = modelo.NewIntVar(0, cota_var, f'DeficitHoras_{etiqueta}')
+        exceso = modelo.NewIntVar(0, cota_var, f'ExcesoHoras_{etiqueta}')
+        modelo.Add(horas_calculadas_qh - objetivo_qh == exceso - deficit)
+        return deficit, exceso, cota_var
+
+    for indice, clave_mes in enumerate(meses_ordenados, start=1):
+        dias_mes = dias_por_mes_orden[clave_mes]
+        horas_complementarias_mes = []
+
+        for t in trabajadores_complementarias:
+            horas_turno_qh = horas_turno_qh_trabajador.get(t)
+            if horas_turno_qh is None:
+                continue
+
+            horas_normales_mes_qh = horas_a_qh(
+                horas_turno_qh / QH * TURNOS_NORMALES_MES_CONTRATO[trabajadores[t].id_contrato]
+            )
+            capacidad_maxima_mes_qh = int(round(horas_normales_mes_qh * 1.6))
+            horas_trabajadas_mes = modelo.NewIntVar(
+                0, capacidad_maxima_mes_qh,
+                f'HorasTrabajadas_T{t}_Mes{clave_mes[0]}_{clave_mes[1]}'
+            )
+            modelo.Add(
+                horas_trabajadas_mes == expr_horas_trabajadas_qh(
+                    dias_mes, trabajadores_incl=[t]
+                )
+            )
+            modelo.Add(horas_trabajadas_mes <= capacidad_maxima_mes_qh)
+
+            horas_complementarias_trabajador = modelo.NewIntVar(
+                0, capacidad_maxima_mes_qh,
+                f'HorasComplementarias_T{t}_Mes{clave_mes[0]}_{clave_mes[1]}'
+            )
+            modelo.AddMaxEquality(
+                horas_complementarias_trabajador,
+                [horas_trabajadas_mes - horas_normales_mes_qh, 0]
+            )
+            horas_complementarias_mes.append(horas_complementarias_trabajador)
+
+        objetivo_hc = (objetivo_horas_hc_por_mes or {}).get(indice)
+        if objetivo_hc is not None:
+            cota_hc = sum(
+                int(round(
+                    horas_a_qh(
+                        horas_turno_qh_trabajador[t] / QH
+                        * TURNOS_NORMALES_MES_CONTRATO[trabajadores[t].id_contrato]
+                    ) * 0.6
+                ))
+                for t in trabajadores_complementarias
+                if t in horas_turno_qh_trabajador
+            )
+            deficit, exceso, cota = anadir_termino_horas_qh(
+                sum(horas_complementarias_mes), objetivo_hc,
+                f'MesHC{clave_mes[0]}_{clave_mes[1]}', cota_hc
+            )
+            terminos_horas_complementarias.append((deficit, exceso, cota))
+
     penal_fd, cota_fd = penalizacion_y_cota(terminos_horas_fd)
+    penal_complementarias, cota_complementarias = penalizacion_y_cota(
+        terminos_horas_complementarias
+    )
     PESO_PRIORIDAD_ORDINARIOS = cota_fd + 1  # domina cualquier penalización posible de los FD
 
     penal_total, cota_total = penalizacion_y_cota(terminos_horas)
@@ -890,6 +969,7 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
         penal_total
         + PESO_PRIORIDAD_ORDINARIOS * penal_ordinarios
         + penal_fd
+        + penal_complementarias
     )
 
     cota_penalizacion_maxima = (
@@ -1134,6 +1214,7 @@ if __name__ == '__main__':
         tareas,
         habilidades,
         objetivo_horas_por_mes=objetivo_horas_por_mes,
+        objetivo_horas_hc_por_mes=objetivo_horas_hc_por_mes,
         objetivo_horas_fd_por_mes=objetivo_horas_fd_por_mes,
         cambios_forzados=cargar_cambios_forzados(),
     )
