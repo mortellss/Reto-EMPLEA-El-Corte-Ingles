@@ -16,12 +16,37 @@ document.addEventListener("DOMContentLoaded",()=>{
         selector.addEventListener("change",mostrarGraficos);
     }
 
+    function guardarPeriodoPrediccionSeleccionado(fechaInicio, fechaFin) {
+        const periodo = {
+            fecha_inicio: fechaInicio,
+            fecha_fin: fechaFin
+        };
+
+        window.__empleaPeriodoPrediccion = periodo;
+
+        try {
+            localStorage.setItem("emplea_periodo_prediccion", JSON.stringify(periodo));
+        } catch (error) {
+            console.warn("No se pudo guardar el periodo de predicción en localStorage:", error);
+        }
+
+        try {
+            sessionStorage.setItem("emplea_periodo_prediccion", JSON.stringify(periodo));
+        } catch (error) {
+            console.warn("No se pudo guardar el periodo de predicción en sessionStorage:", error);
+        }
+    }
+
     async function cargarPrediccion(){
 
         try{
 
             const fechaInicio=document.getElementById("fechaInicio")?.value || "";
             const fechaFin=document.getElementById("fechaFin")?.value || "";
+
+            if(fechaInicio && fechaFin){
+                guardarPeriodoPrediccionSeleccionado(fechaInicio, fechaFin);
+            }
 
             let url="/api/prediccion";
             const params=new URLSearchParams();
@@ -121,6 +146,8 @@ document.addEventListener("DOMContentLoaded",()=>{
                     "No se ha podido generar la predicción."
                 );
             }
+            guardarPeriodoPrediccionSeleccionado(fechaInicio, fechaFin);
+
             alert(
                 "Predicción generada correctamente."
             );

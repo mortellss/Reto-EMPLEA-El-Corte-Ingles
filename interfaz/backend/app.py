@@ -2862,8 +2862,10 @@ def planificacion():
 def api_planificacion():
 
     try:
+        fecha_inicio = request.args.get("fecha_inicio")
+        fecha_fin = request.args.get("fecha_fin")
 
-        df = pd.read_sql("""
+        query = """
             SELECT
                 c.fecha,
                 c.num_semana,
@@ -2891,14 +2893,26 @@ def api_planificacion():
                   ORDER BY id_version DESC
                   LIMIT 1
               )
+        """
+        params = {}
 
+        if fecha_inicio:
+            query += " AND c.fecha >= :fecha_inicio"
+            params["fecha_inicio"] = fecha_inicio
+
+        if fecha_fin:
+            query += " AND c.fecha <= :fecha_fin"
+            params["fecha_fin"] = fecha_fin
+
+        query += """
             ORDER BY
                 c.fecha,
                 c.turno,
                 t.nombre,
                 tr.nombre
+        """
 
-        """, engine)
+        df = pd.read_sql(text(query), engine, params=params)
 
         df = df.astype(object).where(pd.notna(df), None)
 
@@ -3266,6 +3280,21 @@ def generar_planificacion():
         datos = request.get_json(silent=True) or {}
         fecha_inicio = datos.get("fecha_inicio")
         fecha_fin = datos.get("fecha_fin")
+
+        if fecha_inicio and fecha_fin:
+            try:
+                inicio_dt = pd.to_datetime(fecha_inicio).date()
+                fin_dt = pd.to_datetime(fecha_fin).date()
+                if (fin_dt - inicio_dt).days + 1 < 30:
+                    return jsonify({
+                        "ok": False,
+                        "error": "Selecciona un periodo mínimo de 1 mes para generar la planificación."
+                    }), 400
+            except Exception:
+                return jsonify({
+                    "ok": False,
+                    "error": "Las fechas seleccionadas no tienen un formato válido."
+                }), 400
 
         with engine.begin() as conn:
             sql = "SELECT COUNT(*) FROM prediccion WHERE id_centro = 1"

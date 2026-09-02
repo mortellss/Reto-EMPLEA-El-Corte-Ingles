@@ -566,17 +566,28 @@ async function cargarDatos() {
 
     try {
 
+        const periodoSeleccionado = obtenerPeriodoPrediccionSeleccionado();
+        const params = new URLSearchParams();
+
+        if (periodoSeleccionado?.fecha_inicio) {
+            params.append("fecha_inicio", periodoSeleccionado.fecha_inicio);
+        }
+
+        if (periodoSeleccionado?.fecha_fin) {
+            params.append("fecha_fin", periodoSeleccionado.fecha_fin);
+        }
+
+        const urlPlanificacion = params.toString()
+            ? `/api/planificacion?${params.toString()}`
+            : "/api/planificacion";
+
         const [
             respuestaPlanificacion,
             respuestaTareas,
             respuestaTrabajadores
         ] = await Promise.all([
 
-            fetch("/api/planificacion"),
-
-            fetch("/api/tareas"),
-
-            fetch("/api/trabajadores")
+            fetch(urlPlanificacion),
 
         ]);
 
@@ -790,7 +801,12 @@ document
             if (fechaFin) payload.fecha_fin = fechaFin;
 
             if (!fechaInicio || !fechaFin) {
-                throw new Error("No hay un trimestre seleccionado en Predicción.");
+                throw new Error("No hay un periodo seleccionado en Predicción.");
+            }
+
+            const diasPeriodo = ((new Date(fechaFin + "T00:00:00") - new Date(fechaInicio + "T00:00:00")) / 86400000) + 1;
+            if (diasPeriodo < 30) {
+                throw new Error("Selecciona un periodo mínimo de 1 mes para generar la planificación.");
             }
 
             const respuesta = await fetch(
