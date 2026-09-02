@@ -115,6 +115,8 @@ selectorAño.addEventListener("change", () => {
         selector.addEventListener("change",mostrarGraficos);
     }
 
+    cargarPrediccion();
+
     async function cargarPrediccion(){
 
         try{
@@ -130,6 +132,8 @@ selectorAño.addEventListener("change", () => {
             }
 
             predicciones=datos;
+
+            restaurarPeriodoSeleccionado(datos);
 
             mostrarResumen();
             mostrarPrediccion();
@@ -151,6 +155,31 @@ selectorAño.addEventListener("change", () => {
                 `;
             }
         }
+    }
+
+    function restaurarPeriodoSeleccionado(datos){
+        if(!datos.length || !datos[0].fecha){
+            return;
+        }
+
+        const partes=datos[0].fecha.split("-");
+        if(partes.length!==3){
+            return;
+        }
+
+        const año=Number(partes[0]);
+        const mes=Number(partes[1]);
+        const trimestre=Math.ceil(mes/3);
+        const boton=document.querySelector(
+            `.btn-trimestre[data-trimestre="${trimestre}"]`
+        );
+
+        if(!boton || Number.isNaN(año) || Number.isNaN(mes)){
+            return;
+        }
+
+        selectorAño.value=String(año);
+        boton.click();
     }
 
     async function generarPrediccion() {
