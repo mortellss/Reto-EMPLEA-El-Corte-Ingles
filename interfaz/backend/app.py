@@ -5,6 +5,9 @@ from db import engine
 from io import BytesIO
 import subprocess
 import sys
+import threading
+import uuid
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -14,6 +17,31 @@ load_dotenv(Path(__file__).resolve().parent / ".env")
 
 
 app = Flask(__name__)
+
+planificacion_executor = ThreadPoolExecutor(max_workers=1)
+planificacion_trabajos = {}
+planificacion_trabajos_lock = threading.Lock()
+
+
+def ejecutar_generacion_planificacion(job_id, comando, ruta_script):
+    try:
+        resultado = subprocess.run(
+            comando,
+            capture_output=True,
+            text=True,
+            cwd=str(ruta_script.parent)
+        )
+        with planificacion_trabajos_lock:
+            planificacion_trabajos[job_id] = {
+                "estado": "completado" if resultado.returncode == 0 else "error",
+                "detalle": resultado.stderr[-4000:] if resultado.returncode != 0 else "",
+            }
+    except Exception as error:
+        with planificacion_trabajos_lock:
+            planificacion_trabajos[job_id] = {
+                "estado": "error",
+                "detalle": str(error),
+            }
 
 
 def ensure_prophet_config_table():
@@ -3388,32 +3416,31 @@ def generar_planificacion():
         if fecha_fin:
             comando.extend(["--fecha-fin", str(fecha_fin)])
 
-        resultado = subprocess.run(
+        job_id = uuid.uuid4().hex
+        with planificacion_trabajos_lock:
+            if any(
+                trabajo["estado"] == "ejecutando"
+                for trabajo in planificacion_trabajos.values()
+            ):
+                return jsonify({
+                    "ok": False,
+                    "error": "Ya hay una planificación en curso. Espera a que termine."
+                }), 409
+            planificacion_trabajos[job_id] = {"estado": "ejecutando"}
+
+        planificacion_executor.submit(
+            ejecutar_generacion_planificacion,
+            job_id,
             comando,
-            capture_output=True,
-            text=True,
-            cwd=str(ruta_script.parent)
+            ruta_script
         )
-
-        if resultado.returncode != 0:
-
-            print("ERROR CALPRUEBA:")
-            print(resultado.stdout)
-            print(resultado.stderr)
-
-            return jsonify({
-                "ok": False,
-                "error": "No se ha podido generar la planificación.",
-                "detalle": resultado.stderr
-            }), 500
-
-        print("CALPRUEBA EJECUTADO CORRECTAMENTE:")
-        print(resultado.stdout)
 
         return jsonify({
             "ok": True,
-            "mensaje": "Planificación generada correctamente."
-        })
+            "en_curso": True,
+            "job_id": job_id,
+            "mensaje": "La planificación se está generando en segundo plano."
+        }), 202
 
     except Exception as e:
 
@@ -3423,6 +3450,32 @@ def generar_planificacion():
             "ok": False,
             "error": str(e)
         }), 500
+
+
+@app.route("/api/planificacion/generar/<job_id>")
+def estado_generacion_planificacion(job_id):
+    with planificacion_trabajos_lock:
+        trabajo = planificacion_trabajos.get(job_id)
+
+    if trabajo is None:
+        return jsonify({"ok": False, "error": "No se ha encontrado el trabajo."}), 404
+
+    if trabajo["estado"] == "ejecutando":
+        return jsonify({"ok": True, "estado": "ejecutando"}), 202
+
+    if trabajo["estado"] == "error":
+        return jsonify({
+            "ok": False,
+            "estado": "error",
+            "error": "No se ha podido generar la planificación.",
+            "detalle": trabajo.get("detalle", "")
+        }), 500
+
+    return jsonify({
+        "ok": True,
+        "estado": "completado",
+        "mensaje": "Planificación generada correctamente."
+    })
 
 # ============================================================
 # PLANIFICACIÓN - CALENDARIO INDIVIDUAL DEL TRABAJADOR

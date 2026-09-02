@@ -937,6 +937,25 @@ function obtenerPeriodoPrediccionSeleccionado() {
     return { fecha_inicio: inicio, fecha_fin: fin };
 }
 
+async function esperarGeneracionPlanificacion(jobId, boton) {
+    while (true) {
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        const respuesta = await fetch(`/api/planificacion/generar/${jobId}`);
+        const datos = await respuesta.json();
+
+        if (respuesta.status === 202) {
+            boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando...';
+            continue;
+        }
+
+        if (!respuesta.ok || !datos.ok) {
+            throw new Error(datos.error || "No se ha podido generar la planificación.");
+        }
+
+        return datos;
+    }
+}
+
 // GENERAR PLANIFICACIÓN
 document
     .getElementById("generarPlanificacion")
@@ -995,6 +1014,11 @@ document
                     datos.error ||
                     "No se ha podido generar la planificación."
                 );
+            }
+
+            if (datos.en_curso && datos.job_id) {
+                boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando...';
+                await esperarGeneracionPlanificacion(datos.job_id, boton);
             }
 
             alert(
