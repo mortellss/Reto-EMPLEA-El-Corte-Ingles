@@ -3,22 +3,143 @@ document.addEventListener("DOMContentLoaded",()=>{
     let graficoPrediccion=null;
     let graficoHoras=null;
 
+    let fechaInicioPrediccion=null;
+    let fechaFinPrediccion=null;
+    let mesSeleccionado=null;
+    let añoSeleccionado=null;
 
-    const botonesPeriodo=[...document.querySelectorAll(".periodo-prediccion")];
-    let periodoSeleccionado=botonesPeriodo[0] || null;
+    const selectorAño=document.getElementById("añoPrediccion");
+    const botonesMes=document.querySelectorAll(".btn-mes");
+    const periodoSeleccionado=document.getElementById("periodoSeleccionado");
 
+    // ============================================================
+    // AÑOS DISPONIBLES
+    // ============================================================
 
-    cargarPrediccion();
+    if(selectorAño){
+        const añoActual=new Date().getFullYear();
 
+        for(let año=añoActual-1;año<=añoActual+2;año++){
+            const opcion=document.createElement("option");
 
+            opcion.value=año;
+            opcion.textContent=año;
 
-    botonesPeriodo.forEach((boton) => {
-        boton.addEventListener("click", () => {
-            seleccionarPeriodo(boton);
-            cargarPrediccion();
+            selectorAño.appendChild(opcion);
+        }
+    }
+
+    // ============================================================
+    // CARGAR PERIODO GUARDADO
+    // ============================================================
+
+    try{
+        const periodoGuardado=localStorage.getItem("emplea_periodo_prediccion");
+
+        if(periodoGuardado){
+            const periodo=JSON.parse(periodoGuardado);
+
+            fechaInicioPrediccion=periodo.fecha_inicio;
+            fechaFinPrediccion=periodo.fecha_fin;
+
+            if(periodo.mes){
+                mesSeleccionado=periodo.mes;
+            }else if(fechaInicioPrediccion){
+                mesSeleccionado=Number(fechaInicioPrediccion.split("-")[1]);
+            }
+
+            if(periodo.año){
+                añoSeleccionado=periodo.año;
+            }else if(fechaInicioPrediccion){
+                añoSeleccionado=Number(fechaInicioPrediccion.split("-")[0]);
+            }
+
+            if(selectorAño&&añoSeleccionado){
+                selectorAño.value=añoSeleccionado;
+            }
+        }
+    }catch(error){
+        console.warn("No se pudo recuperar el periodo de predicción:",error);
+    }
+
+    // ============================================================
+    // SELECCIONAR MES
+    // ============================================================
+
+    botonesMes.forEach(boton=>{
+        boton.addEventListener("click",()=>{
+            const mes=Number(boton.dataset.mes);
+            const año=Number(selectorAño.value);
+
+            mesSeleccionado=mes;
+            añoSeleccionado=año;
+
+            const mesFormateado=String(mes).padStart(2,"0");
+            const ultimoDia=new Date(año,mes,0).getDate();
+
+            fechaInicioPrediccion=`${año}-${mesFormateado}-01`;
+            fechaFinPrediccion=`${año}-${mesFormateado}-${ultimoDia}`;
+
+            botonesMes.forEach(b=>{
+                b.classList.remove("seleccionado");
+            });
+
+            boton.classList.add("seleccionado");
+
+            if(periodoSeleccionado){
+                periodoSeleccionado.textContent=
+                    `Periodo seleccionado: ${formatearFecha(fechaInicioPrediccion)} - ${formatearFecha(fechaFinPrediccion)}`;
+            }
+
+            guardarPeriodoPrediccionSeleccionado(
+                fechaInicioPrediccion,
+                fechaFinPrediccion
+            );
         });
     });
 
+    // ============================================================
+    // CAMBIAR AÑO
+    // ============================================================
+
+    if(selectorAño){
+        selectorAño.addEventListener("change",()=>{
+            if(!mesSeleccionado){
+                return;
+            }
+
+            const boton=document.querySelector(
+                `.btn-mes[data-mes="${mesSeleccionado}"]`
+            );
+
+            if(boton){
+                boton.click();
+            }
+        });
+    }
+
+    // ============================================================
+    // RESTAURAR MES SELECCIONADO
+    // ============================================================
+
+    if(mesSeleccionado){
+        const boton=document.querySelector(
+            `.btn-mes[data-mes="${mesSeleccionado}"]`
+        );
+
+        if(boton){
+            boton.classList.add("seleccionado");
+
+            if(periodoSeleccionado&&fechaInicioPrediccion&&fechaFinPrediccion){
+                periodoSeleccionado.textContent=
+                    `Periodo seleccionado: ${formatearFecha(fechaInicioPrediccion)} - ${formatearFecha(fechaFinPrediccion)}`;
+            }
+        }
+    }
+
+    // ============================================================
+    // GENERAR PREDICCIÓN
+    // ============================================================
 
     document.getElementById("generarPrediccion").addEventListener(
         "click",
@@ -31,64 +152,67 @@ document.addEventListener("DOMContentLoaded",()=>{
         selector.addEventListener("change",mostrarGraficos);
     }
 
+    // ============================================================
+    // GUARDAR PERIODO
+    // ============================================================
 
-    function seleccionarPeriodo(boton) {
-        periodoSeleccionado=boton;
-
-        botonesPeriodo.forEach((periodo) => {
-            const seleccionado=periodo === boton;
-            periodo.classList.toggle("seleccionado", seleccionado);
-            periodo.setAttribute("aria-pressed", String(seleccionado));
-        });
-    }
-
-
-    function guardarPeriodoPrediccionSeleccionado(fechaInicio, fechaFin) {
-        const periodo = {
-            fecha_inicio: fechaInicio,
-            fecha_fin: fechaFin
+    function guardarPeriodoPrediccionSeleccionado(fechaInicio,fechaFin){
+        const periodo={
+            fecha_inicio:fechaInicio,
+            fecha_fin:fechaFin,
+            mes:mesSeleccionado,
+            año:añoSeleccionado
         };
 
-        window.__empleaPeriodoPrediccion = periodo;
+        window.__empleaPeriodoPrediccion=periodo;
 
-        try {
-            localStorage.setItem("emplea_periodo_prediccion", JSON.stringify(periodo));
-        } catch (error) {
-            console.warn("No se pudo guardar el periodo de predicción en localStorage:", error);
+        try{
+            localStorage.setItem(
+                "emplea_periodo_prediccion",
+                JSON.stringify(periodo)
+            );
+        }catch(error){
+            console.warn(
+                "No se pudo guardar el periodo de predicción en localStorage:",
+                error
+            );
         }
 
-        try {
-            sessionStorage.setItem("emplea_periodo_prediccion", JSON.stringify(periodo));
-        } catch (error) {
-            console.warn("No se pudo guardar el periodo de predicción en sessionStorage:", error);
+        try{
+            sessionStorage.setItem(
+                "emplea_periodo_prediccion",
+                JSON.stringify(periodo)
+            );
+        }catch(error){
+            console.warn(
+                "No se pudo guardar el periodo de predicción en sessionStorage:",
+                error
+            );
         }
     }
 
+    // ============================================================
+    // CARGAR PREDICCIÓN
+    // ============================================================
+
     async function cargarPrediccion(){
-
         try{
-
-
-            const fechaInicio=periodoSeleccionado?.dataset.inicio || "";
-            const fechaFin=periodoSeleccionado?.dataset.fin || "";
-
-            if(fechaInicio && fechaFin){
-                guardarPeriodoPrediccionSeleccionado(fechaInicio, fechaFin);
-            }
+            const fechaInicio=fechaInicioPrediccion||"";
+            const fechaFin=fechaFinPrediccion||"";
 
             let url="/api/prediccion";
             const params=new URLSearchParams();
 
             if(fechaInicio){
-                params.append("fecha_inicio", fechaInicio);
+                params.append("fecha_inicio",fechaInicio);
             }
 
             if(fechaFin){
-                params.append("fecha_fin", fechaFin);
+                params.append("fecha_fin",fechaFin);
             }
 
             if(params.toString()){
-                url += `?${params.toString()}`;
+                url+=`?${params.toString()}`;
             }
 
             const respuesta=await fetch(url);
@@ -108,7 +232,6 @@ document.addEventListener("DOMContentLoaded",()=>{
             mostrarGraficos();
 
         }catch(error){
-
             console.error(error);
 
             const tabla=document.getElementById("tablaPrediccion");
@@ -125,80 +248,92 @@ document.addEventListener("DOMContentLoaded",()=>{
         }
     }
 
-    async function generarPrediccion() {
+    // ============================================================
+    // GENERAR PREDICCIÓN
+    // ============================================================
 
-        const fechaInicio=periodoSeleccionado?.dataset.inicio || "";
-        const fechaFin=periodoSeleccionado?.dataset.fin || "";
+    async function generarPrediccion(){
+        const fechaInicio=fechaInicioPrediccion;
+        const fechaFin=fechaFinPrediccion;
 
-        if (!fechaInicio || !fechaFin) {
-            alert("Selecciona uno de los cuatro periodos disponibles.");
+        if(!fechaInicio||!fechaFin){
+            alert("Selecciona un mes antes de generar la predicción.");
             return;
         }
 
-        const boton =
-            document.getElementById("generarPrediccion");
-        try {
-            boton.disabled = true;
-            boton.innerHTML = `
+        if(fechaInicio>fechaFin){
+            alert("La fecha de inicio no puede ser posterior a la fecha de fin.");
+            return;
+        }
+
+        const boton=document.getElementById("generarPrediccion");
+
+        try{
+            boton.disabled=true;
+
+            boton.innerHTML=`
                 <i class="fa-solid fa-spinner fa-spin"></i>
                 Generando predicción...
             `;
-            const respuesta = await fetch(
+
+            const respuesta=await fetch(
                 "/api/prediccion/generar",
                 {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
+                    method:"POST",
+                    headers:{
+                        "Content-Type":"application/json"
                     },
-                    body: JSON.stringify({
-                        fecha_inicio: fechaInicio,
-                        fecha_fin: fechaFin
+                    body:JSON.stringify({
+                        fecha_inicio:fechaInicio,
+                        fecha_fin:fechaFin
                     })
                 }
             );
-            const datos =
-                await respuesta.json();
-            if (!respuesta.ok) {
 
+            const datos=await respuesta.json();
+
+            if(!respuesta.ok){
                 throw new Error(
-                    datos.error ||
+                    datos.error||
                     "No se ha podido generar la predicción."
                 );
             }
-            guardarPeriodoPrediccionSeleccionado(fechaInicio, fechaFin);
 
-            alert(
-                "Predicción generada correctamente."
+            guardarPeriodoPrediccionSeleccionado(
+                fechaInicio,
+                fechaFin
             );
 
-            // Recargar los datos de la predicción
+            alert("Predicción generada correctamente.");
 
             await cargarPrediccion();
 
-        } catch (error) {
-
+        }catch(error){
             console.error(
                 "ERROR GENERANDO PREDICCIÓN:",
                 error
             );
 
             alert(
-                error.message ||
+                error.message||
                 "No se ha podido generar la predicción."
             );
 
-        } finally {
+        }finally{
+            boton.disabled=false;
 
-            boton.disabled = false;
-            boton.innerHTML = `
+            boton.innerHTML=`
                 <i class="fa-solid fa-chart-line"></i>
                 Generar predicción
             `;
         }
     }
 
-    function mostrarResumen(){
+    // ============================================================
+    // RESUMEN
+    // ============================================================
 
+    function mostrarResumen(){
         const dias=document.getElementById("diasPrevistos");
         const total=document.getElementById("totalPrevisto");
         const horas=document.getElementById("totalHoras");
@@ -258,7 +393,6 @@ document.addEventListener("DOMContentLoaded",()=>{
         }
 
         if(ultima){
-
             const fechas=predicciones
                 .map(p=>p.fecha_generacion)
                 .filter(Boolean);
@@ -270,8 +404,11 @@ document.addEventListener("DOMContentLoaded",()=>{
         }
     }
 
-    function mostrarGraficos(){
+    // ============================================================
+    // GRÁFICOS
+    // ============================================================
 
+    function mostrarGraficos(){
         const canvasPrediccion=
             document.getElementById("graficoPrediccion");
 
@@ -293,9 +430,7 @@ document.addEventListener("DOMContentLoaded",()=>{
         let datosGrafico=[...predicciones];
 
         if(selector&&selector.value!=="todo"){
-
             const dias=Number(selector.value);
-
             datosGrafico=
                 predicciones.slice(0,dias);
         }
@@ -465,8 +600,11 @@ document.addEventListener("DOMContentLoaded",()=>{
             );
     }
 
-    function mostrarPrediccion(){
+    // ============================================================
+    // TABLA
+    // ============================================================
 
+    function mostrarPrediccion(){
         const tabla=
             document.getElementById("tablaPrediccion");
 
@@ -475,7 +613,6 @@ document.addEventListener("DOMContentLoaded",()=>{
         }
 
         if(!predicciones.length){
-
             tabla.innerHTML=`
                 <tr>
                     <td colspan="7" class="loading-cell">
@@ -489,42 +626,35 @@ document.addEventListener("DOMContentLoaded",()=>{
 
         tabla.innerHTML=
             predicciones.map(p=>`
-
                 <tr>
-
                     <td>${formatearFecha(p.fecha)}</td>
-
                     <td>${p.dia_semana||""}</td>
-
                     <td>
                         <strong>
                             ${p.pedidos_previstos??0}
                         </strong>
                     </td>
-
                     <td>
                         ${p.pedidos_acumulados??0}
                     </td>
-
                     <td>
                         ${p.horas_necesarias??0}
                     </td>
-
                     <td>
                         ${p.limite_inferior??0}
                     </td>
-
                     <td>
                         ${p.limite_superior??0}
                     </td>
-
                 </tr>
-
             `).join("");
     }
 
-    function formatearFecha(fecha){
+    // ============================================================
+    // FORMATEAR FECHAS
+    // ============================================================
 
+    function formatearFecha(fecha){
         if(!fecha){
             return "";
         }
@@ -539,7 +669,6 @@ document.addEventListener("DOMContentLoaded",()=>{
     }
 
     function formatearFechaHora(fecha){
-
         if(!fecha){
             return "";
         }
@@ -556,4 +685,9 @@ document.addEventListener("DOMContentLoaded",()=>{
         return`${fechaFormateada} ${partes[1]}`;
     }
 
+    // ============================================================
+    // CARGA INICIAL
+    // ============================================================
+
+    cargarPrediccion();
 });
