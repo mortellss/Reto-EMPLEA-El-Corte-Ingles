@@ -1166,6 +1166,8 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
                     dias_abiertos, turnos_asignados, tarea_asignada,
                     id_version,
                 )
+
+        print()
         
         
     else:

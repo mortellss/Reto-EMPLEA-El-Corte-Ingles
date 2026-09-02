@@ -952,6 +952,7 @@ async function esperarGeneracionPlanificacion(jobId, boton) {
             throw new Error(datos.error || "No se ha podido generar la planificación.");
         }
 
+        console.info("Resultado de generación de planificación:", datos);
         return datos;
     }
 }
@@ -1016,13 +1017,17 @@ document
                 );
             }
 
+            let datosGeneracion = datos;
             if (datos.en_curso && datos.job_id) {
                 boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando...';
-                await esperarGeneracionPlanificacion(datos.job_id, boton);
+                datosGeneracion = await esperarGeneracionPlanificacion(datos.job_id, boton);
             }
 
+            const filasGuardadas = datosGeneracion?.filas_guardadas;
             alert(
-                "La planificación se ha generado correctamente."
+                filasGuardadas === undefined
+                    ? "La planificación se ha generado correctamente."
+                    : `La planificación se ha generado correctamente. Filas guardadas en la base de datos: ${filasGuardadas}.`
             );
 
             // Volver a cargar los datos de la interfaz

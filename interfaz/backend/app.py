@@ -23,7 +23,7 @@ planificacion_trabajos = {}
 planificacion_trabajos_lock = threading.Lock()
 
 
-def ejecutar_generacion_planificacion(job_id, comando, ruta_script):
+def ejecutar_generacion_planificacion(job_id, comando, ruta_script, fecha_inicio, fecha_fin):
     try:
         resultado = subprocess.run(
             comando,
@@ -31,9 +31,35 @@ def ejecutar_generacion_planificacion(job_id, comando, ruta_script):
             text=True,
             cwd=str(ruta_script.parent)
         )
+        filas_guardadas = None
+        version_guardada = None
+        if resultado.returncode == 0:
+            with engine.begin() as conn:
+                version_guardada = conn.execute(text("""
+                    SELECT id_version
+                    FROM planificacion_version
+                    WHERE activa = 1
+                    ORDER BY id_version DESC
+                    LIMIT 1
+                """)).scalar()
+                if version_guardada is not None:
+                    filas_guardadas = conn.execute(text("""
+                        SELECT COUNT(*)
+                        FROM calendarizacion
+                        WHERE id_version = :id_version
+                          AND fecha BETWEEN :fecha_inicio AND :fecha_fin
+                    """), {
+                        "id_version": version_guardada,
+                        "fecha_inicio": fecha_inicio,
+                        "fecha_fin": fecha_fin,
+                    }).scalar()
         with planificacion_trabajos_lock:
             planificacion_trabajos[job_id] = {
                 "estado": "completado" if resultado.returncode == 0 else "error",
+                "codigo_salida": resultado.returncode,
+                "filas_guardadas": filas_guardadas,
+                "version_guardada": version_guardada,
+                "salida": resultado.stdout[-8000:],
                 "detalle": resultado.stderr[-4000:] if resultado.returncode != 0 else "",
             }
     except Exception as error:
@@ -3432,7 +3458,9 @@ def generar_planificacion():
             ejecutar_generacion_planificacion,
             job_id,
             comando,
-            ruta_script
+            ruta_script,
+            fecha_inicio,
+            fecha_fin
         )
 
         return jsonify({
@@ -3474,7 +3502,10 @@ def estado_generacion_planificacion(job_id):
     return jsonify({
         "ok": True,
         "estado": "completado",
-        "mensaje": "Planificación generada correctamente."
+        "mensaje": "Planificación generada correctamente.",
+        "filas_guardadas": trabajo.get("filas_guardadas"),
+        "version_guardada": trabajo.get("version_guardada"),
+        "salida": trabajo.get("salida", "")
     })
 
 # ============================================================
