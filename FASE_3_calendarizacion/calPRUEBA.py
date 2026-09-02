@@ -518,6 +518,33 @@ def crear_version_planificacion(dias_abiertos):
     return int(id_version)
 
 
+def preparar_version_activa(id_version, fecha_inicio, fecha_fin):
+    """Conserva en la nueva versión los días que no se están regenerando."""
+    with engine.begin() as conexion:
+        conexion.execute(
+            text("""
+                UPDATE calendarizacion
+                SET id_version = :id_version
+                WHERE fecha < :fecha_inicio OR fecha > :fecha_fin
+            """),
+            {
+                "id_version": id_version,
+                "fecha_inicio": fecha_inicio,
+                "fecha_fin": fecha_fin,
+            },
+        )
+        conexion.execute(
+            text("""
+                DELETE FROM calendarizacion
+                WHERE fecha BETWEEN :fecha_inicio AND :fecha_fin
+            """),
+            {
+                "fecha_inicio": fecha_inicio,
+                "fecha_fin": fecha_fin,
+            },
+        )
+
+
 def guardar_calendarizacion(solver, calendario, ids_trabajadores, ids_tareas,
                              dias_abiertos, turnos_asignados, tarea_asignada,
                              id_version):
@@ -1079,6 +1106,7 @@ def crear_calendario_base(trabajadores, calendario, calendario_trabajadores, tar
     if estado == cp_model.OPTIMAL or estado == cp_model.FEASIBLE:
 
         id_version = crear_version_planificacion(dias_abiertos)
+        preparar_version_activa(id_version, min(dias_abiertos), max(dias_abiertos))
         print(f"Generando nueva versión de planificación: id_version={id_version}")
 
         horas_semanales_asignadas = {}
@@ -1194,7 +1222,7 @@ if __name__ == '__main__':
         }
 
     objetivo_horas_hc_por_mes = {
-        mes: round(X_HC[mes].varValue)
+        mes: round(X_HC[mes].varValue / indice_desviacion)
         for mes in meses_optimizacion
     }
 

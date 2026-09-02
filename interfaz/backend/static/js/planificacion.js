@@ -6,8 +6,16 @@ let datosPlanificacion = [];
 let tareas = [];
 let fechaInicioSemana = null;
 let trabajadores = [];
+let periodosPlanificacion = [];
 
 function obtenerRangoPlanificacionSeleccionado() {
+    if (periodosPlanificacion.length > 0) {
+        return {
+            inicio: new Date(periodosPlanificacion[0].fecha_inicio + "T00:00:00"),
+            fin: new Date(periodosPlanificacion[periodosPlanificacion.length - 1].fecha_fin + "T00:00:00")
+        };
+    }
+
     const periodo = obtenerPeriodoPrediccionSeleccionado();
 
     if (!periodo?.fecha_inicio || !periodo?.fecha_fin) {
@@ -25,6 +33,58 @@ function obtenerRangoPlanificacionSeleccionado() {
         inicio,
         fin
     };
+}
+
+function formatearPeriodoPlanificacion(periodo) {
+    return new Date(`${periodo}-01T00:00:00`).toLocaleDateString(
+        "es-ES",
+        { month: "long", year: "numeric" }
+    );
+}
+
+function mostrarPeriodosPlanificacion() {
+    const contenedor = document.getElementById("periodosPlanificacion");
+    if (!contenedor) return;
+
+    contenedor.innerHTML = "";
+    periodosPlanificacion.forEach(periodo => {
+        const elemento = document.createElement("div");
+        elemento.className = `planning-period ${periodo.planificada ? "planificada" : "solo-prediccion"}`;
+        elemento.innerHTML = `
+            <span>${formatearPeriodoPlanificacion(periodo.periodo)}</span>
+            <small>${periodo.planificada ? "Planificado" : "Predicho"}</small>
+            <button type="button" title="Eliminar periodo" aria-label="Eliminar periodo">
+                <i class="fa-solid fa-xmark"></i>
+            </button>`;
+        elemento.addEventListener("click", evento => {
+            if (evento.target.closest("button")) return;
+            fechaInicioSemana = obtenerInicioSemana(
+                new Date(`${periodo.periodo}-01T00:00:00`)
+            );
+            cargarPlanificacion();
+        });
+        elemento.querySelector("button").addEventListener("click", async () => {
+            const nombre = formatearPeriodoPlanificacion(periodo.periodo);
+            if (!confirm(`¿Eliminar la predicción y planificación de ${nombre}?`)) return;
+            const respuesta = await fetch(`/api/periodos/${periodo.periodo}`, { method: "DELETE" });
+            const datos = await respuesta.json();
+            if (!respuesta.ok) {
+                alert(datos.error || "No se ha podido eliminar el periodo.");
+                return;
+            }
+            await cargarPeriodosPlanificacion();
+            await cargarDatos();
+        });
+        contenedor.appendChild(elemento);
+    });
+}
+
+async function cargarPeriodosPlanificacion() {
+    const respuesta = await fetch("/api/periodos");
+    const datos = await respuesta.json();
+    if (!respuesta.ok) throw new Error(datos.error || "No se han podido cargar los periodos.");
+    periodosPlanificacion = datos;
+    mostrarPeriodosPlanificacion();
 }
 
 function obtenerInicioSemana(fecha) {
@@ -624,20 +684,7 @@ async function cargarDatos() {
 
     try {
 
-        const periodoSeleccionado = obtenerPeriodoPrediccionSeleccionado();
-        const params = new URLSearchParams();
-
-        if (periodoSeleccionado?.fecha_inicio) {
-            params.append("fecha_inicio", periodoSeleccionado.fecha_inicio);
-        }
-
-        if (periodoSeleccionado?.fecha_fin) {
-            params.append("fecha_fin", periodoSeleccionado.fecha_fin);
-        }
-
-        const urlPlanificacion = params.toString()
-            ? `/api/planificacion?${params.toString()}`
-            : "/api/planificacion";
+        const urlPlanificacion = "/api/planificacion";
 
         const [
             respuestaPlanificacion,
@@ -775,7 +822,9 @@ document.addEventListener(
             );
 
 
-        cargarDatos();
+        cargarPeriodosPlanificacion()
+            .then(cargarDatos)
+            .catch(error => console.error("Error cargando periodos:", error));
 
     }
 );
@@ -946,7 +995,8 @@ document
             );
 
             // Volver a cargar los datos de la interfaz
-            cargarDatos();
+            await cargarPeriodosPlanificacion();
+            await cargarDatos();
 
         } catch (error) {
 

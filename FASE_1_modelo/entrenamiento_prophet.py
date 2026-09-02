@@ -427,7 +427,17 @@ trimestre = trimestre[[
 
 try:
     with engine.begin() as conn:
-        conn.execute(text("DELETE FROM prediccion"))
+        conn.execute(
+            text("""
+                DELETE FROM prediccion
+                WHERE id_centro = 1
+                  AND fecha BETWEEN :fecha_inicio AND :fecha_fin
+            """),
+            {
+                "fecha_inicio": fecha_inicio_prediccion.date(),
+                "fecha_fin": fecha_fin_prediccion.date(),
+            }
+        )
         trimestre.to_sql(
             name="prediccion",
             con=conn,

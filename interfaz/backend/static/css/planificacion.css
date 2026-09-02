@@ -23,6 +23,50 @@
    NAVEGACIÓN DE SEMANA
 ========================= */
 
+.planning-periods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 0 18px;
+}
+
+.planning-period {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 10px 8px 13px;
+    border: 1px solid #cfe5d8;
+    border-left: 4px solid #087f3f;
+    border-radius: 8px;
+    background: #f5fbf7;
+    color: #173b2a;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.planning-period.solo-prediccion { border-left-color: #d6a62b; }
+
+.planning-period small {
+    color: #68717d;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.planning-period button {
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #68717d;
+    cursor: pointer;
+}
+
+.planning-period button:hover {
+    background: #e8dede;
+    color: #a33b3b;
+}
+
 .week-selector {
     display: flex;
     align-items: center;

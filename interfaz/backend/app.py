@@ -2730,6 +2730,69 @@ def api_prediccion():
         }), 500
 
 
+@app.route("/api/periodos")
+def api_periodos():
+    try:
+        predicciones = pd.read_sql(text("""
+            SELECT DATE_FORMAT(fecha, '%Y-%m') AS periodo,
+                   MIN(fecha) AS fecha_inicio, MAX(fecha) AS fecha_fin,
+                   MAX(fecha_generacion) AS fecha_generacion
+            FROM prediccion
+            WHERE id_centro = 1
+            GROUP BY DATE_FORMAT(fecha, '%Y-%m')
+            ORDER BY periodo
+        """), engine).to_dict(orient="records")
+
+        with engine.begin() as conn:
+            planificados = conn.execute(text("""
+                SELECT DISTINCT DATE_FORMAT(fecha, '%Y-%m') AS periodo
+                FROM calendarizacion
+                WHERE id_version = (
+                    SELECT id_version FROM planificacion_version
+                    WHERE activa = 1 ORDER BY id_version DESC LIMIT 1
+                )
+            """)).scalars().all()
+
+        planificados = set(planificados)
+        for periodo in predicciones:
+            periodo["planificada"] = periodo["periodo"] in planificados
+            for clave in ("fecha_inicio", "fecha_fin"):
+                if periodo[clave] is not None:
+                    periodo[clave] = periodo[clave].strftime("%Y-%m-%d")
+            if periodo["fecha_generacion"] is not None:
+                periodo["fecha_generacion"] = periodo["fecha_generacion"].strftime("%Y-%m-%d %H:%M:%S")
+
+        return jsonify(predicciones)
+    except Exception as e:
+        print("ERROR PERIODOS:", e)
+        return jsonify({"error": "No se han podido cargar los periodos."}), 500
+
+
+@app.route("/api/periodos/<periodo>", methods=["DELETE"])
+def eliminar_periodo(periodo):
+    try:
+        inicio = pd.to_datetime(f"{periodo}-01").date()
+        fin = (pd.Timestamp(inicio) + pd.offsets.MonthEnd(1)).date()
+    except Exception:
+        return jsonify({"error": "El periodo no tiene un formato válido."}), 400
+
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("""
+                DELETE FROM prediccion
+                WHERE id_centro = 1 AND fecha BETWEEN :inicio AND :fin
+            """), {"inicio": inicio, "fin": fin})
+            conn.execute(text("""
+                DELETE FROM calendarizacion
+                                WHERE fecha BETWEEN :inicio AND :fin
+            """), {"inicio": inicio, "fin": fin})
+
+        return jsonify({"ok": True, "mensaje": "Periodo eliminado correctamente."})
+    except Exception as e:
+        print("ERROR ELIMINANDO PERIODO:", e)
+        return jsonify({"error": "No se ha podido eliminar el periodo."}), 500
+
+
 # ---- Generar nueva predicción ----
 @app.route("/api/prediccion/generar", methods=["POST"])
 def generar_prediccion():
