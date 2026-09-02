@@ -2750,6 +2750,7 @@ def api_prediccion():
             FROM prediccion
             WHERE id_centro = 1
         """
+
         params = {}
 
         if fecha_inicio:
@@ -2762,123 +2763,220 @@ def api_prediccion():
 
         query += " ORDER BY fecha"
 
-        df = pd.read_sql(text(query), engine, params=params)
+        df = pd.read_sql(
+            text(query),
+            engine,
+            params=params
+        )
 
-        df = df.astype(object).where(pd.notna(df), None)
+        df = df.astype(object).where(
+            pd.notna(df),
+            None
+        )
 
-        datos = df.to_dict(orient="records")
+        datos = df.to_dict(
+            orient="records"
+        )
 
         for fila in datos:
+
             if fila.get("fecha") is not None:
-                fila["fecha"] = fila["fecha"].strftime("%Y-%m-%d")
+                fila["fecha"] = fila["fecha"].strftime(
+                    "%Y-%m-%d"
+                )
 
             if fila.get("fecha_generacion") is not None:
-                fila["fecha_generacion"] = fila["fecha_generacion"].strftime("%Y-%m-%d %H:%M:%S")
+                fila["fecha_generacion"] = fila[
+                    "fecha_generacion"
+                ].strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
 
         return jsonify(datos)
 
     except Exception as e:
+
         print("ERROR PREDICCIÓN:", e)
+
         return jsonify({
             "error": "No se han podido cargar las predicciones."
         }), 500
 
 
+# ---- Obtener periodos disponibles ----
 @app.route("/api/periodos")
 def api_periodos():
     try:
-        predicciones = pd.read_sql(text("""
-            SELECT DATE_FORMAT(fecha, '%Y-%m') AS periodo,
-                   MIN(fecha) AS fecha_inicio, MAX(fecha) AS fecha_fin,
-                   MAX(fecha_generacion) AS fecha_generacion
-            FROM prediccion
-            WHERE id_centro = 1
-            GROUP BY DATE_FORMAT(fecha, '%Y-%m')
-            ORDER BY periodo
-        """), engine).to_dict(orient="records")
+
+        predicciones = pd.read_sql(
+            text("""
+                SELECT
+                    DATE_FORMAT(fecha, '%Y-%m') AS periodo,
+                    MIN(fecha) AS fecha_inicio,
+                    MAX(fecha) AS fecha_fin,
+                    MAX(fecha_generacion) AS fecha_generacion
+                FROM prediccion
+                WHERE id_centro = 1
+                GROUP BY DATE_FORMAT(fecha, '%Y-%m')
+                ORDER BY periodo
+            """),
+            engine
+        ).to_dict(orient="records")
 
         with engine.begin() as conn:
-            planificados = conn.execute(text("""
-                SELECT DISTINCT DATE_FORMAT(fecha, '%Y-%m') AS periodo
-                FROM calendarizacion
-                WHERE id_version = (
-                    SELECT id_version FROM planificacion_version
-                    WHERE activa = 1 ORDER BY id_version DESC LIMIT 1
-                )
-            """)).scalars().all()
+
+            planificados = conn.execute(
+                text("""
+                    SELECT DISTINCT
+                        DATE_FORMAT(fecha, '%Y-%m') AS periodo
+                    FROM calendarizacion
+                    WHERE id_version = (
+                        SELECT id_version
+                        FROM planificacion_version
+                        WHERE activa = 1
+                        ORDER BY id_version DESC
+                        LIMIT 1
+                    )
+                """)
+            ).scalars().all()
 
         planificados = set(planificados)
+
         for periodo in predicciones:
-            periodo["planificada"] = periodo["periodo"] in planificados
-            for clave in ("fecha_inicio", "fecha_fin"):
+
+            periodo["planificada"] = (
+                periodo["periodo"] in planificados
+            )
+
+            for clave in (
+                "fecha_inicio",
+                "fecha_fin"
+            ):
+
                 if periodo[clave] is not None:
-                    periodo[clave] = periodo[clave].strftime("%Y-%m-%d")
+                    periodo[clave] = periodo[
+                        clave
+                    ].strftime("%Y-%m-%d")
+
             if periodo["fecha_generacion"] is not None:
-                periodo["fecha_generacion"] = periodo["fecha_generacion"].strftime("%Y-%m-%d %H:%M:%S")
+
+                periodo["fecha_generacion"] = periodo[
+                    "fecha_generacion"
+                ].strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
 
         return jsonify(predicciones)
     except Exception as e:
         print("ERROR PERIODOS:", e)
-        return jsonify({"error": "No se han podido cargar los periodos."}), 500
+        return jsonify({
+            "error": "No se han podido cargar los periodos."
+        }), 500
 
 
+# ---- Eliminar periodo ----
 @app.route("/api/periodos/<periodo>", methods=["DELETE"])
 def eliminar_periodo(periodo):
     try:
-        inicio = pd.to_datetime(f"{periodo}-01").date()
-        fin = (pd.Timestamp(inicio) + pd.offsets.MonthEnd(1)).date()
+        inicio = pd.to_datetime(
+            f"{periodo}-01"
+        ).date()
+
+        fin = (
+            pd.Timestamp(inicio)
+            + pd.offsets.MonthEnd(1)
+        ).date()
+
     except Exception:
-        return jsonify({"error": "El periodo no tiene un formato válido."}), 400
+        return jsonify({
+            "error": "El periodo no tiene un formato válido."
+        }), 400
 
     try:
         with engine.begin() as conn:
-            conn.execute(text("""
-                DELETE FROM prediccion
-                WHERE id_centro = 1 AND fecha BETWEEN :inicio AND :fin
-            """), {"inicio": inicio, "fin": fin})
-            conn.execute(text("""
-                DELETE FROM calendarizacion
-                                WHERE fecha BETWEEN :inicio AND :fin
-            """), {"inicio": inicio, "fin": fin})
+            conn.execute(
+                text("""
+                    DELETE FROM prediccion
+                    WHERE id_centro = 1
+                    AND fecha BETWEEN :inicio AND :fin
+                """),
+                {
+                    "inicio": inicio,
+                    "fin": fin
+                }
+            )
+            conn.execute(
+                text("""
+                    DELETE FROM calendarizacion
+                    WHERE fecha BETWEEN :inicio AND :fin
+                """),
+                {
+                    "inicio": inicio,
+                    "fin": fin
+                }
+            )
 
-        return jsonify({"ok": True, "mensaje": "Periodo eliminado correctamente."})
+        return jsonify({
+            "ok": True,
+            "mensaje": "Periodo eliminado correctamente."
+        })
     except Exception as e:
-        print("ERROR ELIMINANDO PERIODO:", e)
-        return jsonify({"error": "No se ha podido eliminar el periodo."}), 500
+        print(
+            "ERROR ELIMINANDO PERIODO:",
+            e
+        )
+        return jsonify({
+            "error": "No se ha podido eliminar el periodo."
+        }), 500
 
 
-# ---- Generar nueva predicción ----
+# ============================================================
+# GENERAR PREDICCIÓN
+# ============================================================
+
 @app.route("/api/prediccion/generar", methods=["POST"])
 def generar_prediccion():
+
     try:
+
         import subprocess
         import sys
         import os
 
-        # ====================================================
-        # RECIBIR FECHAS DESDE LA INTERFAZ
-        # ====================================================
+        # ----------------------------------------------------
+        # RECIBIR DATOS DE LA INTERFAZ
+        # ----------------------------------------------------
 
         datos = request.get_json()
-
         if not datos:
+
             return jsonify({
-                "error": "No se han recibido las fechas."
+                "error": "No se han recibido los datos."
             }), 400
 
-        fecha_inicio = datos.get("fecha_inicio")
-        fecha_fin = datos.get("fecha_fin")
+        fecha_inicio = datos.get(
+            "fecha_inicio"
+        )
+
+        fecha_fin = datos.get(
+            "fecha_fin"
+        )
 
         if not fecha_inicio or not fecha_fin:
+
             return jsonify({
-                "error": "Debes seleccionar una fecha de inicio y una fecha de fin."
+                "error":
+                    "Debes seleccionar un trimestre y un año."
             }), 400
 
-        # Comprobar que el periodo es válido
+        # ----------------------------------------------------
+        # COMPROBAR FORMATO DE FECHAS
+        # ----------------------------------------------------
 
         from datetime import datetime
 
         try:
+
             inicio = datetime.strptime(
                 fecha_inicio,
                 "%Y-%m-%d"
@@ -2890,21 +2988,58 @@ def generar_prediccion():
             ).date()
 
         except ValueError:
+
             return jsonify({
-                "error": "El formato de las fechas no es válido."
+                "error":
+                    "El formato de las fechas no es válido."
             }), 400
+
+        # ----------------------------------------------------
+        # COMPROBAR QUE ES UN TRIMESTRE COMPLETO
+        # ----------------------------------------------------
+
+        trimestres_validos = {
+            (1, 1, 3, 31),
+            (4, 1, 6, 30),
+            (7, 1, 9, 30),
+            (10, 1, 12, 31)
+
+        }
+
+        trimestre_valido = False
+
+        for mes_inicio, dia_inicio, mes_fin, dia_fin in trimestres_validos:
+
+            if (
+                inicio.month == mes_inicio
+                and inicio.day == dia_inicio
+                and fin.month == mes_fin
+                and fin.day == dia_fin
+                and inicio.year == fin.year
+            ):
+
+                trimestre_valido = True
+                break
+
+        if not trimestre_valido:
+            return jsonify({
+                "error":
+                    "El periodo seleccionado debe corresponder a un trimestre completo."
+            }), 400
+
+        # ----------------------------------------------------
+        # COMPROBAR ORDEN
+        # ----------------------------------------------------
 
         if inicio > fin:
             return jsonify({
-                "error": "La fecha de inicio no puede ser posterior a la fecha de fin."
+                "error":
+                    "La fecha de inicio no puede ser posterior a la fecha de fin."
             }), 400
 
-        
-
-
-        # ====================================================
-        # EJECUTAR MODELO
-        # ====================================================
+        # ----------------------------------------------------
+        # EJECUTAR MODELO PROPHET
+        # ----------------------------------------------------
 
         script = os.path.join(
             os.path.dirname(__file__),
@@ -2927,43 +3062,64 @@ def generar_prediccion():
             text=True
         )
 
-
-        # ====================================================
+        # ----------------------------------------------------
         # COMPROBAR RESULTADO
-        # ====================================================
+        # ----------------------------------------------------
 
         if resultado.returncode != 0:
 
-            print("ERROR ENTRENAMIENTO:")
-            print(resultado.stderr)
+            print(
+                "ERROR ENTRENAMIENTO:"
+            )
+
+            print(
+                resultado.stderr
+            )
 
             return jsonify({
-                "error": "No se ha podido generar la predicción.",
-                "detalle": resultado.stderr
+                "error":
+                    "No se ha podido generar la predicción.",
+                "detalle":
+                    resultado.stderr
             }), 500
 
+        # ----------------------------------------------------
+        # MOSTRAR RESULTADO EN LOGS
+        # ----------------------------------------------------
 
-        print("PREDICCIÓN GENERADA:")
-        print(resultado.stdout)
+        print(
+            "PREDICCIÓN GENERADA:"
+        )
+        print(
+            resultado.stdout
+        )
 
+        # ----------------------------------------------------
+        # RESPUESTA
+        # ----------------------------------------------------
 
         return jsonify({
             "ok": True,
-            "mensaje": "Predicción generada correctamente.",
-            "fecha_inicio": fecha_inicio,
-            "fecha_fin": fecha_fin
-        })
+            "mensaje":
+                "Predicción generada correctamente.",
 
+            "fecha_inicio":
+                fecha_inicio,
+
+            "fecha_fin":
+                fecha_fin
+        })
 
     except Exception as e:
 
-        print("ERROR:", e)
+        print(
+            "ERROR:",
+            e
+        )
 
         return jsonify({
             "error": str(e)
         }), 500
-
-
     
 # ============================================================
 # PLANIFICACIÓN

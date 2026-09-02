@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EMPLEA | Predicción</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo2.png') }}">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -74,40 +75,62 @@
 
 <div class="prediccion-configuracion">
 
-    <div class="configuracion-superior">
+    <div class="periodo-prediccion">
 
-        <div class="fecha-prediccion">
-            <label for="añoPrediccion">Año</label>
-            <select id="añoPrediccion"></select>
+        <label>
+            Periodo de predicción
+        </label>
+
+        <div class="trimestres">
+
+            <button type="button" class="btn-trimestre" data-trimestre="1">
+                <strong>1.º Trimestre</strong>
+                <span>Enero - Marzo</span>
+            </button>
+
+            <button type="button" class="btn-trimestre" data-trimestre="2">
+                <strong>2.º Trimestre</strong>
+                <span>Abril - Junio</span>
+            </button>
+
+            <button type="button" class="btn-trimestre" data-trimestre="3">
+                <strong>3.º Trimestre</strong>
+                <span>Julio - Septiembre</span>
+            </button>
+
+            <button type="button" class="btn-trimestre" data-trimestre="4">
+                <strong>4.º Trimestre</strong>
+                <span>Octubre - Diciembre</span>
+            </button>
+
         </div>
 
-        <button id="generarPrediccion" class="primary-button">
-            <i class="fa-solid fa-chart-line"></i>
-            Generar predicción
-        </button>
+        <p id="periodoSeleccionado"></p>
 
     </div>
 
-    <div class="meses-prediccion">
 
-        <label>Selecciona el mes</label>
+    <div class="generar-prediccion">
 
-        <div class="botones-meses">
-            <button type="button" class="btn-mes" data-mes="1">Enero</button>
-            <button type="button" class="btn-mes" data-mes="2">Febrero</button>
-            <button type="button" class="btn-mes" data-mes="3">Marzo</button>
-            <button type="button" class="btn-mes" data-mes="4">Abril</button>
-            <button type="button" class="btn-mes" data-mes="5">Mayo</button>
-            <button type="button" class="btn-mes" data-mes="6">Junio</button>
-            <button type="button" class="btn-mes" data-mes="7">Julio</button>
-            <button type="button" class="btn-mes" data-mes="8">Agosto</button>
-            <button type="button" class="btn-mes" data-mes="9">Septiembre</button>
-            <button type="button" class="btn-mes" data-mes="10">Octubre</button>
-            <button type="button" class="btn-mes" data-mes="11">Noviembre</button>
-            <button type="button" class="btn-mes" data-mes="12">Diciembre</button>
+        <div class="año-prediccion">
+
+            <label for="añoPrediccion">
+                Año
+            </label>
+
+            <select id="añoPrediccion">
+            </select>
+
         </div>
 
-        <div id="periodoSeleccionado"></div>
+        <button
+            type="button"
+            id="generarPrediccion"
+            class="primary-button"
+        >
+            <i class="fa-solid fa-chart-line"></i>
+            Generar predicción
+        </button>
 
     </div>
 
