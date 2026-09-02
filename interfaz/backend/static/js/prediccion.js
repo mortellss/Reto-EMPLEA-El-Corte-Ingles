@@ -115,6 +115,8 @@ selectorAño.addEventListener("change", () => {
         selector.addEventListener("change",mostrarGraficos);
     }
 
+    document.addEventListener("tema-cambiado", mostrarGraficos);
+
     cargarPrediccion();
 
     async function cargarPrediccion(){
@@ -401,6 +403,10 @@ selectorAño.addEventListener("change", () => {
             p=>Number(p.horas_necesarias)||0
         );
 
+        const colorTextoGrafico = document.documentElement.classList.contains("dark-mode")
+            ? "#e5e7eb"
+            : "#666666";
+
         if(graficoPrediccion){
             graficoPrediccion.destroy();
         }
@@ -464,7 +470,8 @@ selectorAño.addEventListener("change", () => {
 
                         plugins:{
                             legend:{
-                                position:"top"
+                                position:"top",
+                                labels:{ color:colorTextoGrafico }
                             }
                         },
 
@@ -473,13 +480,16 @@ selectorAño.addEventListener("change", () => {
                                 beginAtZero:false,
                                 title:{
                                     display:true,
-                                    text:"Pedidos"
-                                }
+                                    text:"Pedidos",
+                                    color:colorTextoGrafico
+                                },
+                                ticks:{ color:colorTextoGrafico }
                             },
 
                             x:{
                                 ticks:{
-                                    maxTicksLimit:10
+                                    maxTicksLimit:10,
+                                    color:colorTextoGrafico
                                 }
                             }
                         }
@@ -522,7 +532,8 @@ selectorAño.addEventListener("change", () => {
 
                         plugins:{
                             legend:{
-                                display:false
+                                display:false,
+                                labels:{ color:colorTextoGrafico }
                             }
                         },
 
@@ -531,13 +542,16 @@ selectorAño.addEventListener("change", () => {
                                 beginAtZero:true,
                                 title:{
                                     display:true,
-                                    text:"Horas"
-                                }
+                                    text:"Horas",
+                                    color:colorTextoGrafico
+                                },
+                                ticks:{ color:colorTextoGrafico }
                             },
 
                             x:{
                                 ticks:{
-                                    maxTicksLimit:10
+                                    maxTicksLimit:10,
+                                    color:colorTextoGrafico
                                 }
                             }
                         }

@@ -1,0 +1,268 @@
+html.dark-mode {
+    --color-background: #111827;
+    --color-surface: #1f2937;
+    --color-text: #e5e7eb;
+    --color-text-light: #aab4c3;
+    --color-border: #374151;
+}
+
+html.dark-mode body {
+    background: var(--color-background);
+    color: var(--color-text);
+}
+
+html.dark-mode .topbar,
+html.dark-mode .card,
+html.dark-mode .prediccion-card,
+html.dark-mode .grafico-card,
+html.dark-mode .config-panel,
+html.dark-mode .table-container,
+html.dark-mode .prediccion-table-container,
+html.dark-mode .modal-content,
+html.dark-mode .calendar-container,
+html.dark-mode .worker-card,
+html.dark-mode .planning-period,
+html.dark-mode .resumen-card {
+    background: var(--color-surface) !important;
+    color: var(--color-text);
+    border-color: var(--color-border) !important;
+}
+
+html.dark-mode input,
+html.dark-mode select,
+html.dark-mode textarea,
+html.dark-mode table,
+html.dark-mode th,
+html.dark-mode td {
+    background-color: #273449;
+    color: var(--color-text);
+    border-color: var(--color-border) !important;
+}
+
+html.dark-mode p,
+html.dark-mode label,
+html.dark-mode .user button,
+html.dark-mode .text-muted,
+html.dark-mode .user-info span {
+    color: var(--color-text-light);
+}
+
+.tema-boton {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.tema-boton:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+html.dark-mode .tema-boton {
+    color: #facc15;
+}
+
+/* Correcciones de contraste del tema oscuro */
+html.dark-mode .search-box,
+html.dark-mode .search-box input,
+html.dark-mode .form-field,
+html.dark-mode .month,
+html.dark-mode .prediccion-card,
+html.dark-mode .prediccion-periodo {
+    background: #f8fafc !important;
+    color: #1f2937 !important;
+}
+
+html.dark-mode .search-box input,
+html.dark-mode .search-box input::placeholder {
+    color: #334155 !important;
+    opacity: 1;
+}
+
+html.dark-mode .search-box i,
+html.dark-mode .actions button,
+html.dark-mode .calendar-btn,
+html.dark-mode .trabajador-item i,
+html.dark-mode .competencias-btn,
+html.dark-mode .planning-period button {
+    color: #087f3f !important;
+}
+
+html.dark-mode .calendar-btn {
+    background: #ffffff !important;
+}
+
+html.dark-mode .prediccion-card span,
+html.dark-mode .prediccion-card strong,
+html.dark-mode .prediccion-periodo span,
+html.dark-mode .prediccion-periodo strong,
+html.dark-mode .prediccion-section .section-header h2,
+html.dark-mode .prediccion-section .section-header p,
+html.dark-mode .grafico-header h3,
+html.dark-mode .grafico-header p {
+    color: #1f2937 !important;
+}
+
+html.dark-mode .prediccion-card-icon {
+    background: #e3f3e9 !important;
+    color: #087f3f !important;
+}
+
+html.dark-mode .planning-legend,
+html.dark-mode .legend,
+html.dark-mode .legend-item,
+html.dark-mode .planning-header,
+html.dark-mode .week-info,
+html.dark-mode .week-info * {
+    color: #f1f5f9 !important;
+}
+
+html.dark-mode .month h3,
+html.dark-mode .weekdays span {
+    color: #1f2937 !important;
+}
+
+html.dark-mode .day.open,
+html.dark-mode .day.closed,
+html.dark-mode .day.holiday-open,
+html.dark-mode .day.modified {
+    background: #ffffff !important;
+}
+
+html.dark-mode .summary-card,
+html.dark-mode .current-config-item {
+    color: #1f2937 !important;
+}
+
+html.dark-mode .summary-card strong,
+html.dark-mode .summary-card p,
+html.dark-mode .current-config-item strong,
+html.dark-mode .current-config-item span,
+html.dark-mode .field-header,
+html.dark-mode .section-header h2,
+html.dark-mode .section-divider,
+html.dark-mode .config-panel h2,
+html.dark-mode .config-panel h3 {
+    color: #1f2937 !important;
+}
+
+/* Los modales conservan siempre su apariencia clara. */
+html.dark-mode .modal,
+html.dark-mode .modal-content,
+html.dark-mode .modal-header,
+html.dark-mode .modal-body,
+html.dark-mode .modal-footer,
+html.dark-mode .tarea-modal,
+html.dark-mode .pedido-modal,
+html.dark-mode .promocion-modal,
+html.dark-mode .instrucciones-pedidos-modal,
+html.dark-mode .instrucciones-promociones-modal {
+    background: #ffffff !important;
+    color: #1f2937 !important;
+}
+
+html.dark-mode .modal h1,
+html.dark-mode .modal h2,
+html.dark-mode .modal h3,
+html.dark-mode .modal h4,
+html.dark-mode .modal label,
+html.dark-mode .modal span,
+html.dark-mode .modal p,
+html.dark-mode .modal strong,
+html.dark-mode .modal .field-header,
+html.dark-mode .modal .trabajador-item span,
+html.dark-mode .modal .competencia-item span {
+    color: #1f2937 !important;
+}
+
+html.dark-mode .modal input,
+html.dark-mode .modal select,
+html.dark-mode .modal textarea {
+    background: #ffffff !important;
+    color: #1f2937 !important;
+}
+
+html.dark-mode .modal .competencia-item i,
+html.dark-mode .modal .trabajador-item i {
+    color: #087f3f !important;
+}
+
+html.dark-mode .quick-actions .section-header h2,
+html.dark-mode .planning-header h2,
+html.dark-mode .planning-section-header h2,
+html.dark-mode #semanaActual,
+html.dark-mode .grafico-header h3,
+html.dark-mode .grafico-header p {
+    color: #f1f5f9 !important;
+}
+
+html.dark-mode .week-navigation {
+    background: var(--color-surface) !important;
+    border-color: var(--color-border) !important;
+}
+
+html.dark-mode .fd-btn,
+html.dark-mode .workers-contrato-btn,
+html.dark-mode .trabajadores-btn,
+html.dark-mode .periodos-disponibilidad-btn,
+html.dark-mode .table-action.edit {
+    color: #86efac !important;
+}
+
+html.dark-mode .fd-btn:hover,
+html.dark-mode .workers-contrato-btn:hover,
+html.dark-mode .trabajadores-btn:hover,
+html.dark-mode .periodos-disponibilidad-btn:hover,
+html.dark-mode .table-action.edit:hover {
+    color: #bbf7d0 !important;
+}
+
+html.dark-mode .config-panel > .section-header h2,
+html.dark-mode .config-panel .section-header h2,
+html.dark-mode .config-panel .section-divider,
+html.dark-mode .config-panel .field-header {
+    color: #f1f5f9 !important;
+}
+
+html.dark-mode .config-panel .form-field .field-header > span:first-child {
+    color: #1f2937 !important;
+}
+
+html.dark-mode .config-panel .secondary-button,
+html.dark-mode #resetConfig {
+    background: #334155 !important;
+    color: #f1f5f9 !important;
+    border: 1px solid #64748b;
+}
+
+html.dark-mode .config-panel .secondary-button:hover,
+html.dark-mode #resetConfig:hover {
+    background: #475569 !important;
+}
+
+html.dark-mode .periodo-prediccion > label,
+html.dark-mode .año-prediccion label,
+html.dark-mode #añoPrediccion {
+    color: #1f2937 !important;
+}
+
+html.dark-mode #promociones > .section-header h2 {
+    color: #f1f5f9 !important;
+}
+
+html.dark-mode .competencias-btn {
+    background: #dff4e7 !important;
+    color: #14532d !important;
+}
+
+html.dark-mode .competencias-btn i {
+    color: #15803d !important;
+}
+
+html.dark-mode .competencias-btn:hover {
+    background: #c5ebd2 !important;
+    color: #14532d !important;
+}
