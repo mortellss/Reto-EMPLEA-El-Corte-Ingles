@@ -46,6 +46,11 @@
 
 .planning-period.solo-prediccion { border-left-color: #d6a62b; }
 
+.planning-period.seleccionado {
+    outline: 2px solid #087f3f;
+    outline-offset: 2px;
+}
+
 .planning-period small {
     color: #68717d;
     font-size: 11px;

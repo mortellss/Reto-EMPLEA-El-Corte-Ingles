@@ -7,6 +7,7 @@ let tareas = [];
 let fechaInicioSemana = null;
 let trabajadores = [];
 let periodosPlanificacion = [];
+let periodoPlanificacionSeleccionado = null;
 
 function obtenerRangoPlanificacionSeleccionado() {
     if (periodosPlanificacion.length > 0) {
@@ -49,7 +50,8 @@ function mostrarPeriodosPlanificacion() {
     contenedor.innerHTML = "";
     periodosPlanificacion.forEach(periodo => {
         const elemento = document.createElement("div");
-        elemento.className = `planning-period ${periodo.planificada ? "planificada" : "solo-prediccion"}`;
+        const seleccionado = periodoPlanificacionSeleccionado?.periodo === periodo.periodo;
+        elemento.className = `planning-period ${periodo.planificada ? "planificada" : "solo-prediccion"}${seleccionado ? " seleccionado" : ""}`;
         elemento.innerHTML = `
             <span>${formatearPeriodoPlanificacion(periodo.periodo)}</span>
             <small>${periodo.planificada ? "Planificado" : "Predicho"}</small>
@@ -58,9 +60,11 @@ function mostrarPeriodosPlanificacion() {
             </button>`;
         elemento.addEventListener("click", evento => {
             if (evento.target.closest("button")) return;
+            periodoPlanificacionSeleccionado = periodo;
             fechaInicioSemana = obtenerInicioSemana(
                 new Date(`${periodo.periodo}-01T00:00:00`)
             );
+            mostrarPeriodosPlanificacion();
             cargarPlanificacion();
         });
         elemento.querySelector("button").addEventListener("click", async () => {
@@ -84,6 +88,9 @@ async function cargarPeriodosPlanificacion() {
     const datos = await respuesta.json();
     if (!respuesta.ok) throw new Error(datos.error || "No se han podido cargar los periodos.");
     periodosPlanificacion = datos;
+    if (!periodosPlanificacion.some(periodo => periodo.periodo === periodoPlanificacionSeleccionado?.periodo)) {
+        periodoPlanificacionSeleccionado = periodosPlanificacion[0] || null;
+    }
     mostrarPeriodosPlanificacion();
 }
 
@@ -953,7 +960,7 @@ document
 
         try {
 
-            const periodoSeleccionado = obtenerPeriodoPrediccionSeleccionado();
+            const periodoSeleccionado = periodoPlanificacionSeleccionado || obtenerPeriodoPrediccionSeleccionado();
             const fechaInicio = periodoSeleccionado?.fecha_inicio || document.getElementById("fechaInicio")?.value || null;
             const fechaFin = periodoSeleccionado?.fecha_fin || document.getElementById("fechaFin")?.value || null;
 
