@@ -232,6 +232,11 @@ document.addEventListener("DOMContentLoaded",()=>{
                             onclick="editarPedido(${p.id_pedido_historico})">
                             <i class="fa-solid fa-pen"></i>
                         </button>
+                        <button
+                            class="delete-button"
+                            onclick="eliminarPedido(${p.id_pedido_historico})">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </td>
                 </tr>
             `;
@@ -397,6 +402,36 @@ document.addEventListener("DOMContentLoaded",()=>{
             alert(
                 error.message||
                 "No se ha podido cargar el día."
+            );
+        }
+    }
+
+    async function eliminarPedido(id){
+        if(!confirm("¿Seguro que quieres eliminar este día?")){
+            return;
+        }
+
+        try{
+            const respuesta=await fetch(`/api/pedidos_historicos/${id}`,{
+                method:"DELETE"
+            });
+
+            const resultado=await respuesta.json();
+
+            if(!respuesta.ok){
+                throw new Error(
+                    resultado.error||
+                    "No se ha podido eliminar el día."
+                );
+            }
+
+            location.reload();
+
+        }catch(error){
+            console.error(error);
+            alert(
+                error.message||
+                "No se ha podido eliminar el día."
             );
         }
     }
@@ -783,6 +818,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     }
 
     window.editarPedido=editarPedido;
+    window.eliminarPedido=eliminarPedido;
 });
 
 
