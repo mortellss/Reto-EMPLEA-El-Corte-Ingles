@@ -878,7 +878,8 @@ document
                 );
             }
 
-            alert(datos.mensaje);
+            await cargarDatos();
+            alert(`${datos.mensaje}\nLa vista se ha actualizado con la planificación revertida.`);
         } catch (error) {
             console.error("Error eliminando cambios forzados:", error);
             alert(error.message || "No se han podido eliminar los cambios forzados.");

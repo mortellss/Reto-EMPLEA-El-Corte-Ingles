@@ -3902,13 +3902,36 @@ def api_calendarios_trabajadores():
 def eliminar_cambios_forzados():
     try:
         with engine.begin() as conn:
-            resultado = conn.execute(
-                text("DELETE FROM cambios_planificacion")
-            )
+            cambios = conn.execute(text("""
+                SELECT id_cambio, id_version, fecha, id_tarea,
+                       trabajador_anterior, trabajador_nuevo, turno
+                FROM cambios_planificacion
+                ORDER BY id_cambio DESC
+            """)).mappings().all()
+
+            restaurados = 0
+            for cambio in cambios:
+                resultado = conn.execute(text("""
+                    UPDATE calendarizacion
+                    SET id_trabajador = :trabajador_anterior
+                    WHERE fecha = :fecha
+                      AND id_tarea = :id_tarea
+                      AND id_trabajador = :trabajador_nuevo
+                      AND turno = :turno
+                      AND id_version = :id_version
+                """), cambio)
+                restaurados += resultado.rowcount
+
+            resultado = conn.execute(text("DELETE FROM cambios_planificacion"))
 
         return jsonify({
             "ok": True,
-            "mensaje": f"Se han eliminado {resultado.rowcount} cambios forzados."
+            "mensaje": (
+                f"Se han revertido {restaurados} asignaciones y "
+                f"se han eliminado {resultado.rowcount} cambios forzados."
+            ),
+            "restaurados": restaurados,
+            "eliminados": resultado.rowcount
         })
 
     except Exception as e:
