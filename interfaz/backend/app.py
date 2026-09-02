@@ -2777,6 +2777,18 @@ def generar_prediccion():
                 "error": "El formato de las fechas no es válido."
             }), 400
 
+        periodos_permitidos = {
+            ("2026-07-01", "2026-09-30"),
+            ("2026-10-01", "2026-12-31"),
+            ("2027-01-01", "2027-03-31"),
+            ("2027-04-01", "2027-06-30")
+        }
+
+        if (fecha_inicio, fecha_fin) not in periodos_permitidos:
+            return jsonify({
+                "error": "Solo se pueden generar predicciones para uno de los cuatro trimestres disponibles."
+            }), 400
+
         if inicio > fin:
             return jsonify({
                 "error": "La fecha de inicio no puede ser posterior a la fecha de fin."

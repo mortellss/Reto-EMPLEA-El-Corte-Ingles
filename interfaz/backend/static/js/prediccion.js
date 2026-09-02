@@ -3,7 +3,22 @@ document.addEventListener("DOMContentLoaded",()=>{
     let graficoPrediccion=null;
     let graficoHoras=null;
 
+
+    const botonesPeriodo=[...document.querySelectorAll(".periodo-prediccion")];
+    let periodoSeleccionado=botonesPeriodo[0] || null;
+
+
     cargarPrediccion();
+
+
+
+    botonesPeriodo.forEach((boton) => {
+        boton.addEventListener("click", () => {
+            seleccionarPeriodo(boton);
+            cargarPrediccion();
+        });
+    });
+
 
     document.getElementById("generarPrediccion").addEventListener(
         "click",
@@ -15,6 +30,18 @@ document.addEventListener("DOMContentLoaded",()=>{
     if(selector){
         selector.addEventListener("change",mostrarGraficos);
     }
+
+
+    function seleccionarPeriodo(boton) {
+        periodoSeleccionado=boton;
+
+        botonesPeriodo.forEach((periodo) => {
+            const seleccionado=periodo === boton;
+            periodo.classList.toggle("seleccionado", seleccionado);
+            periodo.setAttribute("aria-pressed", String(seleccionado));
+        });
+    }
+
 
     function guardarPeriodoPrediccionSeleccionado(fechaInicio, fechaFin) {
         const periodo = {
@@ -41,8 +68,9 @@ document.addEventListener("DOMContentLoaded",()=>{
 
         try{
 
-            const fechaInicio=document.getElementById("fechaInicio")?.value || "";
-            const fechaFin=document.getElementById("fechaFin")?.value || "";
+
+            const fechaInicio=periodoSeleccionado?.dataset.inicio || "";
+            const fechaFin=periodoSeleccionado?.dataset.fin || "";
 
             if(fechaInicio && fechaFin){
                 guardarPeriodoPrediccionSeleccionado(fechaInicio, fechaFin);
@@ -99,23 +127,14 @@ document.addEventListener("DOMContentLoaded",()=>{
 
     async function generarPrediccion() {
 
-        const fechaInicio =
-            document.getElementById("fechaInicio").value;
+        const fechaInicio=periodoSeleccionado?.dataset.inicio || "";
+        const fechaFin=periodoSeleccionado?.dataset.fin || "";
 
-        const fechaFin =
-            document.getElementById("fechaFin").value;
-
-        // Comprobar que se han introducido las dos fechas
         if (!fechaInicio || !fechaFin) {
-            alert("Selecciona una fecha de inicio y una fecha de fin.");
+            alert("Selecciona uno de los cuatro periodos disponibles.");
             return;
         }
 
-        // Comprobar que el periodo es válido
-        if (fechaInicio > fechaFin) {
-            alert("La fecha de inicio no puede ser posterior a la fecha de fin.");
-            return;
-        }
         const boton =
             document.getElementById("generarPrediccion");
         try {

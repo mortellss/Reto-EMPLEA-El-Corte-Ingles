@@ -267,6 +267,47 @@
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
 }
 
+.periodos-prediccion {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(150px, 1fr));
+    gap: 10px;
+    flex: 1;
+}
+
+.periodo-prediccion {
+    min-height: 70px;
+    padding: 10px 14px;
+    border: 1px solid #d8dee8;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #24344d;
+    font-family: 'Poppins', sans-serif;
+    text-align: left;
+    cursor: pointer;
+}
+
+.periodo-prediccion span,
+.periodo-prediccion strong {
+    display: block;
+}
+
+.periodo-prediccion span {
+    margin-bottom: 4px;
+    color: #777;
+    font-size: 12px;
+}
+
+.periodo-prediccion strong {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.periodo-prediccion:hover,
+.periodo-prediccion.seleccionado {
+    border-color: #00843d;
+    background: #f1f8f4;
+}
+
 .fecha-prediccion {
     display: flex;
     flex-direction: column;
@@ -301,4 +342,25 @@
 .prediccion-configuracion .primary-button {
     height: 44px;
     margin-left: auto;
+}
+
+@media(max-width:1100px){
+    .periodos-prediccion {
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
+    }
+}
+
+@media(max-width:700px){
+    .prediccion-configuracion {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .periodos-prediccion {
+        grid-template-columns: 1fr;
+    }
+
+    .prediccion-configuracion .primary-button {
+        margin-left: 0;
+    }
 }

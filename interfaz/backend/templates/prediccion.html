@@ -73,28 +73,23 @@
 
 <div class="prediccion-configuracion">
 
-    <div class="fecha-prediccion">
-        <label for="fechaInicio">
-            Fecha de inicio
-        </label>
-
-        <input
-            type="date"
-            id="fechaInicio"
-            required
-        >
-    </div>
-
-    <div class="fecha-prediccion">
-        <label for="fechaFin">
-            Fecha de fin
-        </label>
-
-        <input
-            type="date"
-            id="fechaFin"
-            required
-        >
+    <div class="periodos-prediccion" role="group" aria-label="Periodos de predicción">
+        <button type="button" class="periodo-prediccion seleccionado" data-inicio="2026-07-01" data-fin="2026-09-30" aria-pressed="true">
+            <span>1.er trimestre</span>
+            <strong>Julio - Septiembre 2026</strong>
+        </button>
+        <button type="button" class="periodo-prediccion" data-inicio="2026-10-01" data-fin="2026-12-31" aria-pressed="false">
+            <span>2.º trimestre</span>
+            <strong>Octubre - Diciembre 2026</strong>
+        </button>
+        <button type="button" class="periodo-prediccion" data-inicio="2027-01-01" data-fin="2027-03-31" aria-pressed="false">
+            <span>3.er trimestre</span>
+            <strong>Enero - Marzo 2027</strong>
+        </button>
+        <button type="button" class="periodo-prediccion" data-inicio="2027-04-01" data-fin="2027-06-30" aria-pressed="false">
+            <span>4.º trimestre</span>
+            <strong>Abril - Junio 2027</strong>
+        </button>
     </div>
 
     <button
