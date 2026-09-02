@@ -32,6 +32,8 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='css/calendario_trabajador.css') }}"
     >
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tema.css') }}">
+    <script src="{{ url_for('static', filename='js/tema.js') }}"></script>
 </head>
 
 <body>
@@ -104,6 +106,11 @@
                     Consulta la planificación individual del trabajador.
                 </p>
 
+            </div>
+
+            <div class="user">
+                <div class="user-info"><span>Usuario</span></div>
+                <button type="button" class="tema-boton" aria-label="Activar modo oscuro"></button>
             </div>
 
         </header>
