@@ -340,7 +340,8 @@ document.getElementById("guardarTrabajador").addEventListener("click", async () 
 
     } else {
 
-        alert("Error al guardar el trabajador.");
+        const error = await respuesta.json().catch(() => ({}));
+        alert(error.error || "Error al guardar el trabajador.");
 
     }
 

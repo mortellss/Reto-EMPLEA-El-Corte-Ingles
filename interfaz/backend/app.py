@@ -916,34 +916,81 @@ def eliminar_trabajador():
 @app.route("/nuevo_trabajador",methods=["POST"])
 def nuevo_trabajador():
     datos=request.get_json()
+    datos["correo"] = datos.get("correo", "").strip() or None
     with engine.begin() as conn:
-        resultado=conn.execute(text("""
-            INSERT INTO trabajador(
-                numero_vendedor,
-                nombre,
-                apellidos,
-                correo,
-                activo,
-                id_contrato,
-                id_centro,
-                estado,
-                disponibilidad,
-                fijo_discontinuo
-            )
-            VALUES(
-                :numero_vendedor,
-                :nombre,
-                :apellidos,
-                :correo,
-                1,
-                :id_contrato,
-                1,
-                :estado,
-                :disponibilidad,
-                :fijo_discontinuo
-            )
-        """),datos)
-        id_trabajador=resultado.lastrowid
+        coincidencias=conn.execute(text("""
+            SELECT id_trabajador, numero_vendedor, correo, activo
+            FROM trabajador
+            WHERE numero_vendedor=:numero_vendedor
+               OR (:correo IS NOT NULL AND correo=:correo)
+            FOR UPDATE
+        """), datos).mappings().all()
+
+        trabajador_activo=next(
+            (trabajador for trabajador in coincidencias if trabajador["activo"]),
+            None
+        )
+        if trabajador_activo:
+            campos=[]
+            if datos["numero_vendedor"] == trabajador_activo["numero_vendedor"]:
+                campos.append("número de vendedor")
+            if datos["correo"] and datos["correo"] == trabajador_activo["correo"]:
+                campos.append("correo")
+            return jsonify(
+                ok=False,
+                error="Ya existe un trabajador activo con ese dato: "
+                      + " y ".join(campos or ["número de vendedor o correo"])
+            ), 409
+
+        if coincidencias:
+            id_trabajador=coincidencias[0]["id_trabajador"]
+            conn.execute(text("""
+                UPDATE trabajador
+                SET numero_vendedor=:numero_vendedor,
+                    nombre=:nombre,
+                    apellidos=:apellidos,
+                    correo=:correo,
+                    activo=1,
+                    id_contrato=:id_contrato,
+                    id_centro=1,
+                    estado=:estado,
+                    disponibilidad=:disponibilidad,
+                    fijo_discontinuo=:fijo_discontinuo
+                WHERE id_trabajador=:id_trabajador
+            """), {**datos, "id_trabajador": id_trabajador})
+            conn.execute(text("""
+                DELETE FROM trabajador_tarea
+                WHERE id_trabajador=:id_trabajador
+            """), {"id_trabajador": id_trabajador})
+        else:
+            resultado=conn.execute(text("""
+                INSERT INTO trabajador(
+                    numero_vendedor,
+                    nombre,
+                    apellidos,
+                    correo,
+                    activo,
+                    id_contrato,
+                    id_centro,
+                    estado,
+                    disponibilidad,
+                    fijo_discontinuo
+                )
+                VALUES(
+                    :numero_vendedor,
+                    :nombre,
+                    :apellidos,
+                    :correo,
+                    1,
+                    :id_contrato,
+                    1,
+                    :estado,
+                    :disponibilidad,
+                    :fijo_discontinuo
+                )
+            """),datos)
+            id_trabajador=resultado.lastrowid
+
         for tarea in datos["tareas"]:
             conn.execute(text("""
                 INSERT INTO trabajador_tarea(
@@ -966,6 +1013,7 @@ def nuevo_trabajador():
 def editar_trabajador():
 
     datos = request.json
+    datos["correo"] = datos.get("correo", "").strip() or None
 
     with engine.begin() as conn:
 
