@@ -916,6 +916,11 @@ def eliminar_trabajador():
 @app.route("/nuevo_trabajador",methods=["POST"])
 def nuevo_trabajador():
     datos=request.get_json()
+    datos["numero_vendedor"] = int(datos["numero_vendedor"])
+    datos["id_contrato"] = int(datos["id_contrato"])
+    datos["estado"] = int(datos["estado"])
+    datos["fijo_discontinuo"] = int(datos.get("fijo_discontinuo", 0))
+    datos["tareas"] = [int(tarea) for tarea in datos.get("tareas", [])]
     datos["correo"] = datos.get("correo", "").strip() or None
     with engine.begin() as conn:
         coincidencias=conn.execute(text("""

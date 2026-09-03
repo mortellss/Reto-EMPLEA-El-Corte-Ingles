@@ -322,17 +322,23 @@ document.getElementById("guardarTrabajador").addEventListener("click", async () 
 
     }
 
-    const respuesta = await fetch(url, {
+    let respuesta;
+    try {
+        respuesta = await fetch(url, {
 
-        method: "POST",
+            method: "POST",
 
-        headers: {
-            "Content-Type": "application/json"
-        },
+            headers: {
+                "Content-Type": "application/json"
+            },
 
-        body: JSON.stringify(datos)
+            body: JSON.stringify(datos)
 
-    });
+        });
+    } catch (error) {
+        alert("No se ha podido guardar el trabajador. Comprueba la conexión con el servidor.");
+        return;
+    }
 
     if (respuesta.ok) {
 
