@@ -262,22 +262,29 @@ document.querySelectorAll(".delete-trabajador-btn").forEach(btn => {
 
         if(!confirm("¿Eliminar trabajador?")) return;
 
-        const respuesta = await fetch("/eliminar_trabajador",{
+        try {
+            const respuesta = await fetch("/eliminar_trabajador",{
 
-            method:"POST",
+                method:"POST",
 
-            headers:{
-                "Content-Type":"application/json"
-            },
+                headers:{
+                    "Content-Type":"application/json"
+                },
 
-            body:JSON.stringify({
-                id:btn.dataset.id
-            })
+                body:JSON.stringify({
+                    id:btn.dataset.id
+                })
 
-        });
+            });
 
-        if(respuesta.ok){
-            location.reload();
+            const resultado = await respuesta.json();
+            if(resultado.ok){
+                location.reload();
+            }else{
+                alert(resultado.error || "No se ha podido eliminar el trabajador.");
+            }
+        } catch (error) {
+            alert("No se ha podido eliminar el trabajador. Comprueba la conexión con el servidor.");
         }
 
     });

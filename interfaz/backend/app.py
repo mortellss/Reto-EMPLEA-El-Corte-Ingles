@@ -870,14 +870,43 @@ def editar_contrato():
 def eliminar_trabajador():
 
     datos = request.get_json()
-    print(datos)
 
     with engine.begin() as conn:
 
         conn.execute(text("""
-            UPDATE trabajador
-            SET activo=0
-            WHERE id_trabajador=:id
+            DELETE FROM trabajador_tarea
+            WHERE id_trabajador = :id
+        """), {"id": datos["id"]})
+
+        conn.execute(text("""
+            DELETE FROM disponibilidad
+            WHERE id_trabajador = :id
+        """), {"id": datos["id"]})
+
+        conn.execute(text("""
+            DELETE FROM calendario_trabajadores
+            WHERE id_trabajador = :id
+        """), {"id": datos["id"]})
+
+        conn.execute(text("""
+            DELETE FROM planificacion
+            WHERE id_trabajador = :id
+        """), {"id": datos["id"]})
+
+        conn.execute(text("""
+            DELETE FROM calendarizacion
+            WHERE id_trabajador = :id
+        """), {"id": datos["id"]})
+
+        conn.execute(text("""
+            DELETE FROM cambios_planificacion
+            WHERE trabajador_anterior = :id
+               OR trabajador_nuevo = :id
+        """), {"id": datos["id"]})
+
+        conn.execute(text("""
+            DELETE FROM trabajador
+            WHERE id_trabajador = :id
         """),{"id":datos["id"]})
 
     return jsonify(ok=True)
