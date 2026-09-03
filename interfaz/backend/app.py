@@ -870,43 +870,14 @@ def editar_contrato():
 def eliminar_trabajador():
 
     datos = request.get_json()
+    print(datos)
 
     with engine.begin() as conn:
 
         conn.execute(text("""
-            DELETE FROM trabajador_tarea
-            WHERE id_trabajador = :id
-        """), {"id": datos["id"]})
-
-        conn.execute(text("""
-            DELETE FROM disponibilidad
-            WHERE id_trabajador = :id
-        """), {"id": datos["id"]})
-
-        conn.execute(text("""
-            DELETE FROM calendario_trabajadores
-            WHERE id_trabajador = :id
-        """), {"id": datos["id"]})
-
-        conn.execute(text("""
-            DELETE FROM planificacion
-            WHERE id_trabajador = :id
-        """), {"id": datos["id"]})
-
-        conn.execute(text("""
-            DELETE FROM calendarizacion
-            WHERE id_trabajador = :id
-        """), {"id": datos["id"]})
-
-        conn.execute(text("""
-            DELETE FROM cambios_planificacion
-            WHERE trabajador_anterior = :id
-               OR trabajador_nuevo = :id
-        """), {"id": datos["id"]})
-
-        conn.execute(text("""
-            DELETE FROM trabajador
-            WHERE id_trabajador = :id
+            UPDATE trabajador
+            SET activo=0
+            WHERE id_trabajador=:id
         """),{"id":datos["id"]})
 
     return jsonify(ok=True)
@@ -916,11 +887,6 @@ def eliminar_trabajador():
 @app.route("/nuevo_trabajador",methods=["POST"])
 def nuevo_trabajador():
     datos=request.get_json()
-    datos["numero_vendedor"] = int(datos["numero_vendedor"])
-    datos["id_contrato"] = int(datos["id_contrato"])
-    datos["estado"] = int(datos["estado"])
-    datos["fijo_discontinuo"] = int(datos.get("fijo_discontinuo", 0))
-    datos["tareas"] = [int(tarea) for tarea in datos.get("tareas", [])]
     datos["correo"] = datos.get("correo", "").strip() or None
     with engine.begin() as conn:
         coincidencias=conn.execute(text("""

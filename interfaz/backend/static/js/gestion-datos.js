@@ -262,29 +262,22 @@ document.querySelectorAll(".delete-trabajador-btn").forEach(btn => {
 
         if(!confirm("¿Eliminar trabajador?")) return;
 
-        try {
-            const respuesta = await fetch("/eliminar_trabajador",{
+        const respuesta = await fetch("/eliminar_trabajador",{
 
-                method:"POST",
+            method:"POST",
 
-                headers:{
-                    "Content-Type":"application/json"
-                },
+            headers:{
+                "Content-Type":"application/json"
+            },
 
-                body:JSON.stringify({
-                    id:btn.dataset.id
-                })
+            body:JSON.stringify({
+                id:btn.dataset.id
+            })
 
-            });
+        });
 
-            const resultado = await respuesta.json();
-            if(resultado.ok){
-                location.reload();
-            }else{
-                alert(resultado.error || "No se ha podido eliminar el trabajador.");
-            }
-        } catch (error) {
-            alert("No se ha podido eliminar el trabajador. Comprueba la conexión con el servidor.");
+        if(respuesta.ok){
+            location.reload();
         }
 
     });
@@ -322,23 +315,17 @@ document.getElementById("guardarTrabajador").addEventListener("click", async () 
 
     }
 
-    let respuesta;
-    try {
-        respuesta = await fetch(url, {
+    const respuesta = await fetch(url, {
 
-            method: "POST",
+        method: "POST",
 
-            headers: {
-                "Content-Type": "application/json"
-            },
+        headers: {
+            "Content-Type": "application/json"
+        },
 
-            body: JSON.stringify(datos)
+        body: JSON.stringify(datos)
 
-        });
-    } catch (error) {
-        alert("No se ha podido guardar el trabajador. Comprueba la conexión con el servidor.");
-        return;
-    }
+    });
 
     if (respuesta.ok) {
 
