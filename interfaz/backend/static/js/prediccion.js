@@ -86,6 +86,8 @@ botonesTrimestre.forEach(boton => {
 
         }
 
+        cargarPrediccion(fechaInicioPrediccion, fechaFinPrediccion);
+
     });
 
 });
@@ -119,11 +121,22 @@ selectorAño.addEventListener("change", () => {
 
     cargarPrediccion();
 
-    async function cargarPrediccion(){
+    async function cargarPrediccion(fechaInicio = null, fechaFin = null){
 
         try{
 
-            const respuesta=await fetch("/api/prediccion");
+            const parametros = new URLSearchParams();
+
+            if(fechaInicio && fechaFin){
+                parametros.set("fecha_inicio", fechaInicio);
+                parametros.set("fecha_fin", fechaFin);
+            }
+
+            const consulta = parametros.toString()
+                ? `/api/prediccion?${parametros.toString()}`
+                : "/api/prediccion";
+
+            const respuesta=await fetch(consulta);
             const datos=await respuesta.json();
 
             if(!respuesta.ok){
@@ -251,7 +264,7 @@ selectorAño.addEventListener("change", () => {
 
 
         // Recargar los datos de la predicción
-        await cargarPrediccion();
+        await cargarPrediccion(fechaInicioPrediccion, fechaFinPrediccion);
 
 
     } catch (error) {
