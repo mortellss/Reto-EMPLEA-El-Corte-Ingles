@@ -575,7 +575,6 @@ def gestion_datos():
         LEFT JOIN trabajador t
 
             ON c.id_contrato = t.id_contrato
-            AND t.activo = 1
 
         GROUP BY
 
@@ -704,7 +703,6 @@ def trabajadores_contrato(id_contrato):
             FROM trabajador
 
             WHERE id_contrato = :id
-            AND activo = 1
 
             ORDER BY apellidos, nombre
 
@@ -784,7 +782,6 @@ def eliminar_contrato():
             FROM trabajador
 
             WHERE id_contrato = :id
-            AND activo = 1
 
         """),
 

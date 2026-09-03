@@ -1017,22 +1017,26 @@ document.querySelectorAll(".delete-contrato-btn").forEach(btn=>{
 
     btn.addEventListener("click",async()=>{
         if(!confirm("¿Eliminar contrato?")) return;
-        const respuesta = await fetch("/eliminar_contrato",{
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                id:btn.dataset.id
-            })
+        try {
+            const respuesta = await fetch("/eliminar_contrato",{
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify({
+                    id:btn.dataset.id
+                })
 
-        });
+            });
 
-        const resultado = await respuesta.json();
-        if(resultado.ok){
-            location.reload();
-        }else{
-            alert(resultado.error);
+            const resultado = await respuesta.json();
+            if(resultado.ok){
+                location.reload();
+            }else{
+                alert(resultado.error || "No se ha podido eliminar el contrato.");
+            }
+        } catch (error) {
+            alert("No se ha podido eliminar el contrato. Comprueba la conexión con el servidor.");
         }
 
     });
